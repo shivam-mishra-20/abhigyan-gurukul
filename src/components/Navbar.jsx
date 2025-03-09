@@ -10,7 +10,7 @@ const Navbar = () => {
         <div className="flex justify-evenly px-5 items-end w-1/3 h-full">
           <div className="flex h-full items-center">
             <img
-              src=".\src\assets\ABHIGYAN_GURUKUL_logo.svg"
+              src="/ABHIGYAN_GURUKUL_logo.svg"
               className="self-center h-[60px] w-[60px] rounded-full"
               alt=""
             />
@@ -55,7 +55,7 @@ const Navbar = () => {
       <div className="lg:hidden h-[93px] w-full relative bg-[#6BC74C]">
         <div className="flex justify-between items-center p-5">
           <div className="flex items-center space-x-3">
-            <img src="\ABHIGYAN_GURUKUL_logo.svg" alt="" className="h-10" />
+            <img src="/ABHIGYAN_GURUKUL_logo.svg" alt="" className="h-10" />
             <h1 className="text-white font-bold text-lg">Abhigyan Gurukul</h1>
           </div>
           <button
@@ -135,7 +135,7 @@ const Navbar = () => {
       </div>
       <div className="z-16 h-90 w-full  hidden lg:block">
         <img
-          src=".\src\assets\Photo-2.png"
+          src="/Photo-2.png"
           alt="Abhigyan Gurukul Banner Photo"
           className="object-cover w-full h-full rounded-br-2xl rounded-bl-2xl"
         />
