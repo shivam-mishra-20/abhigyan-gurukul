@@ -8,7 +8,7 @@ export const Introduction = (info) => {
       <div className="text-[#317100] text-6xl font-semibold items-center justify-center w-fill text-center hidden:sm block ">
         Introduction
         <img
-          src=".\src\assets\Intro-Pattern.png"
+          src="/Intro-Pattern.png"
           className="w-fit h-3 ml-[calc(100%/1.9)] justfiy-center rotate-1 hidden sm:block"
           alt="Abhigyan Gurukul Intro Duction pattern"
         />
