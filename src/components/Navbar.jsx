@@ -21,10 +21,25 @@ const Navbar = () => {
         <div className=" absolute text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white  py-1  hidden lg:flex lg:left-[170px] 2xl:left-[250px] -bottom-3">
           Never stop learning
         </div>
-        <div className="flex  justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full">
-          <a>Home</a>
-          <a>About Us</a>
-          <a>Faculties</a>
+        <div className="flex  justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full ">
+          <a
+            href="#"
+            className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
+          >
+            Home
+          </a>
+          <a
+            href="#"
+            className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
+          >
+            About Us
+          </a>
+          <a
+            href="#"
+            className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
+          >
+            Faculties
+          </a>
         </div>
         <div className="flex justify-evenly px-5 items-center w-1/3 h-full">
           <button className="text-[#0B7077] ps-5 pe-14 py-2 rounded-xl font-semibold bg-[#ffffffdf]">
@@ -117,10 +132,10 @@ const Navbar = () => {
         {/* Mobile Menu Dropdown */}
         {isMenuOpen && (
           <div className="bg-[#6BC74C] border-t border-[#5ab33f] pb-4">
-            <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md">
-              <h1>Home</h1>
-              <h1>About Us</h1>
-              <h1>Faculties</h1>
+            <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md hover:underline ">
+              <a href="#">Home</a>
+              <a href="#">About Us</a>
+              <a href="#">Faculties</a>
             </div>
             <div className="flex flex-col space-y-3 px-5">
               <button className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf]">
@@ -133,7 +148,7 @@ const Navbar = () => {
           </div>
         )}
       </div>
-      <div className="z-16 h-90 w-full  hidden lg:block">
+      <div className="z-16 h-100 w-full  hidden lg:block">
         <img
           src="/Photo-2.png"
           alt="Abhigyan Gurukul Banner Photo"

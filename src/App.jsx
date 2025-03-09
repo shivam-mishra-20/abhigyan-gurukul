@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import { Introduction } from "./components/Introduction";
 import Reviews from "./components/Reviews";
 import VideoCarousel from "./components/VideoCarousel";
+import Footer from "./components/Footer";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -62,6 +63,9 @@ function App() {
 
       {/* Video Caraousel */}
       <VideoCarousel></VideoCarousel>
+
+      {/* Footer */}
+      <Footer></Footer>
     </>
   );
 }

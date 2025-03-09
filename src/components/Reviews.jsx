@@ -63,7 +63,7 @@ const ReviewSlider = () => {
                   key={index}
                   className="keen-slider__slide transition-opacity duration-500"
                 >
-                  <blockquote className="hover:shadow-2xl border-[1px] border-[#cedec9] rounded-lg p-6 shadow-xs sm:p-8">
+                  <blockquote className=" border-[1px] border-[#cedec9] rounded-lg p-6 shadow-xs sm:p-8">
                     <div className="flex items-center gap-4">
                       <img
                         alt={review.name}
@@ -101,13 +101,13 @@ const ReviewSlider = () => {
             <div className="mt-6 flex justify-center gap-4">
               <button
                 onClick={() => slider.current?.prev()}
-                className="px-4 py-2 text-white bg-blue-600 rounded-md"
+                className="border-1 border-[#6BFF51] drop-shadow-xl text-center text-[#ffffff] ps-5 p-7 py-2 rounded-xl font-semibold bg-[#20B486]"
               >
                 Previous
               </button>
               <button
                 onClick={() => slider.current?.next()}
-                className="px-4 py-2 text-white bg-blue-600 rounded-md"
+                className="border-1 border-[#6BFF51] drop-shadow-xl text-center text-[#ffffff] ps-5 p-7 py-2 rounded-xl font-semibold bg-[#20B486]"
               >
                 Next
               </button>
