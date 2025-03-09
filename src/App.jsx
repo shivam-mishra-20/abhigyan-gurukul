@@ -1,9 +1,7 @@
 import { useState } from "react";
 
 import "./App.css";
-// import { Example } from "./components/NavigationBar";
-import { NavigationBar } from "./components/NavigationBar";
-import { NewNavbar } from "./components/NavigationBar-Shiv";
+
 import Navbar from "./components/Navbar";
 import { Introduction } from "./components/Introduction";
 
@@ -22,7 +20,7 @@ function App() {
     </p>
   );
 
-  const IntroBanner = "./src/assets/Banner-Photo.jpg";
+  const IntroBanner = "/Banner-Photo.jpg";
 
   return (
     <>
