@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,24 +23,24 @@ const Navbar = () => {
           Never stop learning
         </div>
         <div className="flex  justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full ">
-          <a
-            href="#"
+          <Link
+            to="/"
             className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
           >
             Home
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            to="/about"
             className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
           >
             About Us
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            to="/faculties"
             className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
           >
-            Faculties
-          </a>
+            Facutlies
+          </Link>
         </div>
         <div className="flex justify-evenly px-5 items-center w-1/3 h-full">
           <button className="text-[#0B7077] ps-5 pe-14 py-2 rounded-xl font-semibold bg-[#ffffffdf]">
@@ -133,27 +134,20 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="bg-[#6BC74C] border-t border-[#5ab33f] pb-4">
             <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md hover:underline ">
-              <a href="#">Home</a>
-              <a href="#">About Us</a>
-              <a href="#">Faculties</a>
+              <Link to="/">Home</Link>
+              <Link to="/about">About Us</Link>
+              <Link to="/faculties">Faculties</Link>{" "}
             </div>
             <div className="flex flex-col space-y-3 px-5">
               <button className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf]">
-                LOG IN
+                ENROLL NOW
               </button>
               <button className="text-white py-2 rounded-xl font-semibold bg-[#0B7077]">
-                SIGN UP
+                CONTACT US
               </button>
             </div>
           </div>
         )}
-      </div>
-      <div className="z-16 h-100 w-full  hidden lg:block">
-        <img
-          src="/Photo-2.png"
-          alt="Abhigyan Gurukul Banner Photo"
-          className="object-cover w-full h-full rounded-br-2xl rounded-bl-2xl"
-        />
       </div>
     </>
   );

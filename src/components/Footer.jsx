@@ -145,7 +145,7 @@ const Footer = () => {
         {/* Copyright Section */}
         <div className="mt-8 text-center border-t border-white pt-4 text-sm">
           Copyright &copy; 2023 | All Rights Reserved | Made by Sarman And
-          Shivam with <span className=" opacity-50">❤</span>
+          Shivam for Abhigyan Gurukul
         </div>
       </footer>
     </>
