@@ -1,5 +1,5 @@
 import React from "react";
-import Info from "../components/About Us/Info";
+import Info from "../components/Page-Specific-Components/Info";
 
 const About = () => {
   return (

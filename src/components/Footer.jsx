@@ -1,12 +1,17 @@
 import React from "react";
+import { Link } from "react-router";
 
 const Footer = () => {
   return (
     <>
       <hr class="mt-30 mb-30 border-t-1 border-black opacity-[18%] my-4" />
 
-      <footer className="bg-[#6BC74C] text-white py-8 px-4 md:px-16">
-        <img src="/Group236.svg" alt="" className="absolute z-2 -mt-8" />
+      <footer className="bg-[#6BC74C] text-white py-8 px-4 md:px-16 overflow-hidden">
+        <img
+          src="/Group236.svg"
+          alt=""
+          className="absolute z-2 -mt-8 left-0 right-0 max-w-full"
+        />
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo and Description */}
           <div>
@@ -27,24 +32,16 @@ const Footer = () => {
             <h3 className="text-lg font-semibold">Quick Links</h3>
             <ul className="z-10 mt-2 space-y-2">
               <li>
-                <a href="#" className="hover:underline">
-                  Home
-                </a>
+                <Link to="/">Home</Link>
               </li>
               <li>
-                <a href="#" className="hover:underline">
-                  About Us
-                </a>
+                <Link to="/about">About Us</Link>
               </li>
               <li>
-                <a href="#" className="hover:underline">
-                  Faculty
-                </a>
+                <Link to="/faculties">Faculties</Link>
               </li>
               <li>
-                <a href="#" className="hover:underline">
-                  Enroll Now
-                </a>
+                <Link to="/">Enroll Now</Link>
               </li>
             </ul>
           </div>

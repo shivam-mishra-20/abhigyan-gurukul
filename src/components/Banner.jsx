@@ -2,7 +2,7 @@ import React from "react";
 
 const Banner = () => {
   return (
-    <div className="z-16 h-100 w-full  hidden lg:block">
+    <div className="-z-1 h-100 w-full  hidden lg:block">
       <img
         src="/Photo-2.png"
         alt="Abhigyan Gurukul Banner Photo"

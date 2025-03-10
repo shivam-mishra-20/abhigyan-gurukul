@@ -7,7 +7,7 @@ const Navbar = () => {
   return (
     <>
       {/* Desktop Navbar */}
-      <div className="hidden   lg:flex w-[full]  relative py-7 items-center justify-center bg-[#6BC74C] h-[70px]">
+      <div className="hidden z-  lg:flex w-[full]  relative py-7 items-center justify-center bg-[#6BC74C] h-[70px] overflow-hidden">
         <div className="flex justify-evenly px-5 items-end w-1/3 h-full">
           <div className="flex h-full items-center">
             <img
@@ -19,7 +19,7 @@ const Navbar = () => {
 
           <h1 className="text-white font-bold text-xl">Abhigyan Gurukul</h1>
         </div>
-        <div className=" absolute text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white  py-1  hidden lg:flex lg:left-[170px] 2xl:left-[250px] -bottom-3">
+        <div className="absolute z-20 -bottom-2  text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white  py-1  hidden lg:flex lg:left-[170px] 2xl:left-[250px] ">
           Never stop learning
         </div>
         <div className="flex  justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full ">
