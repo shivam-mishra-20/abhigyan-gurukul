@@ -7,14 +7,21 @@ const Navbar = () => {
   return (
     <>
       {/* Desktop Navbar */}
-      <div className="hidden z-  lg:flex w-[full]  relative py-7 items-center justify-center bg-[#6BC74C] h-[70px] overflow-hidden">
+      <div className="hidden z-3 lg:flex w-[full]  relative py-7 items-center justify-center bg-[#6BC74C] h-[70px] overflow-hidden">
+        <img
+          src="/Group236.svg"
+          alt=""
+          className="absolute z-2 mt-8  right-80  object-cover hidden lg:block"
+        />
         <div className="flex justify-evenly px-5 items-end w-1/3 h-full">
           <div className="flex h-full items-center">
-            <img
-              src="/ABHIGYAN_GURUKUL_logo.svg"
-              className="self-center h-[60px] w-[60px] rounded-full"
-              alt=""
-            />
+            <a href="/">
+              <img
+                src="/ABHIGYAN_GURUKUL_logo.svg"
+                className="self-center h-[60px] w-[60px] rounded-full"
+                alt=""
+              />
+            </a>
           </div>
 
           <h1 className="text-white font-bold text-xl">Abhigyan Gurukul</h1>
@@ -22,7 +29,7 @@ const Navbar = () => {
         <div className="absolute z-20 -bottom-2  text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white  py-1  hidden lg:flex lg:left-[170px] 2xl:left-[250px] ">
           Never stop learning
         </div>
-        <div className="flex  justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full ">
+        <div className="flex  z-5 justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full ">
           <Link
             to="/"
             className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
@@ -35,18 +42,24 @@ const Navbar = () => {
           >
             About Us
           </Link>
-          <Link
+          {/* <Link
             to="/faculties"
             className="text-white text-center  px-2 py-1  hover:rounded-xl font-semibold hover:bg-[#0b707739]"
           >
             Facutlies
-          </Link>
+          </Link> */}
         </div>
         <div className="flex justify-evenly px-5 items-center w-1/3 h-full">
-          <button className="text-[#0B7077] ps-5 pe-14 py-2 rounded-xl font-semibold bg-[#ffffffdf]">
+          <button
+            className="text-[#0B7077] ps-2 pe-6 lg:py-3  rounded-xl font-semibold bg-[#ffffffdf] hover:bg-[#E1E1E1] hover:scale-105 md:py-0.5"
+            onClick={() => (window.location.href = "/enrollnow")}
+          >
             ENROLL NOW
           </button>
-          <button className="text-white ps-5 pe-14 py-2 rounded-xl font-semibold bg-[#0B7077]">
+          <button
+            className="text-white ps-2 pe-6 lg:py-3 rounded-xl font-semibold bg-[#0B7077]  hover:scale-105 "
+            onClick={() => (window.location.href = "/enrollnow")}
+          >
             CONTACT US
           </button>
         </div>
@@ -139,7 +152,10 @@ const Navbar = () => {
               <Link to="/faculties">Faculties</Link>{" "}
             </div>
             <div className="flex flex-col space-y-3 px-5">
-              <button className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf]">
+              <button
+                className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf]"
+                onClick={() => (window.location.href = "/enrollnow")}
+              >
                 ENROLL NOW
               </button>
               <button className="text-white py-2 rounded-xl font-semibold bg-[#0B7077]">

@@ -68,6 +68,13 @@ const VideoCarousel = () => {
           <h2 className="text-center text-4xl font-semibold text-[#317100] sm:text-5xl">
             Watch Free Tutorials
           </h2>
+          <div className="text-[#317100] text-6xl font-semibold items-center justify-center w-fill text-center hidden:sm block ">
+            <img
+              src="/Intro-Pattern.png"
+              className="w-fit h-3 ml-[calc(100%/1.9)] justfiy-center rotate-1 hidden sm:block"
+              alt="Abhigyan Gurukul Intro Duction pattern"
+            />
+          </div>
 
           <div className="relative mt-8">
             <div className="keen-slider" ref={sliderRef}>

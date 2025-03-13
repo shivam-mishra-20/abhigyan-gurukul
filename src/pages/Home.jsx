@@ -35,6 +35,10 @@ const Home = () => {
   return (
     <>
       <Banner />
+
+      {/* Video Carousel */}
+      <VideoCarousel />
+
       {/* Introduction */}
       <Introduction
         title="Introduction"
@@ -50,8 +54,6 @@ const Home = () => {
         img_url={FacultyBanner}
         button_text="View All"
       />
-      {/* Video Carousel */}
-      <VideoCarousel />
     </>
   );
 };

@@ -7,6 +7,7 @@ const Footer = () => {
       <hr class="mt-30 mb-30 border-t-1 border-black opacity-[18%] my-4" />
 
       <footer className="bg-[#6BC74C] text-white py-8 px-4 md:px-16 overflow-hidden">
+        {/* Design */}
         <img
           src="/Group236.svg"
           alt=""
@@ -37,9 +38,9 @@ const Footer = () => {
               <li>
                 <Link to="/about">About Us</Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/faculties">Faculties</Link>
-              </li>
+              </li> */}
               <li>
                 <Link to="/">Enroll Now</Link>
               </li>
@@ -67,12 +68,12 @@ const Footer = () => {
               <span>2nd Floor, Akshar Pavillion, Bhayli-Sevasi, Vadodara</span>
             </p>
             <div class="flex  z-flex-col mt-5 pt-6 lg:pt-0">
-              <div class="flex justify-center space-x-4">
+              <div class="flex justify-center space-x-4 ">
                 <a
                   rel="noopener noreferrer"
-                  href="#"
+                  href="https://www.instagram.com/abhigyan_gurukul/"
                   title="Instagram"
-                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50"
+                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50 hover:scale-105 hover:border-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -85,9 +86,9 @@ const Footer = () => {
                 </a>
                 <a
                   rel="noopener noreferrer"
-                  href="#"
+                  href=""
                   title="Twitter"
-                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50"
+                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50 hover:scale-105 hover:border-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -100,9 +101,9 @@ const Footer = () => {
                 </a>
                 <a
                   rel="noopener noreferrer"
-                  href="#"
+                  href="https://www.facebook.com/abhigyangurukul"
                   title="Facebook"
-                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50"
+                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50 hover:scale-105 hover:border-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -115,9 +116,9 @@ const Footer = () => {
                 </a>
                 <a
                   rel="noopener noreferrer"
-                  href="#"
-                  title="Gmail"
-                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50"
+                  href="https://www.youtube.com/@AbhigyanGurukul"
+                  title="Youtube"
+                  class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50 hover:scale-105 hover:border-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

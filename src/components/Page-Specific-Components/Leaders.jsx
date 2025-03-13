@@ -13,19 +13,25 @@ const Leaders = ({ info, isFlagged }) => {
   ];
 
   const Others = [
-    {
-      name: "Dhara Ma'am",
-      subject: "English/EVS/Social Science",
-      img: "/placeholder.png",
-    },
+    { name: "Sarman Sir", subject: "Science", img: "/placeholder.png" },
+
     {
       name: "Pratyaksha Ma'am",
       subject: "English/EVS",
-      img: "/placeholder.png",
+      img: "/Protooksha-2-Cropped.jpg",
     },
-    { name: "Sarman Sir", subject: "Science", img: "/placeholder.png" },
     { name: "Shivam Sir", subject: "Mathematics", img: "/placeholder.png" },
     { name: "Nitish Sir", subject: "Social Science", img: "/placeholder.png" },
+    {
+      name: "Dhara Ma'am",
+      subject: "English/EVS/Social Science",
+      img: "/DharaMam.png",
+    },
+    {
+      name: "Prakash Sir",
+      subject: "Hindi/Gujarati/Sanskrit",
+      img: "/placeholder.png",
+    },
   ];
 
   if (isFlagged) {
@@ -114,12 +120,12 @@ const Leaders = ({ info, isFlagged }) => {
             {Others.map((Others, index) => (
               <div
                 key={index}
-                className="w-[250px] bg-gray-100 p-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
+                className="w-[200px] bg-gray-100 p-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
               >
                 <img
                   src={Others.img}
                   alt={Others.name}
-                  className="w-full h-60 object-cover rounded-lg"
+                  className="w-full h-80 object-cover rounded-lg"
                 />
                 <h3 className="mt-3 text-lg font-semibold text-center">
                   {Others.name}
