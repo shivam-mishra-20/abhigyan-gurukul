@@ -13,7 +13,7 @@ export const Introduction = (info) => {
         <img
           src="/Intro-Pattern.png"
           className="w-fit h-3 ml-[calc(100%/1.9)] justfiy-center rotate-1 hidden sm:block"
-          alt="Abhigyan Gurukul Intro Duction pattern"
+          alt="Abhigyan Gurukul Introduction pattern"
         />
       </div>
       {/* Sections For Abhigyan Gurkul Introduction Page */}

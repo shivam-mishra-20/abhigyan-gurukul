@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -86,7 +87,9 @@ const Navbar = () => {
       <div className="lg:hidden h-[93px] w-full relative bg-[#6BC74C]">
         <div className="flex justify-between items-center p-5">
           <div className="flex items-center space-x-3">
-            <img src="/ABHIGYAN_GURUKUL_logo.svg" alt="" className="h-10" />
+            <Link to="/">
+              <img src="/ABHIGYAN_GURUKUL_logo.svg" alt="" className="h-10" />
+            </Link>
             <h1 className="text-white font-bold text-lg">Abhigyan Gurukul</h1>
           </div>
           <button
@@ -146,26 +149,49 @@ const Navbar = () => {
         </div> */}
 
         {/* Mobile Menu Dropdown */}
-        {isMenuOpen && (
-          <div className="bg-[#6BC74C] border-t border-[#5ab33f] pb-4">
-            <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md hover:underline ">
-              <Link to="/">Home</Link>
-              <Link to="/about">About Us</Link>
-              {/* <Link to="/faculties">Faculties</Link>{" "} */}
-            </div>
-            <div className="flex flex-col space-y-3 px-5">
-              <button
-                className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf]"
-                onClick={() => (window.location.href = "/enrollnow")}
-              >
-                CONTACT US
-              </button>
-              {/* <button className="text-white py-2 rounded-xl font-semibold bg-[#0B7077]">
-                CONTACT US
-              </button> */}
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="bg-[#6BC74C] border-t border-[#5ab33f] pb-4 shadow-lg"
+            >
+              <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md">
+                <motion.div
+                  whileTap={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Link to="/" className="hover:text-[#0B7077] transition-all">
+                    Home
+                  </Link>
+                </motion.div>
+                <motion.div
+                  whileTap={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Link
+                    to="/about"
+                    className="hover:text-[#0B7077] transition-all"
+                  >
+                    About Us
+                  </Link>
+                </motion.div>
+              </div>
+              <div className="flex flex-col space-y-3 px-5">
+                <motion.button
+                  whileTap={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, backgroundColor: "#e0e0e0" }}
+                  className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf] transition-all"
+                  onClick={() => (window.location.href = "/enrollnow")}
+                >
+                  CONTACT US
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

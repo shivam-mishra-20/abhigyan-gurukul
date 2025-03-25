@@ -2,10 +2,8 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import { Introduction } from "../components/Introduction";
 import VideoCarousel from "../components/VideoCarousel";
-import Footer from "../components/Footer";
 import "../App.css";
 import Banner from "../components/Banner";
-import ImageCarousel from "../components/ImageCarousel";
 import { Link } from "react-router";
 
 const Home = () => {
