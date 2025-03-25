@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 
 const Info = () => {
   const features = [
@@ -57,22 +58,33 @@ const Info = () => {
         />
       </div>
       <hr className="border-t-1 mt-10 mb-10 border-black opacity-[18%] my-4" />
-      {/* Introduction */}
-      <div className="text-[#317100] text-6xl font-semibold text-center hidden sm:block">
+      {/* Introduction Heading */}
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="text-[#317100] text-6xl font-semibold text-center hidden sm:block"
+      >
         Introduction
         <img
           src="/Intro-Pattern.png"
           className="w-fit h-3 ml-[calc(100%/1.9)] justify-center rotate-1 hidden sm:block"
           alt="Intro Pattern"
         />
-      </div>
+      </motion.div>
+
       {/* Introduction Section */}
-      <section>
+      <motion.section
+        whileHover={{ scale: 1.01 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <div className="mx-auto mt-5 max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8 hover:shadow-2xl border-[1px] border-[#cedec9] rounded-lg">
           <div className="grid grid-cols-1 gap-4 md:items-center md:gap-8">
-            <div>
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+            >
               <div className="md:max-w-none">
-                <h2 class="text-2xl font-semibold text-gray-900 sm:text-3xl">
+                <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl">
                   <p className="text-center">
                     At{" "}
                     <span className="text-[#20B486] font-semibold">
@@ -110,9 +122,6 @@ const Info = () => {
                       personal development
                     </span>
                     .
-                    <br />
-                    <br />
-                    <br />
                   </p>
 
                   <p className="text-center mt-6">
@@ -162,44 +171,56 @@ const Info = () => {
                     .
                   </p>
                 </h2>
-                ;
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
       {/* Images */}
-      <div className="grid grid-cols-2 gap-4 mx-auto mt-5 max-w-screen-xl lg:px-4 lg:py-8 sm:px-6 :px-8">
+      <div className="grid grid-cols-2 gap-4 mx-auto mt-5 max-w-screen-xl lg:px-4 lg:py-8 sm:px-6 px-8">
         <img
-          className="rounded-lg w-full object-cover"
+          className="rounded-lg w-full object-cover transition-transform duration-300 hover:scale-105"
           src="/Photo1.jpg"
           alt="Photo 1"
         />
         <img
-          className="rounded-lg w-full object-cover"
+          className="rounded-lg w-full object-cover transition-transform duration-300 hover:scale-105"
           src="/Photo2.jpg"
           alt="Photo 2"
         />
       </div>
+
       {/* Divider */}
       <hr className="border-t-1 mt-10  border-black opacity-[18%] my-4" />
       {/* Why Choose Us Section */}
       <div className="max-w-screen-xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <h2 className="text-center text-3xl font-bold text-green-700 mb-10">
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center text-3xl font-bold text-green-700 mb-10"
+        >
           Why Choose Abhigyan Gurukul?
-        </h2>
+        </motion.h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <div
+            <motion.div
               key={index}
-              className="p-6 bg-white border border-gray-200 shadow-lg rounded-lg hover:shadow-xl transition duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0 }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0px 10px 20px rgba(0,0,0,0.15)",
+              }}
+              className="p-6 bg-white border border-gray-200 shadow-lg rounded-lg transition duration-300"
             >
               <h3 className={`text-xl font-bold ${feature.color}`}>
                 {feature.id} {feature.title}
               </h3>
               <p className="text-gray-600 mt-2">{feature.description}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -216,42 +237,33 @@ const Info = () => {
             alt="Intro Pattern"
           />
         </div>
-        <div className="mx-auto mt-5 max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8 hover:shadow-2xl border-[1px] border-[#cedec9] rounded-lg">
+        <div className="mx-auto mt-5 max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8 border-[1px] border-[#cedec9] rounded-lg transition-transform duration-300 hover:scale-105">
           <div className="grid grid-cols-1 gap-4 md:items-center md:gap-8">
-            <div>
-              <div className="md:max-w-none">
-                <h3 className="text-4xl font-semibold text-red-500 mb-2">
-                  Vision:
-                </h3>
-                <h2 class="text-2xl font-semibold text-gray-900 sm:text-3xl">
-                  <p className="text-2xl text-gray-800">
-                    To make{" "}
-                    <span className="text-teal-500 font-medium">
-                      quality education
-                    </span>{" "}
-                    accessible at every level of education. To make learning a
-                    process to{" "}
-                    <span className="text-teal-500 font-medium">enjoy</span> and{" "}
-                    <span className="text-teal-500 font-medium">grow</span>{" "}
-                    rather than a hassle. To{" "}
-                    <span className="text-teal-500 font-medium">
-                      prioritize
-                    </span>{" "}
-                    students to ensure learning, rather than providing
-                    standardized and same content to everyone. To provide{" "}
-                    <span className="text-teal-500 font-medium">
-                      customized attention
-                    </span>{" "}
-                    to{" "}
-                    <span className="text-teal-500 font-medium">
-                      every type
-                    </span>{" "}
-                    of students, so that each one can grow ahead from the{" "}
-                    <span className="text-teal-500 font-medium">stage</span>,
-                    they started.
-                  </p>
-                </h2>
-              </div>
+            <div className="md:max-w-none">
+              <h3 className="text-4xl font-semibold text-red-500 mb-2">
+                Vision:
+              </h3>
+              <p className="text-2xl text-gray-800">
+                To make{" "}
+                <span className="text-teal-500 font-medium">
+                  quality education
+                </span>{" "}
+                accessible at every level of education. To make learning a
+                process to{" "}
+                <span className="text-teal-500 font-medium">enjoy</span> and{" "}
+                <span className="text-teal-500 font-medium">grow</span> rather
+                than a hassle. To{" "}
+                <span className="text-teal-500 font-medium">prioritize</span>{" "}
+                students to ensure learning, rather than providing standardized
+                and same content to everyone. To provide{" "}
+                <span className="text-teal-500 font-medium">
+                  customized attention
+                </span>{" "}
+                to <span className="text-teal-500 font-medium">every type</span>{" "}
+                of students, so that each one can grow ahead from the{" "}
+                <span className="text-teal-500 font-medium">stage</span> they
+                started.
+              </p>
             </div>
           </div>
         </div>
