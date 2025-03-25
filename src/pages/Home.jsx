@@ -5,6 +5,8 @@ import VideoCarousel from "../components/VideoCarousel";
 import Footer from "../components/Footer";
 import "../App.css";
 import Banner from "../components/Banner";
+import ImageCarousel from "../components/ImageCarousel";
+import { Link } from "react-router";
 
 const Home = () => {
   const text1 = (
@@ -32,19 +34,21 @@ const Home = () => {
 
   const IntroBanner = "/Banner-Photo.jpg";
   const FacultyBanner = "/Abhigyan_Gurukul_Faculty_Intro.png";
+
   return (
     <>
       <Banner />
 
-      {/* Video Carousel */}
-      <VideoCarousel />
-
+      {/* Image Carousel */}
+      {/* <ImageCarousel /> */}
       {/* Introduction */}
       <Introduction
         title="Introduction"
         Text={text1}
         img_url={IntroBanner}
         button_text="Learn More"
+        imageUrls={["/image1.jpg", "/image2.jpg", "/image3.jpg"]}
+        route="/about"
       />
       {/* Faculties Introduction */}
       <Introduction
@@ -53,7 +57,11 @@ const Home = () => {
         Text={Faculty_Intro}
         img_url={FacultyBanner}
         button_text="View All"
+        route={"/"}
       />
+
+      {/* Video Carousel */}
+      <VideoCarousel />
     </>
   );
 };

@@ -24,9 +24,11 @@ const Navbar = () => {
             </a>
           </div>
 
-          <h1 className="text-white font-bold text-xl">Abhigyan Gurukul</h1>
+          <h1 className="text-white font-bold mb-1 text-xl">
+            Abhigyan Gurukul
+          </h1>
         </div>
-        <div className="absolute z-20 -bottom-2  text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white  py-1  hidden lg:flex lg:left-[170px] 2xl:left-[250px] ">
+        <div className="absolute  -bottom-[2px]  text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white  py-1  hidden lg:flex lg:left-[170px] 2xl:left-[250px] ">
           Never stop learning
         </div>
         <div className="flex  z-5 justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full ">
@@ -50,15 +52,15 @@ const Navbar = () => {
           </Link> */}
         </div>
         <div className="flex justify-evenly px-5 items-center w-1/3 h-full">
-          <button
-            className="text-[#0B7077] ps-2 pe-6 lg:py-3  rounded-xl font-semibold bg-[#ffffffdf] hover:bg-[#E1E1E1] hover:scale-105 md:py-0.5"
+          {/* <button
+            className="text-[#0B7077] z-20 ps-2 pe-6 lg:py-3  rounded-xl font-semibold bg-[#ffffffdf] hover:bg-[#E1E1E1] hover:scale-105 md:py-0.5"
             onClick={() => (window.location.href = "/enrollnow")}
           >
             ENROLL NOW
-          </button>
+          </button> */}
           <button
             className="text-white ps-2 pe-6 lg:py-3 rounded-xl font-semibold bg-[#0B7077]  hover:scale-105 "
-            onClick={() => (window.location.href = "/enrollnow")}
+            onClick={() => (window.location.href = "/enrollnow ")}
           >
             CONTACT US
           </button>
@@ -149,18 +151,18 @@ const Navbar = () => {
             <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md hover:underline ">
               <Link to="/">Home</Link>
               <Link to="/about">About Us</Link>
-              <Link to="/faculties">Faculties</Link>{" "}
+              {/* <Link to="/faculties">Faculties</Link>{" "} */}
             </div>
             <div className="flex flex-col space-y-3 px-5">
               <button
                 className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf]"
                 onClick={() => (window.location.href = "/enrollnow")}
               >
-                ENROLL NOW
-              </button>
-              <button className="text-white py-2 rounded-xl font-semibold bg-[#0B7077]">
                 CONTACT US
               </button>
+              {/* <button className="text-white py-2 rounded-xl font-semibold bg-[#0B7077]">
+                CONTACT US
+              </button> */}
             </div>
           </div>
         )}

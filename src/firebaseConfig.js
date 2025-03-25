@@ -1,21 +1,19 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // Firestore
-import { getAuth } from "firebase/auth"; // Authentication (if needed)
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-// 🔥 Replace with your actual Firebase config
 const firebaseConfig = {
-    apiKey: "AIzaSyCVj7X7CRTByLG7YF3IlYNofMVFI5D41Kk",
-  authDomain: "abhigyan-gurukul.firebaseapp.com",
-  projectId: "abhigyan-gurukul",
-  storageBucket: "abhigyan-gurukul.firebasestorage.app",
-  messagingSenderId: "871374608648",
-  appId: "1:871374608648:web:fc1124bba966c56d63f4bd",
-  measurementId: "G-93N8W9YQPZ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app); // If authentication is needed
+const auth = getAuth(app);
 
-export { app, db, auth };
+export { db, collection, addDoc, auth };

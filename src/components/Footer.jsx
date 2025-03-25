@@ -42,7 +42,7 @@ const Footer = () => {
                 <Link to="/faculties">Faculties</Link>
               </li> */}
               <li>
-                <Link to="/">Enroll Now</Link>
+                <Link to="/enrollnow">Enroll Now</Link>
               </li>
             </ul>
           </div>
@@ -86,7 +86,7 @@ const Footer = () => {
                 </a>
                 <a
                   rel="noopener noreferrer"
-                  href=""
+                  href="https://x.com/AbhigyanGurukul"
                   title="Twitter"
                   class="flex items-center justify-center w-8 h-8 rounded-full sm:w-10 sm:h-10 dark: dark:text-gray-50 hover:scale-105 hover:border-1"
                 >
@@ -142,7 +142,7 @@ const Footer = () => {
 
         {/* Copyright Section */}
         <div className="mt-8 text-center border-t border-white pt-4 text-sm">
-          Copyright &copy; 2023 | All Rights Reserved | Made by Sarman And
+          Copyright &copy; 2025 | All Rights Reserved | Made by Sarman And
           Shivam for Abhigyan Gurukul
         </div>
       </footer>
