@@ -27,7 +27,7 @@ const videoData = [
   },
   {
     id: "3",
-    title: "Trgonometry Functions",
+    title: "Trigonometry Functions",
     description: "Learn about Trigonometry Functions and its applications.",
     duration: "20 min",
     rating: 4.6,
@@ -62,20 +62,11 @@ const VideoCarousel = () => {
   return (
     <>
       <hr className="mt-30 mb-30 border-t-1 border-black opacity-[18%] my-4" />
-
       <section className="bg-white">
         <div className="mx-auto border-[1px] border-[#cedec9] rounded-lg hover:shadow-2xl max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8">
           <h2 className="text-center text-4xl font-semibold text-[#317100] sm:text-5xl">
             Watch Free Tutorials
           </h2>
-          <div className="text-[#317100] text-6xl font-semibold items-center justify-center w-fill text-center hidden:sm block ">
-            <img
-              src="/Intro-Pattern.png"
-              className="w-fit h-3 ml-[calc(100%/1.9)] justfiy-center rotate-1 hidden sm:block"
-              alt="Abhigyan Gurukul Intro Duction pattern"
-            />
-          </div>
-
           <div className="relative mt-8">
             <div className="keen-slider" ref={sliderRef}>
               {videoData.map((video) => (
@@ -97,7 +88,6 @@ const VideoCarousel = () => {
                         {video.duration}
                       </span>
                     </div>
-
                     <div className="p-4">
                       <h3 className="text-lg font-bold">{video.title}</h3>
                       <p className="text-sm text-gray-600">
@@ -120,7 +110,6 @@ const VideoCarousel = () => {
                 </div>
               ))}
             </div>
-
             {/* Navigation Buttons */}
             <div className="flex justify-between items-center mt-4">
               <button

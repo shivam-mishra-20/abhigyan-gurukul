@@ -2,12 +2,12 @@ import React from "react";
 
 const Leaders = ({ info, isFlagged }) => {
   const leaders1 = [
-    { name: info.title, subject: "Mathematics", img: "/placeholder.png" },
-    { name: info.title2, subject: "Physics", img: "/placeholder.png" },
+    { name: info.title, subject: "Mathematics", img: "/Abhigyan.png" },
+    { name: info.title2, subject: "Physics", img: "/Chandan.png" },
   ];
   const core = [
     { name: "Sonia Ma'am", subject: "Commerce", img: "/placeholder.png" },
-    { name: "Nitesh Sir", subject: "Mathematics", img: "/placeholder.png" },
+    { name: "Nitesh Sir", subject: "Mathematics", img: "/Nitesh.png" },
     { name: "Bhanu Sir", subject: "Biology", img: "/placeholder.png" },
     { name: "Ankit Sir", subject: "Chemistry", img: "/placeholder.png" },
   ];
@@ -21,7 +21,7 @@ const Leaders = ({ info, isFlagged }) => {
       img: "/Protooksha-2-Cropped.jpg",
     },
     { name: "Shivam Sir", subject: "Mathematics", img: "/placeholder.png" },
-    { name: "Nitish Sir", subject: "Social Science", img: "/placeholder.png" },
+    { name: "Nitish Sir", subject: "Social Science", img: "/Nitish.png" },
     {
       name: "Dhara Ma'am",
       subject: "English/EVS/Social Science",

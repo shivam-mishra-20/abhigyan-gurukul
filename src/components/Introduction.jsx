@@ -31,7 +31,7 @@ export const Introduction = (info) => {
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+        transition={{ duration: 0, ease: "easeOut" }}
         whileHover={{
           scale: 1.02,
           boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.15)",
