@@ -68,7 +68,7 @@ const ContactSection = () => {
         <h2 className="text-2xl font-bold mb-4 text-center">Contact Details</h2>
         <p className="text-lg">📞 Phone-1: +91 9829491219</p>
         <p className="text-lg">📞 Phone-2: +91 9472600836</p>
-        <p className="text-lg">📧 Email: admin@abhigyangurukul@gmail.com</p>
+        <p className="text-lg">📧 Email: admin@abhigyangurukul.com</p>
 
         <h3 className="text-xl font-semibold mt-6 mb-3">Visit Us</h3>
         <div className="w-full flex justify-center">

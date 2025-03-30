@@ -51,13 +51,23 @@ const Navbar = () => {
         </motion.div>
 
         <div className="flex z-5 justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full">
-          {["Home", "About Us"].map((text, index) => (
+          {["Home", "About Us", "Faculties"].map((text) => (
             <motion.div
               key={text}
               whileHover={{ scale: 1.1, backgroundColor: "#0b707739" }}
               className="text-white text-center px-2 py-1 hover:rounded-xl font-semibold"
             >
-              <Link to={text === "Home" ? "/" : "/about"}>{text}</Link>
+              <Link
+                to={
+                  text === "Home"
+                    ? "/"
+                    : text === "About Us"
+                    ? "/about"
+                    : "/faculties"
+                }
+              >
+                {text}
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -146,30 +156,26 @@ const Navbar = () => {
               className="bg-[#6BC74C] border-t border-[#5ab33f] pb-4 shadow-lg"
             >
               <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md">
-                {["Home", "About Us"].map((text) => (
+                {["Home", "About Us", "Faculties"].map((text) => (
                   <motion.div
                     key={text}
                     whileTap={{ scale: 1.05 }}
                     whileHover={{ scale: 1.05 }}
                   >
                     <Link
-                      to={text === "Home" ? "/" : "/about"}
+                      to={
+                        text === "Home"
+                          ? "/"
+                          : text === "About Us"
+                          ? "/about"
+                          : "/faculties"
+                      }
                       className="hover:text-[#0B7077] transition-all"
                     >
                       {text}
                     </Link>
                   </motion.div>
                 ))}
-              </div>
-              <div className="flex flex-col space-y-3 px-5">
-                <motion.button
-                  whileTap={{ scale: 1.05 }}
-                  whileHover={{ scale: 1.05, backgroundColor: "#e0e0e0" }}
-                  className="text-[#0B7077] py-2 rounded-xl font-semibold bg-[#ffffffdf] transition-all"
-                  onClick={() => (window.location.href = "/enrollnow")}
-                >
-                  CONTACT US
-                </motion.button>
               </div>
             </motion.div>
           )}

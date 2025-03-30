@@ -9,6 +9,7 @@ import {
   FaHandshake,
 } from "react-icons/fa";
 import GoogleReviews from "../components/Page-Specific-Components/GoogleReviews";
+import MobileTeachers from "../components/MobileTeachers";
 
 const ImageCarousel = () => {
   // Image paths (Ensure correct paths)
@@ -29,6 +30,18 @@ const ImageCarousel = () => {
 
     return () => clearInterval(interval);
   }, [images.length]);
+
+  const text = (
+    <p className="text-gray-600 text-2xl mt-5 flex-wrap">
+      Experience teaching from{" "}
+      <span className="font-bold text-[#F76060]">Amazing Teachers</span> who
+      have mastered the art of
+      <span className="font-bold text-[#F76060]">Teaching</span> Click on "
+      <span className=" font-bold text-green-600">View All</span>" to look at
+      all the
+      <span className="font-bold text-[#F76060]"> Faculties -</span>
+    </p>
+  );
 
   return (
     <>
@@ -114,6 +127,8 @@ const ImageCarousel = () => {
           </li>
         </ul> */}
       </div>
+
+      <MobileTeachers InfoText={text}></MobileTeachers>
 
       <div className="flex flex-col items-center justify-center w-full py-10 relative">
         {/* Features List */}

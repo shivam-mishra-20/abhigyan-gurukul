@@ -38,9 +38,9 @@ const Footer = () => {
               <li>
                 <Link to="/about">About Us</Link>
               </li>
-              {/* <li>
+              <li>
                 <Link to="/faculties">Faculties</Link>
-              </li> */}
+              </li>
               <li>
                 <Link to="/enrollnow">Enroll Now</Link>
               </li>
@@ -60,7 +60,7 @@ const Footer = () => {
                 href="mailto:abhigyangurukul@gmail.com"
                 className="hover:underline"
               >
-                admin@abhigyangurukul@gmail.com
+                admin@abhigyangurukul.com
               </a>
             </p>
             <p className="mt-2 flex items-center space-x-2 font-semibold">

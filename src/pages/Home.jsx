@@ -1,10 +1,9 @@
 import React from "react";
-import Navbar from "../components/Navbar";
 import { Introduction } from "../components/Introduction";
 import VideoCarousel from "../components/VideoCarousel";
 import "../App.css";
 import Banner from "../components/Banner";
-import { Link } from "react-router";
+import { MajorFeatures } from "../components/MajorFeatures";
 
 const Home = () => {
   const text1 = (
@@ -22,7 +21,7 @@ const Home = () => {
     <p className="text-gray-600 text-2xl mt-5 flex-wrap">
       Experience teaching from{" "}
       <span className="font-bold text-[#F76060]">Amazing Teachers</span> who
-      have mastered the art of
+      have mastered the art of{" "}
       <span className="font-bold text-[#F76060]">Teaching</span> Click on "
       <span className=" font-bold text-green-600">View All</span>" to look at
       all the
@@ -30,8 +29,8 @@ const Home = () => {
     </p>
   );
 
-  const IntroBanner = "/Banner-Photo.jpg";
-  const FacultyBanner = "/Abhigyan_Gurukul_Faculty_Intro.png";
+  const IntroBanner = "/IntroWalaPhoto.jpg";
+  const FacultyBanner = "/AbgChndn.png";
 
   return (
     <>
@@ -58,6 +57,8 @@ const Home = () => {
         route={"/"}
       />
 
+      {/* Major Features */}
+      <MajorFeatures></MajorFeatures>
       {/* Video Carousel */}
       <VideoCarousel />
     </>

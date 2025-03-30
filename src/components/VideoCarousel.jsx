@@ -5,47 +5,31 @@ import "keen-slider/keen-slider.min.css";
 const videoData = [
   {
     id: "1",
-    title: "Economics class 10 ",
-    description: "Class 10 Economics",
-    duration: "12 min",
-    rating: 4.7,
-    reviews: 1023,
+    title:
+      "CLASS 10th Chapter 12 | Parallel Combination of Resistance | CBSE | GSEB | ICSE",
+    description: "Take a look at Straight Line in just 36 mins!",
+    duration: "36 min",
     author: "Abhigyan Sir",
     price: "Free",
-    youtubeId: "oQEHl4hW3kI",
+    youtubeId: "plB-Oo6Y7JU",
   },
   {
     id: "2",
-    title: "Matrix Advanced Concepts",
+    title: "Unlocking the Mysteries of Converging and Diverging Lens!",
     description: "Deep dive into Matrix and its advanced Concepts!",
     duration: "15 min",
-    rating: 4.5,
-    reviews: 850,
     author: "Abhigyan Sir",
     price: "Free",
-    youtubeId: "PIFMDqPYewY",
+    youtubeId: "hAeLLbByEjk",
   },
   {
     id: "3",
-    title: "Trigonometry Functions",
-    description: "Learn about Trigonometry Functions and its applications.",
-    duration: "20 min",
-    rating: 4.6,
-    reviews: 980,
+    title: "Motion - Absolute or Relative? #2 | Chapter 8 | Class 9",
+    description: "Is motion relative or absolute? Lets discuss in this video!",
+    duration: "15 min",
     author: "Abhigyan Sir",
     price: "Free",
-    youtubeId: "dbZFtkhtfmk",
-  },
-  {
-    id: "4",
-    title: "Matrix Triple Product",
-    description: "Introductory video to Matrix Product",
-    duration: "20 min",
-    rating: 4.6,
-    reviews: 980,
-    author: "Abhigyan Sir",
-    price: "Free",
-    youtubeId: "LB7iGImrk_Q",
+    youtubeId: "UlhjoJ8l6iU",
   },
 ];
 
@@ -71,7 +55,7 @@ const VideoCarousel = () => {
             <div className="keen-slider" ref={sliderRef}>
               {videoData.map((video) => (
                 <div key={video.id} className="keen-slider__slide">
-                  <div className="border h-fit rounded-lg shadow-sm overflow-hidden">
+                  <div className="border w-fit h-fit rounded-lg shadow-sm overflow-hidden">
                     <div className="relative">
                       <a
                         href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
