@@ -4,6 +4,7 @@ import VideoCarousel from "../components/VideoCarousel";
 import "../App.css";
 import Banner from "../components/Banner";
 import { MajorFeatures } from "../components/MajorFeatures";
+import ResultCarousel from "../components/ResultCarousel";
 
 const Home = () => {
   const text1 = (
@@ -61,6 +62,9 @@ const Home = () => {
       <MajorFeatures></MajorFeatures>
       {/* Video Carousel */}
       <VideoCarousel />
+
+      {/* Image Carousel */}
+      <ResultCarousel></ResultCarousel>
     </>
   );
 };

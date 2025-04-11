@@ -57,7 +57,7 @@ const Footer = () => {
             <p className="mt-2 flex items-center space-x-2 font-semibold">
               <span>📧</span>
               <a
-                href="mailto:abhigyangurukul@gmail.com"
+                href="mailto:admin@abhigyangurukul.com"
                 className="hover:underline"
               >
                 admin@abhigyangurukul.com

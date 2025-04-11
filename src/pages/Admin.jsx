@@ -2,21 +2,25 @@ import React, { useEffect, useState } from "react";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { db } from "../firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 const AdminDashboard = () => {
   const auth = getAuth();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [submissions, setSubmissions] = useState([]); // Holds multiple submissions
+  const [submissions, setSubmissions] = useState([]);
+  const [adminEmails, setAdminEmails] = useState([]);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         navigate("/login");
       } else {
         setUser(currentUser);
-        fetchContactSubmissions();
+        await fetchContactSubmissions();
+        await fetchAdminEmails();
       }
     });
 
@@ -30,7 +34,7 @@ const AdminDashboard = () => {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setSubmissions(data.submissions || []); // Store the array of submissions
+        setSubmissions(data.submissions || []);
       } else {
         console.log("No submissions found.");
       }
@@ -39,9 +43,39 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchAdminEmails = async () => {
+    try {
+      const docRef = doc(db, "settings", "adminEmails");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setAdminEmails(docSnap.data().emails || []);
+      } else {
+        setAdminEmails([]);
+      }
+    } catch (error) {
+      console.error("Error fetching admin emails:", error);
+    }
+  };
+
+  const handleAddAdminEmail = async (e) => {
+    e.preventDefault();
+    if (!newAdminEmail || !user) return;
+
+    try {
+      const docRef = doc(db, "settings", "adminEmails");
+      const updatedEmails = [...new Set([...adminEmails, newAdminEmail])];
+      await setDoc(docRef, { emails: updatedEmails }, { merge: true });
+      setAdminEmails(updatedEmails);
+      setNewAdminEmail("");
+      setMessage("✅ Admin email added!");
+    } catch (err) {
+      console.error("Error adding admin email:", err);
+    }
+  };
+
   const handleLogout = async () => {
     await signOut(auth);
-    navigate("/login");
+    navigate("/adminlogin");
   };
 
   return (
@@ -54,7 +88,7 @@ const AdminDashboard = () => {
           <p className="text-lg text-center mt-2">Welcome, {user.email}</p>
         )}
 
-        {/* Contact Submissions List */}
+        {/* Contact Submissions */}
         <div className="mt-6">
           <h3 className="text-xl font-semibold text-purple-600 mb-3">
             Users Registered (Contact Submissions)
@@ -96,9 +130,34 @@ const AdminDashboard = () => {
           )}
         </div>
 
+        {/* Admin Email Form */}
+        <div className="mt-10">
+          <h3 className="text-xl font-semibold text-purple-600 mb-3">
+            Add Admin Email
+          </h3>
+          <form onSubmit={handleAddAdminEmail} className="flex gap-4 flex-wrap">
+            <input
+              type="email"
+              placeholder="Enter new admin email"
+              value={newAdminEmail}
+              onChange={(e) => setNewAdminEmail(e.target.value)}
+              required
+              className="flex-1 px-4 py-2 rounded border border-gray-300"
+            />
+            <button
+              type="submit"
+              className="px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Add Admin
+            </button>
+          </form>
+          {message && <p className="text-green-600 mt-2">{message}</p>}
+        </div>
+
+        {/* Logout */}
         <button
           onClick={handleLogout}
-          className="mt-6 px-6 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600"
+          className="mt-10 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
         >
           Logout
         </button>

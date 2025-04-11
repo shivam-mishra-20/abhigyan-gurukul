@@ -72,14 +72,23 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="flex justify-evenly px-5 items-center w-1/3 h-full">
+        <div className="flex justify-evenly px-5 items-center w-1/3 h-full gap-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="text-white ps-2 pe-6 lg:py-3 rounded-xl font-semibold bg-[#0B7077] hover:scale-105"
+            className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300"
             onClick={() => (window.location.href = "/enrollnow")}
           >
             CONTACT US
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300"
+            onClick={() => (window.location.href = "/login")}
+          >
+            LOGIN
           </motion.button>
         </div>
       </motion.div>
@@ -153,9 +162,9 @@ const Navbar = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="bg-[#6BC74C] border-t border-[#5ab33f] pb-4 shadow-lg"
+              className="bg-[#6BC74C] border-t border-[#5ab33f] pb-6 shadow-lg"
             >
-              <div className="flex flex-col items-center gap-6 py-4 font-semibold text-black text-md">
+              <div className="flex flex-col items-center gap-4 py-4 font-semibold text-black text-md">
                 {["Home", "About Us", "Faculties"].map((text) => (
                   <motion.div
                     key={text}
@@ -176,6 +185,26 @@ const Navbar = () => {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* ENROLL NOW Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold"
+                  onClick={() => (window.location.href = "/enrollnow")}
+                >
+                  ENROLL NOW
+                </motion.button>
+
+                {/* LOGIN Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold"
+                  onClick={() => (window.location.href = "/login")}
+                >
+                  LOGIN
+                </motion.button>
               </div>
             </motion.div>
           )}

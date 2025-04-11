@@ -10,9 +10,16 @@ import Faculties from "./pages/Faculties";
 import EnrollNow from "./pages/EnrollNow";
 import AdminDashboard from "./pages/Admin";
 import Login from "./pages/Login";
+import StudentRegister from "./pages/StudentRegister";
+import ProtectedStudentRoute from "./components/ProtectedStudentRoute";
+import StudentDashboard from "./pages/StudentDashboard";
+import DashboardAttendance from "./components/Page-Specific-Components/DashboardAttendance";
 
 // Mobile Version of Home Page
 import MobileHome from "./pages/MobileHome";
+import StudentLogin from "./pages/StudentLogin";
+import DashboardResult from "./components/Page-Specific-Components/DashboardResult";
+import DashboardHome from "./pages/DashboardHome"; // ✅ use this one
 
 function App() {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -28,7 +35,18 @@ function App() {
         <Route path="/faculties" element={<Faculties />} />
         <Route path="/enrollnow" element={<EnrollNow />} />
         <Route path="/dashboard" element={<AdminDashboard />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/adminlogin" element={<Login />} />
+        <Route path="/register" element={<StudentRegister />} />
+        <Route path="/login" element={<StudentLogin />} />
+        {/* Protected student route */}
+        <Route
+          path="/student-dashboard/*"
+          element={
+            <ProtectedStudentRoute roles={["student", "teacher", "admin"]}>
+              <StudentDashboard />
+            </ProtectedStudentRoute>
+          }
+        />
       </Routes>
       <Footer />
     </Router>

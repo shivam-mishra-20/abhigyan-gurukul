@@ -21,10 +21,10 @@ const Leaders = ({ info, isFlagged }) => {
     },
     {
       name: "Ankit Sir",
-      subject: "Chemistry - PHD",
+      subject: "Chemistry - Ph.D",
       img: "/AnkitSirCropped.jpg",
     },
-    { name: "Bhanu Sir", subject: "Biology - PHD", img: "/placeholder.png" },
+    { name: "Bhanu Sir", subject: "Biology - Ph.D", img: "/placeholder.png" },
     {
       name: "Sonia Ma'am",
       subject: "Commerce - Accounts",
