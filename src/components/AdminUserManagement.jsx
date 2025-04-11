@@ -16,6 +16,8 @@ const AdminUserManagement = () => {
   const usersPerPage = 5;
   const navigate = useNavigate();
 
+  const userRole = localStorage.getItem("userRole");
+
   useEffect(() => {
     const fetchUsers = async () => {
       const collections = ["students", "teachers", "admins"];
@@ -85,6 +87,7 @@ const AdminUserManagement = () => {
   };
 
   const handleExportPDF = () => {
+    const pdf = new jsPDF();
     const tableData = filteredUsers.map((user) => [
       user.uid,
       user.name,
@@ -171,19 +174,23 @@ const AdminUserManagement = () => {
           Export as Excel
         </button>
 
-        <button
-          onClick={() => navigate("/student-dashboard/admin/create-user")}
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
-        >
-          Create User
-        </button>
+        {userRole === "admin" && (
+          <>
+            <button
+              onClick={() => navigate("/student-dashboard/admin/create-user")}
+              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+            >
+              Create User
+            </button>
 
-        <button
-          onClick={handleClearAll}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-        >
-          Clear All Records (Dev)
-        </button>
+            <button
+              onClick={handleClearAll}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+            >
+              Clear All Records (Dev)
+            </button>
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto rounded shadow">
@@ -224,12 +231,14 @@ const AdminUserManagement = () => {
                         View Leaves
                       </button>
                     )}
-                    <button
-                      className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition"
-                      onClick={() => handleDelete(user)}
-                    >
-                      Delete
-                    </button>
+                    {userRole === "admin" && (
+                      <button
+                        className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition"
+                        onClick={() => handleDelete(user)}
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))

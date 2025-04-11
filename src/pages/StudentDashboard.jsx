@@ -121,17 +121,8 @@ const StudentDashboard = () => {
           <Route
             path="attendance"
             element={
-              <ProtectedStudent roles={["student"]}>
+              <ProtectedStudent roles={["student", "admin", "teacher"]}>
                 <DashboardAttendance />
-              </ProtectedStudent>
-            }
-          />
-
-          <Route
-            path="manage-students"
-            element={
-              <ProtectedStudent roles={["teacher"]}>
-                <div>👥 Teacher's Student Management Panel</div>
               </ProtectedStudent>
             }
           />
@@ -146,7 +137,7 @@ const StudentDashboard = () => {
           <Route
             path="admin/manage-users"
             element={
-              <ProtectedStudent roles={["admin"]}>
+              <ProtectedStudent roles={["admin", "teacher"]}>
                 <AdminUserManagement />
               </ProtectedStudent>
             }
@@ -179,7 +170,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           Abhigyan Gurukul
         </h1>
 
-        {/* 🎯 ADD ROLE BADGE BELOW LOGO */}
+        {/* 🎯 ROLE BADGE */}
         <span className="mt-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
           ROLE: {userRole?.toUpperCase() || "UNKNOWN"}
         </span>
@@ -187,7 +178,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
         <hr className="border-green-600 w-full mt-3" />
       </div>
 
-      {/* Sidebar Navigation Items */}
+      {/* Navigation Items */}
       <SidebarItem
         icon={<FaTachometerAlt />}
         label="Dashboard"
@@ -211,10 +202,11 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
         <SidebarItem
           icon={<FaUsers />}
           label="Manage Students"
-          active={location.pathname === "/student-dashboard/manage-students"}
-          onClick={() => handleNav("/student-dashboard/manage-students")}
+          active={location.pathname === "/student-dashboard/admin/manage-users"}
+          onClick={() => handleNav("/student-dashboard/admin/manage-users")}
         />
       )}
+
       {userRole === "admin" && (
         <SidebarItem
           icon={<FaUsers />}
@@ -223,6 +215,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           onClick={() => handleNav("/student-dashboard/admin/manage-users")}
         />
       )}
+
       {["teacher", "admin"].includes(userRole) && (
         <SidebarItem
           icon={<FaCalendarAlt />}

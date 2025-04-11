@@ -24,7 +24,7 @@ const StudentLogin = () => {
     setError("");
     setMessage("");
 
-    const roles = ["students", "teachers", "admin"];
+    const roles = ["students", "teachers", "admins"]; // ✅ Fixed: "admins" instead of "admin"
 
     try {
       for (const role of roles) {
@@ -48,17 +48,27 @@ const StudentLogin = () => {
             return;
           }
 
-          // Save user details to localStorage
+          // ✅ Save user data to localStorage
           localStorage.setItem("studentEmail", userData.email);
           localStorage.setItem("studentName", userData.name);
           localStorage.setItem("userRole", userData.role || "student");
+          localStorage.setItem("uid", userData.uid || ""); // Optional: Save UID
+
           if (userData.Class) {
             localStorage.setItem("studentClass", userData.Class);
           }
 
           setMessage(`🎉 Welcome, ${userData.name}!`);
+
+          // ✅ Role-based redirection
           setTimeout(() => {
-            window.location.href = "/student-dashboard"; // Full reload so localStorage is re-evaluated
+            if (userData.role === "admin") {
+              navigate("/student-dashboard");
+            } else if (userData.role === "teacher") {
+              navigate("/student-dashboard");
+            } else {
+              navigate("/student-dashboard");
+            }
           }, 1000);
 
           return;
