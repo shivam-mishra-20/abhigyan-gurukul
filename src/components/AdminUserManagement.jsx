@@ -227,7 +227,10 @@ const AdminUserManagement = () => {
                       </button>
                     )}
                     {user.role === "teacher" && (
-                      <button className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition">
+                      <button
+                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition"
+                        onClick={() => navigate(`/student-dashboard/leaves/`)}
+                      >
                         View Leaves
                       </button>
                     )}

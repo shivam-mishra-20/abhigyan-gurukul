@@ -11,23 +11,25 @@ const TeacherLeaveCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [confirmation, setConfirmation] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
-  const role = localStorage.getItem("userRole");
+  const role = localStorage.getItem("userRole"); // Get the role of the logged-in user
 
   useEffect(() => {
     const fetchLeaves = async () => {
       const snapshot = await getDocs(collection(db, "teacherLeaves"));
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      const currentUserId = localStorage.getItem("userId");
+      setAllTeachersLeaves(data);
 
-      if (role === "teacher") {
-        const teacherData = data.find((t) => t.id === currentUserId);
+      // If a teacher is logged in, we can auto-select their leaves if needed
+      const currentUserId = localStorage.getItem("userId");
+      const teacherData = data.find((t) => t.id === currentUserId);
+      if (teacherData) {
         setLeaveDates(teacherData?.leaves || []);
-      } else if (role === "admin") {
-        setAllTeachersLeaves(data);
+        setSelectedTeacherId(currentUserId); // Pre-select teacher if logged in
       }
     };
+
     fetchLeaves();
-  }, [role]);
+  }, []);
 
   const filteredLeaves = leaveDates.filter((date) => {
     if (!filterMonth) return true;
@@ -131,118 +133,115 @@ const TeacherLeaveCalendar = () => {
         Teacher Leave Records
       </h2>
 
-      {/* ...Teacher View code stays same... */}
+      {/* Teacher View code stays same */}
 
-      {role === "admin" && (
+      {/* Teacher can now view and select any teacher */}
+      <div className="flex flex-col gap-3 mb-6">
+        <label className="text-sm font-medium">Select Teacher</label>
+        <select
+          className="border p-2 rounded w-full"
+          onChange={(e) => {
+            setSelectedTeacherId(e.target.value);
+            const teacher = allTeachersLeaves.find(
+              (t) => t.id === e.target.value
+            );
+            setLeaveDates(teacher?.leaves || []);
+            setConfirmation("");
+          }}
+          value={selectedTeacherId}
+        >
+          <option value="">-- Choose --</option>
+          {allTeachersLeaves.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+
+        <label className="text-sm font-medium">Select Date</label>
+        <input
+          type="date"
+          className="border p-2 rounded w-full"
+          onChange={(e) => setSelectedDate(new Date(e.target.value))}
+        />
+
+        {/* Only show this button for admins */}
+        {role === "admin" && (
+          <button
+            className="w-full md:w-fit mt-2 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+            onClick={handleLeaveSubmit}
+          >
+            Mark Leave
+          </button>
+        )}
+      </div>
+
+      {/* Filter and export all PDF */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+        <div>
+          <label className="block text-sm font-medium">Filter by Month</label>
+          <input
+            type="month"
+            value={filterMonth}
+            onChange={(e) => setFilterMonth(e.target.value)}
+            className="border p-2 rounded w-full sm:w-60"
+          />
+        </div>
+
+        <button
+          onClick={handleExportAllTeachersPDF}
+          className="text-sm bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+        >
+          Export All PDF
+        </button>
+      </div>
+
+      {/* Show selected teacher's leave table if selected */}
+      {confirmation && (
+        <p className="text-sm text-green-700 font-semibold mb-4">
+          {confirmation}
+        </p>
+      )}
+
+      {selectedTeacherId && leaveDates.length > 0 && (
         <>
-          {/* Teacher selection and mark leave */}
-          <div className="flex flex-col gap-3 mb-6">
-            <label className="text-sm font-medium">Select Teacher</label>
-            <select
-              className="border p-2 rounded w-full"
-              onChange={(e) => {
-                setSelectedTeacherId(e.target.value);
-                const teacher = allTeachersLeaves.find(
-                  (t) => t.id === e.target.value
-                );
-                setLeaveDates(teacher?.leaves || []);
-                setConfirmation("");
-              }}
-              value={selectedTeacherId}
-            >
-              <option value="">-- Choose --</option>
-              {allTeachersLeaves.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+          <h3 className="text-md font-semibold mb-2">
+            Leaves for Selected Teacher
+          </h3>
 
-            <label className="text-sm font-medium">Select Date</label>
-            <input
-              type="date"
-              className="border p-2 rounded w-full"
-              onChange={(e) => setSelectedDate(new Date(e.target.value))}
-            />
-
-            <button
-              className="w-full md:w-fit mt-2 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
-              onClick={handleLeaveSubmit}
-            >
-              Mark Leave
-            </button>
-          </div>
-
-          {/* Filter and export all PDF */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-            <div>
-              <label className="block text-sm font-medium">
-                Filter by Month
-              </label>
-              <input
-                type="month"
-                value={filterMonth}
-                onChange={(e) => setFilterMonth(e.target.value)}
-                className="border p-2 rounded w-full sm:w-60"
-              />
-            </div>
-
-            <button
-              onClick={handleExportAllTeachersPDF}
-              className="text-sm bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-            >
-              Export All PDF
-            </button>
-          </div>
-
-          {/* Show selected teacher's leave table if selected */}
-          {confirmation && (
-            <p className="text-sm text-green-700 font-semibold mb-4">
-              {confirmation}
-            </p>
-          )}
-
-          {selectedTeacherId && leaveDates.length > 0 && (
-            <>
-              <h3 className="text-md font-semibold mb-2">
-                Leaves for Selected Teacher
-              </h3>
-
-              <div className="overflow-x-auto">
-                <table className="min-w-full border text-sm text-left">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-4 py-2 border">#</th>
-                      <th className="px-4 py-2 border">Date</th>
-                      <th className="px-4 py-2 border">Formatted</th>
-                      <th className="px-4 py-2 border">Action</th>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border text-sm text-left">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border">#</th>
+                  <th className="px-4 py-2 border">Date</th>
+                  <th className="px-4 py-2 border">Formatted</th>
+                  <th className="px-4 py-2 border">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLeaves
+                  .sort((a, b) => new Date(b) - new Date(a))
+                  .map((date, idx) => (
+                    <tr key={date}>
+                      <td className="px-4 py-2 border">{idx + 1}</td>
+                      <td className="px-4 py-2 border">{date}</td>
+                      <td className="px-4 py-2 border">
+                        {new Date(date).toDateString()}
+                      </td>
+                      <td className="px-4 py-2 border text-center">
+                        <button
+                          onClick={() => handleRemoveLeave(date)}
+                          className="text-red-500 hover:underline text-xs"
+                        >
+                          ❌ Remove
+                        </button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {filteredLeaves
-                      .sort((a, b) => new Date(b) - new Date(a))
-                      .map((date, idx) => (
-                        <tr key={date}>
-                          <td className="px-4 py-2 border">{idx + 1}</td>
-                          <td className="px-4 py-2 border">{date}</td>
-                          <td className="px-4 py-2 border">
-                            {new Date(date).toDateString()}
-                          </td>
-                          <td className="px-4 py-2 border text-center">
-                            <button
-                              onClick={() => handleRemoveLeave(date)}
-                              className="text-red-500 hover:underline text-xs"
-                            >
-                              ❌ Remove
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </div>

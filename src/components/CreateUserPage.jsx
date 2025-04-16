@@ -44,16 +44,40 @@ const CreateUserPage = () => {
       const safeName = formData.name.trim().replace(/\s+/g, "_");
       const docId = `${safeName}_${nextUID}`;
 
-      await setDoc(doc(db, collectionName, docId), {
+      // Base user object
+      const newUserData = {
         uid: nextUID,
         name: formData.name,
         email: formData.email,
         password: hashedPassword,
         phone: formData.phone,
-        Class: formData.role === "student" ? formData.Class : "",
         role: formData.role,
         registeredAt: new Date().toISOString(),
-      });
+      };
+
+      // Add student-specific fields
+      if (formData.role === "student") {
+        newUserData.Class = formData.Class;
+        newUserData.remark = ""; // Empty by default
+        newUserData.attendance = []; // Empty array for absents
+      }
+
+      // Add teacher-specific fields
+      if (formData.role === "teacher") {
+        newUserData.leaves = []; // Initialize empty leave array
+      }
+
+      await setDoc(doc(db, collectionName, docId), newUserData);
+
+      // Add entry to teacherLeaves collection as well
+      if (formData.role === "teacher") {
+        const teacherLeaveRecord = {
+          name: formData.name,
+          leaves: [],
+        };
+
+        await setDoc(doc(db, "teacherLeaves", docId), teacherLeaveRecord);
+      }
 
       setMessage("🎉 User created successfully!");
 
