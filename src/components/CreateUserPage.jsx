@@ -31,20 +31,14 @@ const CreateUserPage = () => {
 
     try {
       const hashedPassword = await bcrypt.hash(formData.password, 10);
-      const collectionName =
-        formData.role === "admin"
-          ? "admins"
-          : formData.role === "teacher"
-          ? "teachers"
-          : "students";
 
-      const snapshot = await getDocs(collection(db, collectionName));
+      const snapshot = await getDocs(collection(db, "Users"));
       const nextUID = snapshot.size;
 
       const safeName = formData.name.trim().replace(/\s+/g, "_");
       const docId = `${safeName}_${nextUID}`;
 
-      // Base user object
+      // Build user object
       const newUserData = {
         uid: nextUID,
         name: formData.name,
@@ -55,21 +49,22 @@ const CreateUserPage = () => {
         registeredAt: new Date().toISOString(),
       };
 
-      // Add student-specific fields
+      // Add fields conditionally
       if (formData.role === "student") {
         newUserData.Class = formData.Class;
-        newUserData.remark = ""; // Empty by default
-        newUserData.attendance = []; // Empty array for absents
+        newUserData.attendance = [];
+        newUserData.remark = "";
+        newUserData.results = [];
       }
 
-      // Add teacher-specific fields
       if (formData.role === "teacher") {
-        newUserData.leaves = []; // Initialize empty leave array
+        newUserData.leaves = [];
       }
 
-      await setDoc(doc(db, collectionName, docId), newUserData);
+      // Save to Users collection
+      await setDoc(doc(db, "Users", docId), newUserData);
 
-      // Add entry to teacherLeaves collection as well
+      // Also save in teacherLeaves if teacher
       if (formData.role === "teacher") {
         const teacherLeaveRecord = {
           name: formData.name,
@@ -80,7 +75,6 @@ const CreateUserPage = () => {
       }
 
       setMessage("🎉 User created successfully!");
-
       setFormData({
         name: "",
         email: "",

@@ -1,244 +1,186 @@
 import React, { useEffect, useState } from "react";
-import { getDocs, collection, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-const TeacherLeaveCalendar = () => {
+export default function TeacherLeaveCalendar() {
+  const [staff, setStaff] = useState([]); // now holds both teachers & admins
   const [leaveDates, setLeaveDates] = useState([]);
-  const [allTeachersLeaves, setAllTeachersLeaves] = useState([]);
-  const [selectedTeacherId, setSelectedTeacherId] = useState("");
+  const [selectedUid, setSelectedUid] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [confirmation, setConfirmation] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
-  const role = localStorage.getItem("userRole"); // Get the role of the logged-in user
 
+  const role = localStorage.getItem("userRole");
+  const myUid = localStorage.getItem("uid");
+
+  // 1️⃣ Fetch staff (teachers + admins) and pre‑select when appropriate
   useEffect(() => {
-    const fetchLeaves = async () => {
-      const snapshot = await getDocs(collection(db, "teacherLeaves"));
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setAllTeachersLeaves(data);
+    const fetchStaff = async () => {
+      try {
+        // fetch all users...
+        const snap = await getDocs(collection(db, "Users"));
+        const all = snap.docs.map((d) => ({
+          ...d.data(),
+          id: d.id,
+          uid: d.data().uid?.toString(),
+        }));
+        // ...then keep only teachers or admins
+        const list = all.filter(
+          (u) => u.role === "teacher" || u.role === "admin"
+        );
+        setStaff(list);
 
-      // If a teacher is logged in, we can auto-select their leaves if needed
-      const currentUserId = localStorage.getItem("userId");
-      const teacherData = data.find((t) => t.id === currentUserId);
-      if (teacherData) {
-        setLeaveDates(teacherData?.leaves || []);
-        setSelectedTeacherId(currentUserId); // Pre-select teacher if logged in
+        // if I'm a teacher, auto‑load my leaves
+        if (role === "teacher" && myUid) {
+          setSelectedUid(myUid);
+          await loadLeaves(myUid);
+        }
+      } catch (err) {
+        console.error(err);
       }
     };
+    fetchStaff();
+  }, [role, myUid]);
 
-    fetchLeaves();
-  }, []);
+  // helper to load leaves for a given uid
+  const loadLeaves = async (uid) => {
+    const dSnap = await getDoc(doc(db, "teacherLeaves", uid));
+    setLeaveDates(dSnap.exists() ? dSnap.data().leaves || [] : []);
+  };
 
-  const filteredLeaves = leaveDates.filter((date) => {
+  const filtered = leaveDates.filter((date) => {
     if (!filterMonth) return true;
     const d = new Date(date);
-    const monthString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}`;
-    return filterMonth === monthString;
+    return (
+      filterMonth ===
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+    );
   });
 
-  const handleLeaveSubmit = async () => {
-    if (!selectedTeacherId || !selectedDate) {
-      alert("Please select a teacher and a date.");
+  const markLeave = async () => {
+    if (!selectedUid || !selectedDate) {
+      alert("Select a staff member and a date.");
       return;
     }
-
-    const formattedDate = selectedDate.toISOString().split("T")[0];
-    const teacherDocRef = doc(db, "teacherLeaves", selectedTeacherId);
-    const selectedTeacher = allTeachersLeaves.find(
-      (t) => t.id === selectedTeacherId
-    );
-
-    const updatedLeaves = selectedTeacher?.leaves
-      ? [...new Set([...selectedTeacher.leaves, formattedDate])]
-      : [formattedDate];
-
-    try {
-      await updateDoc(teacherDocRef, { leaves: updatedLeaves });
-      setConfirmation(`Leave marked for ${formattedDate}`);
-      setLeaveDates(updatedLeaves);
-    } catch (error) {
-      console.error("Error updating leave:", error);
-      setConfirmation("Failed to mark leave.");
-    }
+    const dStr = selectedDate.toISOString().split("T")[0];
+    const ref = doc(db, "teacherLeaves", selectedUid);
+    const snap = await getDoc(ref);
+    const old = snap.exists() ? snap.data().leaves || [] : [];
+    const next = [...new Set([...old, dStr])];
+    // find name
+    const person = staff.find((s) => s.uid === selectedUid);
+    await updateDoc(ref, { name: person?.name || "", leaves: next });
+    setLeaveDates(next);
+    setConfirmation(`✅ Leave marked for ${dStr}`);
   };
 
-  const handleRemoveLeave = async (dateToRemove) => {
-    const teacherDocRef = doc(db, "teacherLeaves", selectedTeacherId);
-    const updatedLeaves = leaveDates.filter((date) => date !== dateToRemove);
-
-    try {
-      await updateDoc(teacherDocRef, { leaves: updatedLeaves });
-      setConfirmation(`Removed leave for ${dateToRemove}`);
-      setLeaveDates(updatedLeaves);
-    } catch (error) {
-      console.error("Error removing leave:", error);
-      setConfirmation("Failed to remove leave.");
-    }
-  };
-
-  // 📄 Export all teachers' leave records
-  const handleExportAllTeachersPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("All Teachers' Leave Records", 14, 16);
-    let y = 24;
-
-    allTeachersLeaves.forEach((teacher, index) => {
-      const name = teacher.name || `Teacher ${index + 1}`;
-      const leaves = (teacher.leaves || []).filter((date) => {
-        if (!filterMonth) return true;
-        const d = new Date(date);
-        const monthString = `${d.getFullYear()}-${String(
-          d.getMonth() + 1
-        ).padStart(2, "0")}`;
-        return filterMonth === monthString;
-      });
-
-      if (leaves.length === 0) return;
-
-      doc.setFontSize(12);
-      doc.text(`${name}`, 14, y);
-      y += 6;
-
-      const rows = leaves
-        .sort((a, b) => new Date(b) - new Date(a))
-        .map((date, idx) => [idx + 1, date, new Date(date).toDateString()]);
-
-      doc.autoTable({
-        head: [["#", "Date", "Formatted"]],
-        body: rows,
-        startY: y,
-        margin: { left: 14 },
-        theme: "grid",
-        styles: { fontSize: 10 },
-        didDrawPage: (data) => {
-          y = data.cursor.y + 10;
-        },
-      });
-
-      y += 10;
-    });
-
-    doc.save("all_teacher_leaves.pdf");
+  const removeLeave = async (date) => {
+    const next = leaveDates.filter((d) => d !== date);
+    await updateDoc(doc(db, "teacherLeaves", selectedUid), { leaves: next });
+    setLeaveDates(next);
+    setConfirmation(`❌ Removed leave for ${date}`);
   };
 
   return (
-    <div className="bg-white p-4 md:p-6 rounded shadow max-w-full overflow-x-hidden">
-      <h2 className="text-lg font-bold mb-4 text-center md:text-left">
-        Teacher Leave Records
-      </h2>
+    <div className="bg-white p-6 rounded shadow">
+      <h2 className="text-xl font-bold mb-4">Staff Leave Records</h2>
 
-      {/* Teacher View code stays same */}
-
-      {/* Teacher can now view and select any teacher */}
-      <div className="flex flex-col gap-3 mb-6">
-        <label className="text-sm font-medium">Select Teacher</label>
+      {/* Select any teacher or admin */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">Select Staff</label>
         <select
-          className="border p-2 rounded w-full"
-          onChange={(e) => {
-            setSelectedTeacherId(e.target.value);
-            const teacher = allTeachersLeaves.find(
-              (t) => t.id === e.target.value
-            );
-            setLeaveDates(teacher?.leaves || []);
+          className="w-full border p-2 rounded"
+          value={selectedUid}
+          onChange={async (e) => {
+            const uid = e.target.value;
+            setSelectedUid(uid);
             setConfirmation("");
+            await loadLeaves(uid);
           }}
-          value={selectedTeacherId}
         >
-          <option value="">-- Choose --</option>
-          {allTeachersLeaves.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
+          <option value="">— choose —</option>
+          {staff.map((s) => (
+            <option key={s.uid} value={s.uid}>
+              {s.name} ({s.role})
             </option>
           ))}
         </select>
+      </div>
 
-        <label className="text-sm font-medium">Select Date</label>
-        <input
-          type="date"
-          className="border p-2 rounded w-full"
-          onChange={(e) => setSelectedDate(new Date(e.target.value))}
-        />
-
-        {/* Only show this button for admins */}
-        {role === "admin" && (
+      {/* Only admins can mark new leaves */}
+      {role === "admin" && (
+        <div className="flex gap-4 mb-4">
+          <input
+            type="date"
+            className="border p-2 rounded flex-1"
+            onChange={(e) => setSelectedDate(new Date(e.target.value))}
+          />
           <button
-            className="w-full md:w-fit mt-2 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
-            onClick={handleLeaveSubmit}
+            onClick={markLeave}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
             Mark Leave
           </button>
-        )}
-      </div>
-
-      {/* Filter and export all PDF */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-        <div>
-          <label className="block text-sm font-medium">Filter by Month</label>
-          <input
-            type="month"
-            value={filterMonth}
-            onChange={(e) => setFilterMonth(e.target.value)}
-            className="border p-2 rounded w-full sm:w-60"
-          />
         </div>
-
-        <button
-          onClick={handleExportAllTeachersPDF}
-          className="text-sm bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-        >
-          Export All PDF
-        </button>
-      </div>
-
-      {/* Show selected teacher's leave table if selected */}
-      {confirmation && (
-        <p className="text-sm text-green-700 font-semibold mb-4">
-          {confirmation}
-        </p>
       )}
 
-      {selectedTeacherId && leaveDates.length > 0 && (
-        <>
-          <h3 className="text-md font-semibold mb-2">
-            Leaves for Selected Teacher
-          </h3>
+      {/* Month filter */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">Filter by Month</label>
+        <input
+          type="month"
+          className="border p-2 rounded"
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+        />
+      </div>
 
+      {confirmation && <p className="mb-4 text-green-700">{confirmation}</p>}
+
+      {/* Leave list */}
+      {selectedUid && filtered.length > 0 && (
+        <>
+          <h3 className="font-semibold mb-2">Leaves for selected staff</h3>
           <div className="overflow-x-auto">
-            <table className="min-w-full border text-sm text-left">
+            <table className="w-full text-sm border-collapse">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-4 py-2 border">#</th>
-                  <th className="px-4 py-2 border">Date</th>
-                  <th className="px-4 py-2 border">Formatted</th>
-                  <th className="px-4 py-2 border">Action</th>
+                  <th className="border px-3 py-1">#</th>
+                  <th className="border px-3 py-1">Date</th>
+                  <th className="border px-3 py-1">Formatted</th>
+                  {role === "admin" && (
+                    <th className="border px-3 py-1">Action</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {filteredLeaves
-                  .sort((a, b) => new Date(b) - new Date(a))
-                  .map((date, idx) => (
-                    <tr key={date}>
-                      <td className="px-4 py-2 border">{idx + 1}</td>
-                      <td className="px-4 py-2 border">{date}</td>
-                      <td className="px-4 py-2 border">
-                        {new Date(date).toDateString()}
-                      </td>
-                      <td className="px-4 py-2 border text-center">
+                {filtered.map((date, i) => (
+                  <tr key={date} className="hover:bg-gray-50">
+                    <td className="border px-3 py-1">{i + 1}</td>
+                    <td className="border px-3 py-1">{date}</td>
+                    <td className="border px-3 py-1">
+                      {new Date(date).toDateString()}
+                    </td>
+                    {role === "admin" && (
+                      <td className="border px-3 py-1 text-center">
                         <button
-                          onClick={() => handleRemoveLeave(date)}
-                          className="text-red-500 hover:underline text-xs"
+                          onClick={() => removeLeave(date)}
+                          className="text-red-500 hover:underline"
                         >
-                          ❌ Remove
+                          Remove
                         </button>
                       </td>
-                    </tr>
-                  ))}
+                    )}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -246,6 +188,4 @@ const TeacherLeaveCalendar = () => {
       )}
     </div>
   );
-};
-
-export default TeacherLeaveCalendar;
+}

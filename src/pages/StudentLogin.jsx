@@ -24,61 +24,56 @@ const StudentLogin = () => {
     setError("");
     setMessage("");
 
-    const roles = ["students", "teachers", "admins"]; // ✅ Fixed: "admins" instead of "admin"
-
     try {
-      for (const role of roles) {
-        const q = query(
-          collection(db, role),
-          where("email", "==", credentials.email)
-        );
-        const snapshot = await getDocs(q);
+      const q = query(
+        collection(db, "Users"),
+        where("email", "==", credentials.email)
+      );
+      const snapshot = await getDocs(q);
 
-        if (!snapshot.empty) {
-          const userDoc = snapshot.docs[0];
-          const userData = userDoc.data();
-
-          const isMatch = await bcrypt.compare(
-            credentials.password,
-            userData.password
-          );
-
-          if (!isMatch) {
-            setError("❌ Incorrect password.");
-            return;
-          }
-
-          // ✅ Save user data to localStorage
-          localStorage.setItem("studentEmail", userData.email);
-          localStorage.setItem("studentName", userData.name);
-          localStorage.setItem("userRole", userData.role || "student");
-          localStorage.setItem("uid", userData.uid || ""); // Optional: Save UID
-
-          if (userData.Class) {
-            localStorage.setItem("studentClass", userData.Class);
-          }
-
-          setMessage(`🎉 Welcome, ${userData.name}!`);
-
-          // ✅ Role-based redirection
-          setTimeout(() => {
-            if (userData.role === "admin") {
-              navigate("/student-dashboard");
-            } else if (userData.role === "teacher") {
-              navigate("/student-dashboard");
-            } else {
-              navigate("/student-dashboard");
-            }
-          }, 1000);
-
-          return;
-        }
+      if (snapshot.empty) {
+        setError("⚠️ User not found. Please check your email.");
+        return;
       }
 
-      setError("⚠️ User not found. Please check your email.");
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+
+      const isMatch = await bcrypt.compare(
+        credentials.password,
+        userData.password
+      );
+
+      if (!isMatch) {
+        setError("❌ Incorrect password.");
+        return;
+      }
+
+      // ✅ Save user data to localStorage
+      localStorage.setItem("studentEmail", userData.email);
+      localStorage.setItem("studentName", userData.name);
+      localStorage.setItem("userRole", userData.role || "student");
+      localStorage.setItem("uid", userData.uid || "");
+
+      if (userData.Class) {
+        localStorage.setItem("studentClass", userData.Class);
+      }
+
+      setMessage(`🎉 Welcome, ${userData.name}!`);
+
+      // ✅ Role-based redirection (customize routes here)
+      setTimeout(() => {
+        if (userData.role === "admin") {
+          navigate("/student-dashboard");
+        } else if (userData.role === "teacher") {
+          navigate("/student-dashboard");
+        } else {
+          navigate("/student-dashboard");
+        }
+      }, 1000);
     } catch (err) {
-      console.error("Login error:", err);
-      setError("⚠️ An error occurred during login. Please try again.");
+      console.error("🔥 Firebase login error:", err.message || err);
+      setError(`⚠️ Login failed: ${err.message || err}`);
     }
   };
 

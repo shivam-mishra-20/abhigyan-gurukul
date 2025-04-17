@@ -31,29 +31,38 @@ const StudentRegister = () => {
 
     try {
       const hashedPassword = await bcrypt.hash(student.password, 10);
-      const collectionName =
-        student.role === "admin"
-          ? "admins"
-          : student.role === "teacher"
-          ? "teachers"
-          : "students";
-
-      const snapshot = await getDocs(collection(db, collectionName));
+      const snapshot = await getDocs(collection(db, "Users"));
       const nextUID = snapshot.size;
 
       const safeName = student.name.trim().replace(/\s+/g, "_");
       const docId = `${safeName}_${nextUID}`;
 
-      await setDoc(doc(db, collectionName, docId), {
+      const newUserData = {
         uid: nextUID,
         name: student.name,
         email: student.email,
         password: hashedPassword,
         phone: student.phone,
-        Class: student.role === "student" ? student.Class : "",
         role: student.role,
         registeredAt: new Date().toISOString(),
-      });
+        Class: student.role === "student" ? student.Class : "",
+        remarks: [],
+        leaves: [],
+        results: [],
+      };
+
+      // 1️⃣ Add user to unified Users collection
+      await setDoc(doc(db, "Users", docId), newUserData);
+
+      // 2️⃣ If teacher, also add to teacherLeaves collection
+      if (student.role === "teacher") {
+        const teacherLeavesData = {
+          name: student.name,
+          uid: nextUID,
+          leaves: [],
+        };
+        await setDoc(doc(db, "teacherLeaves", docId), teacherLeavesData);
+      }
 
       localStorage.setItem("studentName", student.name);
       localStorage.setItem("studentClass", student.Class);
@@ -69,7 +78,6 @@ const StudentRegister = () => {
         role: "student",
       });
 
-      // Redirect to login after short delay
       setTimeout(() => {
         window.location.href = "/login";
       }, 1500);
@@ -154,5 +162,6 @@ const StudentRegister = () => {
     </motion.div>
   );
 };
+console.log("Hi");
 
 export default StudentRegister;

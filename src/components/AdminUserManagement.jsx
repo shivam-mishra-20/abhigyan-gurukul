@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { getDocs, collection, deleteDoc, doc } from "firebase/firestore";
+import {
+  getDocs,
+  collection,
+  deleteDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
+import bcrypt from "bcryptjs";
+import { motion } from "framer-motion";
 
 const AdminUserManagement = () => {
   const [allUsers, setAllUsers] = useState([]);
@@ -13,127 +21,116 @@ const AdminUserManagement = () => {
   const [selectedRole, setSelectedRole] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const usersPerPage = 9; // show 9 records per page
   const navigate = useNavigate();
-
   const userRole = localStorage.getItem("userRole");
 
+  // Fetch all users once
   useEffect(() => {
     const fetchUsers = async () => {
-      const collections = ["students", "teachers", "admins"];
-      let users = [];
-
-      for (const col of collections) {
-        const snapshot = await getDocs(collection(db, col));
-        snapshot.forEach((docSnap) => {
-          users.push({ ...docSnap.data(), id: docSnap.id });
-        });
-      }
-
+      const snap = await getDocs(collection(db, "Users"));
+      const users = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      // initial alphabetical sort
+      users.sort((a, b) => a.name.localeCompare(b.name));
       setAllUsers(users);
       setFilteredUsers(users);
     };
-
     fetchUsers();
   }, []);
 
+  // Apply filters + alphabetical sort
   useEffect(() => {
-    let users = allUsers;
+    let u = [...allUsers];
 
     if (selectedClass !== "All") {
-      users = users.filter((user) => user.Class === selectedClass);
+      u = u.filter((user) => user.Class === selectedClass);
     }
-
     if (selectedRole !== "All") {
-      users = users.filter((user) => user.role === selectedRole);
+      u = u.filter((user) => user.role === selectedRole);
     }
-
     if (searchQuery.trim()) {
-      users = users.filter((user) =>
+      u = u.filter((user) =>
         user.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
+    // sort alphabetically by name
+    u.sort((a, b) => a.name.localeCompare(b.name));
 
-    setFilteredUsers(users);
+    setFilteredUsers(u);
     setCurrentPage(1);
-  }, [selectedClass, selectedRole, searchQuery, allUsers]);
+  }, [allUsers, selectedClass, selectedRole, searchQuery]);
 
+  // Delete a user
   const handleDelete = async (user) => {
-    const collectionName =
-      user.role === "student"
-        ? "students"
-        : user.role === "teacher"
-        ? "teachers"
-        : "admins";
-
-    if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-      await deleteDoc(doc(db, collectionName, user.id));
-      setAllUsers((prev) => prev.filter((u) => u.id !== user.id));
-    }
+    if (!window.confirm(`Delete ${user.name}?`)) return;
+    await deleteDoc(doc(db, "Users", user.id));
+    setAllUsers((prev) => prev.filter((u) => u.id !== user.id));
   };
 
-  const handleClearAll = async () => {
-    if (window.confirm("Are you sure you want to clear ALL user records?")) {
-      const collections = ["students", "teachers", "admins"];
-      for (const col of collections) {
-        const snap = await getDocs(collection(db, col));
-        for (const d of snap.docs) {
-          await deleteDoc(doc(db, col, d.id));
-        }
-      }
-      setAllUsers([]);
-      setFilteredUsers([]);
-    }
-  };
-
+  // Export handlers
   const handleExportPDF = () => {
     const pdf = new jsPDF();
-    const tableData = filteredUsers.map((user) => [
-      user.uid,
-      user.name,
-      user.Class,
-      user.phone,
-      user.role,
+    const rows = filteredUsers.map((u) => [
+      u.uid,
+      u.name,
+      u.Class,
+      u.phone,
+      u.role,
     ]);
-
     autoTable(pdf, {
       head: [["UID", "Name", "Class", "Phone", "Role"]],
-      body: tableData,
+      body: rows,
     });
-
     pdf.save("users.pdf");
   };
-
   const handleExportExcel = () => {
-    const data = filteredUsers.map(({ uid, name, Class, phone, role }) => ({
-      UID: uid,
-      Name: name,
-      Class,
-      Phone: phone,
-      Role: role,
+    const data = filteredUsers.map((u) => ({
+      UID: u.uid,
+      Name: u.name,
+      Class: u.Class,
+      Phone: u.phone,
+      Role: u.role,
     }));
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
-    XLSX.writeFile(workbook, "users.xlsx");
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Users");
+    XLSX.writeFile(wb, "users.xlsx");
   };
 
-  const paginatedUsers = filteredUsers.slice(
+  // Change a single user’s role
+  const handleRoleChange = async (userId, newRole) => {
+    await updateDoc(doc(db, "Users", userId), { role: newRole });
+    setAllUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+    );
+  };
+
+  // Reset password
+  const handleResetPassword = async (userId) => {
+    const pw = prompt("Enter the new password:");
+    if (!pw) return alert("Password reset cancelled.");
+    const salt = bcrypt.genSaltSync(12);
+    const hash = bcrypt.hashSync(pw, salt);
+    await updateDoc(doc(db, "Users", userId), { password: hash });
+    alert("Password updated.");
+  };
+
+  // Paginate
+  const paginated = filteredUsers.slice(
     (currentPage - 1) * usersPerPage,
     currentPage * usersPerPage
   );
 
   return (
-    <div className="p-6 animate-fadeIn">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        Admin User Management
-      </h2>
+    <div className="p-6 space-y-6">
+      <h2 className="text-2xl font-bold">Admin User Management</h2>
 
-      <div className="flex flex-wrap gap-4 items-center mb-6">
+      {/* Filters & Actions */}
+      <div className="flex flex-wrap gap-4 items-center">
         <select
+          className="border px-3 py-2 rounded"
           onChange={(e) => setSelectedClass(e.target.value)}
-          className="border px-3 py-2 rounded shadow-sm"
+          value={selectedClass}
         >
           <option value="All">All Classes</option>
           <option value="Class 8">Class 8</option>
@@ -143,8 +140,9 @@ const AdminUserManagement = () => {
         </select>
 
         <select
+          className="border px-3 py-2 rounded"
           onChange={(e) => setSelectedRole(e.target.value)}
-          className="border px-3 py-2 rounded shadow-sm"
+          value={selectedRole}
         >
           <option value="All">All Roles</option>
           <option value="student">Student</option>
@@ -153,52 +151,43 @@ const AdminUserManagement = () => {
         </select>
 
         <input
-          type="text"
+          className="border px-3 py-2 rounded w-56"
           placeholder="Search by name"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border px-3 py-2 rounded w-52 shadow-sm"
         />
 
         <button
           onClick={handleExportPDF}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         >
-          Export as PDF
+          Export PDF
         </button>
-
         <button
           onClick={handleExportExcel}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
         >
-          Export as Excel
+          Export Excel
         </button>
 
         {userRole === "admin" && (
-          <>
-            <button
-              onClick={() => navigate("/student-dashboard/admin/create-user")}
-              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
-            >
-              Create User
-            </button>
-
-            <button
-              onClick={handleClearAll}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-            >
-              Clear All Records (Dev)
-            </button>
-          </>
+          <button
+            onClick={() => navigate("/student-dashboard/admin/create-user")}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+          >
+            Create User
+          </button>
         )}
       </div>
 
+      {/* User Table */}
       <div className="overflow-x-auto rounded shadow">
-        <table className="min-w-full border border-gray-300 bg-white">
+        <table className="min-w-full border-collapse bg-white">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border px-4 py-2">UID</th>
+              <th className="border px-4 py-2">Sr. No</th>
               <th className="border px-4 py-2">Name</th>
+              <th className="border px-4 py-2">Email</th>
               <th className="border px-4 py-2">Class</th>
               <th className="border px-4 py-2">Phone</th>
               <th className="border px-4 py-2">Role</th>
@@ -206,45 +195,93 @@ const AdminUserManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {paginatedUsers.length === 0 ? (
+            {paginated.length === 0 ? (
               <tr>
-                <td colSpan="6" className="text-center py-4 text-gray-500">
+                <td colSpan="7" className="text-center py-4">
                   No users found.
                 </td>
               </tr>
             ) : (
-              paginatedUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 transition">
-                  <td className="border px-4 py-2">{user.uid}</td>
-                  <td className="border px-4 py-2">{user.name}</td>
-                  <td className="border px-4 py-2">{user.Class}</td>
-                  <td className="border px-4 py-2">{user.phone}</td>
-                  <td className="border px-4 py-2 capitalize">{user.role}</td>
-                  <td className="border px-4 py-2 flex flex-wrap gap-2 justify-center">
-                    {user.role === "student" && (
-                      <button className="bg-amber-500 text-white px-3 py-1 rounded text-sm hover:bg-amber-600 transition">
-                        View Attendance
-                      </button>
-                    )}
-                    {user.role === "teacher" && (
-                      <button
-                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition"
-                        onClick={() => navigate(`/student-dashboard/leaves/`)}
-                      >
-                        View Leaves
-                      </button>
-                    )}
-                    {userRole === "admin" && (
-                      <button
-                        className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition"
-                        onClick={() => handleDelete(user)}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))
+              paginated.map((user, idx) => {
+                const srNo = (currentPage - 1) * usersPerPage + idx + 1;
+                return (
+                  <motion.tr
+                    key={user.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="hover:bg-gray-200 transition-colors"
+                  >
+                    <td className="border px-4 py-2">{srNo}</td>
+                    <td className="border px-4 py-2">{user.name}</td>
+                    <td className="border px-4 py-2">{user.email || "—"}</td>
+                    <td className="border px-4 py-2">{user.Class}</td>
+                    <td className="border px-4 py-2">{user.phone}</td>
+                    <td className="border px-4 py-2">
+                      {userRole === "admin" ? (
+                        <select
+                          className="border px-2 py-1 rounded"
+                          value={user.role}
+                          onChange={(e) =>
+                            handleRoleChange(user.id, e.target.value)
+                          }
+                        >
+                          <option value="student">Student</option>
+                          <option value="teacher">Teacher</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      ) : (
+                        user.role
+                      )}
+                    </td>
+                    <td className="border px-4 py-2 flex flex-wrap gap-2 justify-center">
+                      {user.role === "student" && (
+                        <>
+                          <button className="bg-amber-500 text-white px-3 py-1 rounded hover:bg-gray-200 transition">
+                            Attendance
+                          </button>
+                          <button
+                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-gray-200 transition"
+                            onClick={() =>
+                              navigate("/student-dashboard/results")
+                            }
+                          >
+                            Results
+                          </button>
+                        </>
+                      )}
+                      {(user.role === "teacher" || user.role === "admin") && (
+                        <button
+                          className="bg-green-600 text-white px-3 py-1 rounded hover:bg-gray-200 transition"
+                          onClick={() =>
+                            navigate(
+                              `/student-dashboard/leaves?teacherId=${user.id}`
+                            )
+                          }
+                        >
+                          View Leaves
+                        </button>
+                      )}
+                      {userRole === "admin" && (
+                        <>
+                          <button
+                            className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-gray-200 transition"
+                            onClick={() => handleResetPassword(user.id)}
+                          >
+                            Reset Password
+                          </button>
+                          <button
+                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-gray-200 transition"
+                            onClick={() => handleDelete(user)}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </motion.tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -254,17 +291,17 @@ const AdminUserManagement = () => {
       <div className="flex justify-center mt-6 space-x-2">
         {Array.from({
           length: Math.ceil(filteredUsers.length / usersPerPage),
-        }).map((_, index) => (
+        }).map((_, i) => (
           <button
-            key={index}
-            onClick={() => setCurrentPage(index + 1)}
+            key={i}
+            onClick={() => setCurrentPage(i + 1)}
             className={`px-3 py-1 rounded transition ${
-              currentPage === index + 1
+              currentPage === i + 1
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
-            {index + 1}
+            {i + 1}
           </button>
         ))}
       </div>

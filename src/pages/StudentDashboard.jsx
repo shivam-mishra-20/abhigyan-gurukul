@@ -90,7 +90,7 @@ const StudentDashboard = () => {
       )}
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 w-full">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 w-full min-h-full">
         {/* Mobile Menu Toggle */}
         <div className="md:hidden mb-4">
           <button

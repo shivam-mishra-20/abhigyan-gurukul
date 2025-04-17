@@ -1,5 +1,5 @@
 import React from "react";
 
 export default function DashboardAttendance() {
-  return <div>DashboardAttendance</div>;
+  return <div>WORK IN PROGRESS</div>;
 }

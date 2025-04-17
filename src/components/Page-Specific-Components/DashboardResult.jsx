@@ -1,99 +1,145 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 
 export default function DashboardResult() {
   const [students, setStudents] = useState([]);
-  const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
-  const [selectedStudentId, setSelectedStudentId] = useState("");
-  const [result, setResult] = useState("");
-  const [remark, setRemark] = useState("");
+  const [selectedStudentName, setSelectedStudentName] = useState("");
+  const [subject, setSubject] = useState("");
+  const [marks, setMarks] = useState("");
+  const [outOf, setOutOf] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [testDate, setTestDate] = useState("");
   const [confirmation, setConfirmation] = useState("");
-  const [studentData, setStudentData] = useState(null);
+
+  const [studentResults, setStudentResults] = useState([]);
+  const [filterSubject, setFilterSubject] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+
+  // For Admin/Teacher to view results
+  const [selectedViewClass, setSelectedViewClass] = useState("");
+  const [selectedViewStudentName, setSelectedViewStudentName] = useState("");
+  const [viewedResults, setViewedResults] = useState([]);
 
   const role = localStorage.getItem("userRole");
-  const currentUserId = localStorage.getItem("userId");
+  const currentUserName = localStorage.getItem("studentName");
+  const currentUserClass = localStorage.getItem("studentClass");
 
-  // Fetch all students
   useEffect(() => {
     const fetchStudents = async () => {
-      const snapshot = await getDocs(collection(db, "students"));
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setStudents(data);
+      const snapshot = await getDocs(collection(db, "Users"));
+      const data = snapshot.docs.map((doc) => doc.data());
+      setStudents(data.filter((u) => u.role === "student"));
     };
     fetchStudents();
   }, []);
 
-  // Filter students based on selected class
   useEffect(() => {
-    const filtered = students.filter((student) =>
-      selectedClass ? student.Class === selectedClass : false
-    );
-    setFilteredStudents(filtered);
-    setSelectedStudentId(""); // reset on class change
-  }, [students, selectedClass]);
-
-  // Fetch result if role is student
-  useEffect(() => {
-    if (role === "student" && currentUserId) {
-      const fetchStudent = async () => {
-        const studentRef = doc(db, "students", currentUserId);
-        const studentSnap = await getDoc(studentRef);
-        if (studentSnap.exists()) {
-          setStudentData(studentSnap.data());
-        }
+    if (role === "student") {
+      const fetchResult = async () => {
+        const q = query(
+          collection(db, "Results"),
+          where("name", "==", currentUserName),
+          where("class", "==", currentUserClass)
+        );
+        const snapshot = await getDocs(q);
+        setStudentResults(snapshot.docs.map((doc) => doc.data()));
       };
-      fetchStudent();
+      fetchResult();
     }
-  }, [role, currentUserId]);
+  }, [role, currentUserName, currentUserClass]);
 
   const handleSubmit = async () => {
-    const selectedStudent = filteredStudents.find(
-      (s) => s.id === selectedStudentId
-    );
-
-    if (!selectedStudent || result.trim() === "") {
-      alert("Please select a student and enter a result.");
+    if (
+      !selectedClass ||
+      !selectedStudentName ||
+      !subject ||
+      !marks ||
+      !outOf ||
+      !testDate
+    ) {
+      alert("Please fill all fields.");
       return;
     }
 
     try {
-      const studentRef = doc(db, "students", selectedStudent.id);
-      await updateDoc(studentRef, {
-        result: result.trim(),
-        remark: remark.trim(),
+      await addDoc(collection(db, "Results"), {
+        class: selectedClass,
+        name: selectedStudentName,
+        subject,
+        marks,
+        outOf,
+        remarks,
+        testDate,
+        createdAt: new Date().toISOString(),
       });
 
-      setConfirmation(`✅ Result updated for ${selectedStudent.name}`);
-      setResult("");
-      setRemark("");
-    } catch (error) {
-      console.error("Error updating result:", error);
-      setConfirmation("❌ Failed to update result.");
+      setConfirmation("✅ Result submitted successfully!");
+      setSubject("");
+      setMarks("");
+      setOutOf("");
+      setRemarks("");
+      setTestDate("");
+    } catch (err) {
+      console.error("Error submitting result:", err);
+      setConfirmation("❌ Failed to submit result.");
+    }
+  };
+
+  const filteredStudentResults = studentResults
+    .filter((res) =>
+      filterSubject
+        ? res.subject?.toLowerCase() === filterSubject.toLowerCase()
+        : true
+    )
+    .filter((res) =>
+      filterDate
+        ? new Date(res.testDate).toISOString().split("T")[0] === filterDate
+        : true
+    );
+
+  const handleViewResults = async () => {
+    if (!selectedViewClass || !selectedViewStudentName) {
+      alert("Select class and student to view results.");
+      return;
+    }
+
+    try {
+      const q = query(
+        collection(db, "Results"),
+        where("class", "==", selectedViewClass),
+        where("name", "==", selectedViewStudentName)
+      );
+      const snapshot = await getDocs(q);
+      setViewedResults(snapshot.docs.map((doc) => doc.data()));
+    } catch (err) {
+      console.error("Error fetching viewed results:", err);
     }
   };
 
   return (
     <div className="bg-white p-4 md:p-6 rounded shadow max-w-3xl mx-auto">
-      <h2 className="text-xl font-bold mb-4 text-center">Add Student Result</h2>
+      <h2 className="text-xl font-bold mb-4 text-center">
+        {role === "student" ? "Your Results" : "Add Student Result"}
+      </h2>
 
+      {/* Teacher/Admin Add Result */}
       {(role === "teacher" || role === "admin") && (
-        <>
-          <div className="flex flex-col gap-3 mb-4">
-            <label className="text-sm font-medium">Select Class</label>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          className="space-y-4"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select
-              className="border p-2 rounded"
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
+              className="p-2 border rounded w-full"
             >
-              <option value="">-- Choose Class --</option>
+              <option value="">Select Class</option>
               {[...new Set(students.map((s) => s.Class))].map((cls) => (
                 <option key={cls} value={cls}>
                   {cls}
@@ -101,82 +147,191 @@ export default function DashboardResult() {
               ))}
             </select>
 
-            {selectedClass && (
-              <>
-                <label className="text-sm font-medium">Select Student</label>
-                <select
-                  className="border p-2 rounded"
-                  value={selectedStudentId}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                >
-                  <option value="">-- Choose Student --</option>
-                  {filteredStudents.map((student) => (
-                    <option key={student.id} value={student.id}>
-                      {student.name}
-                    </option>
-                  ))}
-                </select>
-              </>
-            )}
+            <select
+              value={selectedStudentName}
+              onChange={(e) => setSelectedStudentName(e.target.value)}
+              className="p-2 border rounded w-full"
+            >
+              <option value="">Select Student</option>
+              {students
+                .filter((s) => s.Class === selectedClass)
+                .map((student) => (
+                  <option key={student.name} value={student.name}>
+                    {student.name}
+                  </option>
+                ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="Subject"
+              className="p-2 border rounded w-full"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+
+            <input
+              type="number"
+              placeholder="Marks"
+              className="p-2 border rounded w-full"
+              value={marks}
+              onChange={(e) => setMarks(e.target.value)}
+            />
+
+            <input
+              type="number"
+              placeholder="Out Of"
+              className="p-2 border rounded w-full"
+              value={outOf}
+              onChange={(e) => setOutOf(e.target.value)}
+            />
+
+            <input
+              type="text"
+              placeholder="Remarks"
+              className="p-2 border rounded w-full"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+            />
+
+            <input
+              type="date"
+              className="p-2 border rounded w-full"
+              value={testDate}
+              onChange={(e) => setTestDate(e.target.value)}
+            />
           </div>
 
-          {selectedStudentId && (
-            <div className="flex flex-col gap-3 mb-4">
-              <label className="text-sm font-medium">Result</label>
-              <input
-                type="text"
-                className="border p-2 rounded"
-                value={result}
-                onChange={(e) => setResult(e.target.value)}
-                placeholder="e.g., Passed, 85%, etc."
-              />
-
-              <label className="text-sm font-medium">Remark</label>
-              <textarea
-                className="border p-2 rounded"
-                rows={3}
-                value={remark}
-                onChange={(e) => setRemark(e.target.value)}
-                placeholder="Add any remarks"
-              />
-            </div>
-          )}
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full md:w-auto"
+          >
+            Submit
+          </button>
 
           {confirmation && (
-            <p className="text-green-600 text-sm font-semibold mb-2">
-              {confirmation}
-            </p>
+            <p className="text-green-600 font-semibold mt-2">{confirmation}</p>
           )}
-
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={handleSubmit}
-          >
-            Submit Result
-          </button>
-        </>
+        </form>
       )}
 
-      {role === "student" && studentData && (
-        <div className="text-center mt-6">
-          <h3 className="text-lg font-semibold mb-2 text-blue-700">
-            Your Result:
+      {/* Student Result View */}
+      {role === "student" && (
+        <div className="mt-6">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <input
+              type="text"
+              placeholder="Filter by Subject"
+              className="border p-2 rounded w-full"
+              value={filterSubject}
+              onChange={(e) => setFilterSubject(e.target.value)}
+            />
+            <input
+              type="date"
+              className="border p-2 rounded w-full"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+            />
+          </div>
+
+          {filteredStudentResults.length === 0 ? (
+            <p className="text-center text-gray-500 italic">
+              No results found.
+            </p>
+          ) : (
+            <div className="grid gap-4">
+              {filteredStudentResults.map((res, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 bg-gray-50 border rounded shadow-sm"
+                >
+                  <h3 className="text-md font-semibold mb-1 text-blue-600">
+                    {res.subject}
+                  </h3>
+                  <p className="text-sm">
+                    <strong>Marks:</strong> {res.marks} / {res.outOf}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Date:</strong>{" "}
+                    {new Date(res.testDate).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Remarks:</strong> {res.remarks || "N/A"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin/Teacher View Any Student's Results */}
+      {(role === "teacher" || role === "admin") && (
+        <div className="mt-10 border-t pt-6">
+          <h3 className="text-lg font-semibold mb-4">
+            📄 View Student Results
           </h3>
 
-          {studentData.result ? (
-            <>
-              <p className="text-md mb-1">
-                <strong>Result:</strong> {studentData.result}
-              </p>
-              <p className="text-md">
-                <strong>Remark:</strong>{" "}
-                {studentData.remark?.trim() ? studentData.remark : "No remarks"}
-              </p>
-            </>
-          ) : (
-            <p className="text-gray-500 text-md italic">
-              Result not declared yet.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <select
+              value={selectedViewClass}
+              onChange={(e) => setSelectedViewClass(e.target.value)}
+              className="p-2 border rounded w-full"
+            >
+              <option value="">Select Class</option>
+              {[...new Set(students.map((s) => s.Class))].map((cls) => (
+                <option key={cls} value={cls}>
+                  {cls}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedViewStudentName}
+              onChange={(e) => setSelectedViewStudentName(e.target.value)}
+              className="p-2 border rounded w-full"
+            >
+              <option value="">Select Student</option>
+              {students
+                .filter((s) => s.Class === selectedViewClass)
+                .map((student) => (
+                  <option key={student.name} value={student.name}>
+                    {student.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <button
+            onClick={handleViewResults}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            View Results
+          </button>
+
+          {viewedResults.length > 0 && (
+            <div className="mt-6 grid gap-4">
+              {viewedResults.map((res, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 bg-gray-50 border rounded shadow-sm"
+                >
+                  <h3 className="text-md font-semibold mb-1 text-purple-600">
+                    {res.subject}
+                  </h3>
+                  <p className="text-sm">
+                    <strong>Marks:</strong> {res.marks} / {res.outOf}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Date:</strong>{" "}
+                    {new Date(res.testDate).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Remarks:</strong> {res.remarks || "N/A"}
+                  </p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

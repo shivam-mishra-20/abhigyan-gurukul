@@ -6,21 +6,24 @@ const videoData = [
   {
     id: "1",
     title:
-      "CLASS 10th Chapter 12 | Parallel Combination of Resistance | CBSE | GSEB | ICSE",
-    description: "Take a look at Straight Line in just 36 mins!",
-    duration: "36 min",
+      "Basic Maths for Physics - Differentiation (Part 1) for Class 11 | JEE / NEET 2025",
+    description:
+      "Basic Maths for Physics - Differentiation (Part 1) for Class 11 | JEE / NEET 2025",
+    duration: "41 mins",
     author: "Abhigyan Sir",
     price: "Free",
-    youtubeId: "plB-Oo6Y7JU",
+    youtubeId: "TvNB4fHYJs4",
   },
   {
     id: "2",
-    title: "Unlocking the Mysteries of Converging and Diverging Lens!",
-    description: "Deep dive into Matrix and its advanced Concepts!",
-    duration: "15 min",
+    title:
+      "REAL NUMBERS - Lecture 1 | Class 10th |  Number of Zeros in an expression ? ",
+    description:
+      "REAL NUMBERS - Lecture 1 | Class 10th |  Number of Zeros in an expression ? ",
+    duration: "10:39 mins",
     author: "Abhigyan Sir",
     price: "Free",
-    youtubeId: "hAeLLbByEjk",
+    youtubeId: "oLwUa5tdxGQ",
   },
   {
     id: "3",
@@ -63,7 +66,7 @@ const VideoCarousel = () => {
                         rel="noopener noreferrer"
                       >
                         <img
-                          src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+                          src={`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
                           alt={video.title}
                           className="w-full h-56 object-cover"
                         />
