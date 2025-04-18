@@ -36,7 +36,7 @@ function App() {
         <Route path="/enrollnow" element={<EnrollNow />} />
         <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/adminlogin" element={<Login />} />
-        <Route path="/register" element={<StudentRegister />} />
+        {/* <Route path="/verysecretregister" element={<StudentRegister />} /> */}
         <Route path="/login" element={<StudentLogin />} />
         {/* Protected student route */}
         <Route

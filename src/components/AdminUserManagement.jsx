@@ -4,6 +4,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  setDoc,
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
@@ -12,6 +13,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
 import bcrypt from "bcryptjs";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 const AdminUserManagement = () => {
@@ -21,7 +23,7 @@ const AdminUserManagement = () => {
   const [selectedRole, setSelectedRole] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 9; // show 9 records per page
+  const usersPerPage = 9;
   const navigate = useNavigate();
   const userRole = localStorage.getItem("userRole");
 
@@ -30,7 +32,6 @@ const AdminUserManagement = () => {
     const fetchUsers = async () => {
       const snap = await getDocs(collection(db, "Users"));
       const users = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      // initial alphabetical sort
       users.sort((a, b) => a.name.localeCompare(b.name));
       setAllUsers(users);
       setFilteredUsers(users);
@@ -41,7 +42,6 @@ const AdminUserManagement = () => {
   // Apply filters + alphabetical sort
   useEffect(() => {
     let u = [...allUsers];
-
     if (selectedClass !== "All") {
       u = u.filter((user) => user.Class === selectedClass);
     }
@@ -53,9 +53,7 @@ const AdminUserManagement = () => {
         user.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    // sort alphabetically by name
     u.sort((a, b) => a.name.localeCompare(b.name));
-
     setFilteredUsers(u);
     setCurrentPage(1);
   }, [allUsers, selectedClass, selectedRole, searchQuery]);
@@ -65,6 +63,45 @@ const AdminUserManagement = () => {
     if (!window.confirm(`Delete ${user.name}?`)) return;
     await deleteDoc(doc(db, "Users", user.id));
     setAllUsers((prev) => prev.filter((u) => u.id !== user.id));
+  };
+
+  // Clear ALL leaves
+  const handleClearLeaves = async () => {
+    if (
+      !window.confirm(
+        "This will delete every document in teacherLeaves. Are you sure?"
+      )
+    )
+      return;
+    const snap = await getDocs(collection(db, "teacherLeaves"));
+    for (const d of snap.docs) {
+      await deleteDoc(doc(db, "teacherLeaves", d.id));
+    }
+    alert("✅ All teacher leaves cleared.");
+  };
+
+  // Initialize teacherLeaves for every teacher in Users
+  const handleInitTeacherLeaves = async () => {
+    if (
+      !window.confirm(
+        "This will create/overwrite a teacherLeaves doc for each teacher in Users. Proceed?"
+      )
+    )
+      return;
+    // grab all teachers
+    const snap = await getDocs(collection(db, "Users"));
+    const teachers = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((u) => u.role === "teacher");
+    // write into teacherLeaves
+    for (const t of teachers) {
+      await setDoc(
+        doc(db, "teacherLeaves", t.id),
+        { name: t.name, leaves: [] },
+        { merge: true }
+      );
+    }
+    alert("✅ teacherLeaves initialized for all teachers.");
   };
 
   // Export handlers
@@ -97,7 +134,7 @@ const AdminUserManagement = () => {
     XLSX.writeFile(wb, "users.xlsx");
   };
 
-  // Change a single user’s role
+  // Change a user’s role
   const handleRoleChange = async (userId, newRole) => {
     await updateDoc(doc(db, "Users", userId), { role: newRole });
     setAllUsers((prev) =>
@@ -112,7 +149,7 @@ const AdminUserManagement = () => {
     const salt = bcrypt.genSaltSync(12);
     const hash = bcrypt.hashSync(pw, salt);
     await updateDoc(doc(db, "Users", userId), { password: hash });
-    alert("Password updated.");
+    alert("✅ Password updated.");
   };
 
   // Paginate
@@ -171,12 +208,26 @@ const AdminUserManagement = () => {
         </button>
 
         {userRole === "admin" && (
-          <button
-            onClick={() => navigate("/student-dashboard/admin/create-user")}
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
-          >
-            Create User
-          </button>
+          <>
+            <button
+              onClick={() => navigate("/student-dashboard/admin/create-user")}
+              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+            >
+              Create User
+            </button>
+            <button
+              onClick={handleClearLeaves}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+            >
+              Clear All Leaves
+            </button>
+            <button
+              onClick={handleInitTeacherLeaves}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+            >
+              Init Teacher Leaves
+            </button>
+          </>
         )}
       </div>
 
@@ -295,7 +346,7 @@ const AdminUserManagement = () => {
           <button
             key={i}
             onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 rounded transition ${
+            className={`px-3 py-1 rounded ${
               currentPage === i + 1
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 hover:bg-gray-300"
