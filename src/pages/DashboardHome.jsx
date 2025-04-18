@@ -5,11 +5,10 @@ import {
   FaUsers,
   FaChalkboardTeacher,
   FaClipboardList,
-  FaCheckCircle,
   FaUserEdit,
 } from "react-icons/fa";
 
-const DashboardHome = ({ name, studentClass }) => {
+const DashboardHome = ({ name }) => {
   const role = localStorage.getItem("userRole");
   const navigate = useNavigate();
 
@@ -34,10 +33,10 @@ const DashboardHome = ({ name, studentClass }) => {
   ];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 px-4 md:px-10 py-6">
       <h1 className="text-2xl font-bold">Welcome, {name}!</h1>
 
-      {/* Student View */}
+      {/* STUDENT VIEW */}
       {role === "student" && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -53,8 +52,8 @@ const DashboardHome = ({ name, studentClass }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div className="bg-white p-4 shadow rounded">
+          <div className="grid h-[350px] grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div className="bg-white h-full p-4  shadow rounded">
               <StudentPerformanceChart
                 previous={previousScore}
                 current={currentScore}
@@ -64,45 +63,34 @@ const DashboardHome = ({ name, studentClass }) => {
         </>
       )}
 
-      {/* Teacher/Admin Quick Access Cards */}
+      {/* TEACHER VIEW */}
       {role === "teacher" && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div
+          <Card
+            icon={<FaClipboardList className="text-2xl" />}
+            title="Results"
+            description="Manage or view student results"
+            bg="bg-purple-100 text-purple-800"
             onClick={() => navigate("/student-dashboard/results")}
-            className="bg-purple-100 text-purple-800 p-4 rounded shadow flex items-center gap-4 cursor-pointer hover:scale-105 transition"
-          >
-            <FaClipboardList className="text-2xl" />
-            <div>
-              <div className="text-sm font-semibold">Results</div>
-              <div className="text-xs">Manage or view student results</div>
-            </div>
-          </div>
-
-          <div
+          />
+          <Card
+            icon={<FaChalkboardTeacher className="text-2xl" />}
+            title="Leaves"
+            description="Apply leave or view teacher leaves"
+            bg="bg-green-100 text-green-800"
             onClick={() => navigate("/student-dashboard/leaves")}
-            className="bg-green-100 text-green-800 p-4 rounded shadow flex items-center gap-4 cursor-pointer hover:scale-105 transition"
-          >
-            <FaChalkboardTeacher className="text-2xl" />
-            <div>
-              <div className="text-sm font-semibold">Leaves</div>
-              <div className="text-xs">Apply leave or view teacher leaves</div>
-            </div>
-          </div>
-
-          <div
+          />
+          <Card
+            icon={<FaUserEdit className="text-2xl" />}
+            title="Manage Users"
+            description="Create, edit, delete users"
+            bg="bg-blue-100 text-blue-800"
             onClick={() => navigate("/student-dashboard/admin/manage-users")}
-            className="bg-blue-100 text-blue-800 p-4 rounded shadow flex items-center gap-4 cursor-pointer hover:scale-105 transition"
-          >
-            <FaUserEdit className="text-2xl" />
-            <div>
-              <div className="text-sm font-semibold">Manage Users</div>
-              <div className="text-xs">Create, edit, delete users</div>
-            </div>
-          </div>
+          />
         </div>
       )}
 
-      {/* Admin Widgets */}
+      {/* ADMIN VIEW */}
       {role === "admin" && (
         <div className="bg-white p-6 shadow rounded space-y-6">
           <div>
@@ -112,19 +100,14 @@ const DashboardHome = ({ name, studentClass }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {adminCards.map((card, index) => (
-              <div
+              <Card
                 key={index}
+                icon={card.icon}
+                title={card.title}
+                description={card.description}
+                bg={card.bg}
                 onClick={() => navigate(card.route)}
-                className={`cursor-pointer transition-transform transform hover:scale-105 hover:shadow-lg ${card.bg} p-4 rounded flex items-center gap-4`}
-              >
-                {card.icon}
-                <div>
-                  <div className="text-sm font-semibold">{card.title}</div>
-                  <div className="text-xs text-gray-600">
-                    {card.description}
-                  </div>
-                </div>
-              </div>
+              />
             ))}
           </div>
         </div>
@@ -132,5 +115,18 @@ const DashboardHome = ({ name, studentClass }) => {
     </div>
   );
 };
+
+const Card = ({ icon, title, description, onClick, bg }) => (
+  <div
+    onClick={onClick}
+    className={`cursor-pointer transition transform hover:scale-105 hover:shadow-md ${bg} p-4 rounded flex items-center gap-4`}
+  >
+    {icon}
+    <div>
+      <div className="text-sm font-semibold">{title}</div>
+      <div className="text-xs text-gray-600">{description}</div>
+    </div>
+  </div>
+);
 
 export default DashboardHome;

@@ -20,6 +20,7 @@ import MobileHome from "./pages/MobileHome";
 import StudentLogin from "./pages/StudentLogin";
 import DashboardResult from "./components/Page-Specific-Components/DashboardResult";
 import DashboardHome from "./pages/DashboardHome"; // ✅ use this one
+import EXAM from "./components/Page-Specific-Components/EXAM";
 
 function App() {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -38,6 +39,7 @@ function App() {
         <Route path="/adminlogin" element={<Login />} />
         {/* <Route path="/verysecretregister" element={<StudentRegister />} /> */}
         <Route path="/login" element={<StudentLogin />} />
+        <Route path="testtest" element={<EXAM />} />
         {/* Protected student route */}
         <Route
           path="/student-dashboard/*"
