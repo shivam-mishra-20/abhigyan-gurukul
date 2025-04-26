@@ -66,43 +66,43 @@ const AdminUserManagement = () => {
   };
 
   // Clear ALL leaves
-  const handleClearLeaves = async () => {
-    if (
-      !window.confirm(
-        "This will delete every document in teacherLeaves. Are you sure?"
-      )
-    )
-      return;
-    const snap = await getDocs(collection(db, "teacherLeaves"));
-    for (const d of snap.docs) {
-      await deleteDoc(doc(db, "teacherLeaves", d.id));
-    }
-    alert("✅ All teacher leaves cleared.");
-  };
+  // const handleClearLeaves = async () => {
+  //   if (
+  //     !window.confirm(
+  //       "This will delete every document in teacherLeaves. Are you sure?"
+  //     )
+  //   )
+  //     return;
+  //   const snap = await getDocs(collection(db, "teacherLeaves"));
+  //   for (const d of snap.docs) {
+  //     await deleteDoc(doc(db, "teacherLeaves", d.id));
+  //   }
+  //   alert("✅ All teacher leaves cleared.");
+  // };
 
-  // Initialize teacherLeaves for every teacher in Users
-  const handleInitTeacherLeaves = async () => {
-    if (
-      !window.confirm(
-        "This will create/overwrite a teacherLeaves doc for each teacher in Users. Proceed?"
-      )
-    )
-      return;
-    // grab all teachers
-    const snap = await getDocs(collection(db, "Users"));
-    const teachers = snap.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((u) => u.role === "teacher");
-    // write into teacherLeaves
-    for (const t of teachers) {
-      await setDoc(
-        doc(db, "teacherLeaves", t.id),
-        { name: t.name, leaves: [] },
-        { merge: true }
-      );
-    }
-    alert("✅ teacherLeaves initialized for all teachers.");
-  };
+  // // Initialize teacherLeaves for every teacher in Users
+  // const handleInitTeacherLeaves = async () => {
+  //   if (
+  //     !window.confirm(
+  //       "This will create/overwrite a teacherLeaves doc for each teacher in Users. Proceed?"
+  //     )
+  //   )
+  //     return;
+  //   // grab all teachers
+  //   const snap = await getDocs(collection(db, "Users"));
+  //   const teachers = snap.docs
+  //     .map((d) => ({ id: d.id, ...d.data() }))
+  //     .filter((u) => u.role === "teacher");
+  //   // write into teacherLeaves
+  //   for (const t of teachers) {
+  //     await setDoc(
+  //       doc(db, "teacherLeaves", t.id),
+  //       { name: t.name, leaves: [] },
+  //       { merge: true }
+  //     );
+  //   }
+  //   alert("✅ teacherLeaves initialized for all teachers.");
+  // };
 
   // Export handlers
   const handleExportPDF = () => {
