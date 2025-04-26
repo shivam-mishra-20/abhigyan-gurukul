@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { db } from "../firebaseConfig";
 import { collection, getDocs, setDoc, doc } from "firebase/firestore";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import bcrypt from "bcryptjs";
 import { useNavigate } from "react-router";

@@ -142,6 +142,19 @@ const AdminUserManagement = () => {
     );
   };
 
+  const branchOptions = ["Lakshya", "Adarshila", "Basic"];
+
+  const handleBatchChange = async (userId, newBatch) => {
+    try {
+      await updateDoc(doc(db, "Users", userId), { batch: newBatch });
+      setAllUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, batch: newBatch } : u))
+      );
+    } catch (err) {
+      console.error("Failed to update batch:", err);
+      alert("❌ Could not update batch.");
+    }
+  };
   // Reset password
   const handleResetPassword = async (userId) => {
     const pw = prompt("Enter the new password:");
@@ -259,11 +272,14 @@ const AdminUserManagement = () => {
         <table className="min-w-full border-collapse bg-white">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border px-4 py-2">Sr.No</th>
+              <th className="border px-1 py-2">Sr.No</th>
               <th className="border px-4 py-2">Name</th>
               <th className="border px-4 py-2">Email</th>
-              <th className="border px-4 py-2">Class</th>
+              <th className="border px-7 py-2">Class</th>
+
               <th className="border px-4 py-2">Phone</th>
+              <th className="border px-2 py-2">Batch</th>
+
               <th className="border px-4 py-2">Role</th>
               <th className="border px-4 py-2">Actions</th>
             </tr>
@@ -291,6 +307,28 @@ const AdminUserManagement = () => {
                     <td className="border px-4 py-2">{user.email || "—"}</td>
                     <td className="border px-4 py-2">{user.Class}</td>
                     <td className="border px-4 py-2">{user.phone}</td>
+
+                    {/* Batch cell */}
+                    <td className="border px-4 py-2">
+                      {userRole === "admin" ? (
+                        <select
+                          className="border px-2 py-1 rounded"
+                          value={user.batch || ""}
+                          onChange={(e) =>
+                            handleBatchChange(user.id, e.target.value)
+                          }
+                        >
+                          <option value="">— select —</option>
+                          {branchOptions.map((b) => (
+                            <option key={b} value={b}>
+                              {b}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        user.batch || "—"
+                      )}
+                    </td>
                     <td className="border px-4 py-2">
                       {userRole === "admin" ? (
                         <select
