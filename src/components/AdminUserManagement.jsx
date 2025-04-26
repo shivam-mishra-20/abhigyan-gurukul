@@ -158,6 +158,22 @@ const AdminUserManagement = () => {
     currentPage * usersPerPage
   );
 
+  // 👇 above your return(), inside AdminUserManagement:
+  const handleBackupUsers = async () => {
+    if (!window.confirm("Backup all users to UsersBackup?")) return;
+    try {
+      const snap = await getDocs(collection(db, "Users"));
+      for (const userDoc of snap.docs) {
+        // write each user under the same ID into UsersBackup
+        await setDoc(doc(db, "UsersBackup", userDoc.id), userDoc.data());
+      }
+      alert("✅ Users collection backed up successfully!");
+    } catch (err) {
+      console.error("Backup failed:", err);
+      alert("❌ Failed to backup users.");
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <h2 className="text-2xl font-bold">Admin User Management</h2>
@@ -221,11 +237,18 @@ const AdminUserManagement = () => {
             >
               Clear All Leaves
             </button> */}
-            <button
+            {/* <button
               onClick={handleInitTeacherLeaves}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
             >
               Init Teacher Leaves
+            </button> */}
+            {/* ← New Backup button */}
+            <button
+              onClick={handleBackupUsers}
+              className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition"
+            >
+              📦 Backup Users
             </button>
           </>
         )}
