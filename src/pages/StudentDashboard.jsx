@@ -1,4 +1,3 @@
-// 👇 Full code with updates
 import React, { useEffect, useState } from "react";
 import {
   FaTachometerAlt,
@@ -16,6 +15,7 @@ import {
   useLocation,
   Navigate,
 } from "react-router";
+import { motion, AnimatePresence } from "framer-motion";
 import DashboardResult from "../components/Page-Specific-Components/DashboardResult";
 import DashboardAttendance from "../components/Page-Specific-Components/DashboardAttendance";
 import DashboardHome from "./DashboardHome";
@@ -60,97 +60,130 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
       {/* Sidebar for desktop */}
-      <aside className="hidden md:flex w-64 bg-white shadow-lg flex-col justify-between px-4 py-6">
+      <motion.aside
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="hidden md:flex w-64 bg-white shadow-lg flex-col justify-between px-4 py-6 border-r border-gray-200"
+      >
         <SidebarContent
           location={location}
           userRole={userRole}
           handleNav={handleNav}
           handleLogout={handleLogout}
         />
-      </aside>
+      </motion.aside>
 
       {/* Sidebar drawer for mobile */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 z-40 flex">
-          <div className="w-64 bg-white shadow-lg p-4 flex flex-col justify-between">
-            <SidebarContent
-              location={location}
-              userRole={userRole}
-              handleNav={handleNav}
-              handleLogout={handleLogout}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-40 flex">
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.25 }}
+              className="w-64 bg-white shadow-lg p-4 flex flex-col justify-between z-50"
+            >
+              <SidebarContent
+                location={location}
+                userRole={userRole}
+                handleNav={handleNav}
+                handleLogout={handleLogout}
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex-1 backdrop-blur-xs"
+              onClick={() => setIsSidebarOpen(false)}
             />
           </div>
-          <div
-            className="flex-1 bg-black bg-opacity-30"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 w-full min-h-full">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 w-full min-h-full">
         {/* Mobile Menu Toggle */}
         <div className="md:hidden mb-4">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center px-4 py-2 text-sm bg-green-700 text-white rounded shadow hover:bg-green-800"
+            className="flex items-center px-4 py-2 text-sm bg-green-700 text-white rounded-lg shadow hover:bg-green-800 transition-all duration-200"
           >
             <FaBars className="mr-2" /> Menu
-          </button>
+          </motion.button>
         </div>
 
-        <Routes>
-          <Route
-            index
-            element={
-              <ProtectedStudent roles={["student", "teacher", "admin"]}>
-                <DashboardHome name={studentName} studentClass={studentClass} />
-              </ProtectedStudent>
-            }
-          />
-          <Route
-            path="results"
-            element={
-              <ProtectedStudent roles={["student", "teacher", "admin"]}>
-                <DashboardResult />
-              </ProtectedStudent>
-            }
-          />
-          <Route
-            path="attendance"
-            element={
-              <ProtectedStudent roles={["student", "admin", "teacher"]}>
-                <DashboardAttendance />
-              </ProtectedStudent>
-            }
-          />
-          <Route
-            path="leaves"
-            element={
-              <ProtectedStudent roles={["teacher", "admin"]}>
-                <TeacherLeaveCalendar />
-              </ProtectedStudent>
-            }
-          />
-          <Route
-            path="admin/manage-users"
-            element={
-              <ProtectedStudent roles={["admin", "teacher"]}>
-                <AdminUserManagement />
-              </ProtectedStudent>
-            }
-          />
-          <Route
-            path="admin/create-user"
-            element={
-              <ProtectedStudent roles={["admin"]}>
-                <CreateUserPage />
-              </ProtectedStudent>
-            }
-          />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="w-full"
+          >
+            <Routes>
+              <Route
+                index
+                element={
+                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                    <DashboardHome
+                      name={studentName}
+                      studentClass={studentClass}
+                    />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="results"
+                element={
+                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                    <DashboardResult />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="attendance"
+                element={
+                  <ProtectedStudent roles={["student", "admin", "teacher"]}>
+                    <DashboardAttendance />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="leaves"
+                element={
+                  <ProtectedStudent roles={["teacher", "admin"]}>
+                    <TeacherLeaveCalendar />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="admin/manage-users"
+                element={
+                  <ProtectedStudent roles={["admin", "teacher"]}>
+                    <AdminUserManagement />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="admin/create-user"
+                element={
+                  <ProtectedStudent roles={["admin"]}>
+                    <CreateUserPage />
+                  </ProtectedStudent>
+                }
+              />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );
@@ -160,99 +193,134 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
   <div className="flex flex-col justify-between h-full">
     <div>
       {/* Logo + Name */}
-      <div className="flex flex-col items-center mb-6">
-        <img
+      <motion.div
+        initial={{ y: -10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+        className="flex flex-col items-center mb-6"
+      >
+        <motion.img
+          whileHover={{ scale: 1.05 }}
           src="/ABHIGYAN_GURUKUL_logo.svg"
           alt="Logo"
-          className="w-24 h-24 object-contain mb-2"
+          className="w-24 h-24 object-contain mb-2 drop-shadow-md"
         />
         <h1 className="text-lg font-bold text-green-800 text-center">
           Abhigyan Gurukul
         </h1>
 
-        {/* 🎯 ROLE BADGE */}
-        <span className="mt-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+        {/* Role Badge */}
+        <motion.span
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+          className="mt-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-green-200"
+        >
           ROLE: {userRole?.toUpperCase() || "UNKNOWN"}
-        </span>
+        </motion.span>
 
-        <hr className="border-green-600 w-full mt-3" />
-      </div>
+        <hr className="border-green-600 w-full mt-3 opacity-50" />
+      </motion.div>
 
       {/* Navigation Items */}
-      <SidebarItem
-        icon={<FaTachometerAlt />}
-        label="Dashboard"
-        active={location.pathname === "/student-dashboard"}
-        onClick={() => handleNav("/student-dashboard")}
-      />
-      <SidebarItem
-        icon={<FaChartLine />}
-        label="Results"
-        active={location.pathname === "/student-dashboard/results"}
-        onClick={() => handleNav("/student-dashboard/results")}
-      />
-      <SidebarItem
-        icon={<FaCalendarAlt />}
-        label="Attendance"
-        active={location.pathname === "/student-dashboard/attendance"}
-        onClick={() => handleNav("/student-dashboard/attendance")}
-      />
-
-      {userRole === "teacher" && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, staggerChildren: 0.1 }}
+        className="space-y-1"
+      >
         <SidebarItem
-          icon={<FaUsers />}
-          label="Manage Students"
-          active={location.pathname === "/student-dashboard/admin/manage-users"}
-          onClick={() => handleNav("/student-dashboard/admin/manage-users")}
+          icon={<FaTachometerAlt />}
+          label="Dashboard"
+          active={location.pathname === "/student-dashboard"}
+          onClick={() => handleNav("/student-dashboard")}
         />
-      )}
-
-      {userRole === "admin" && (
         <SidebarItem
-          icon={<FaUsers />}
-          label="Manage Users"
-          active={location.pathname === "/student-dashboard/admin/manage-users"}
-          onClick={() => handleNav("/student-dashboard/admin/manage-users")}
+          icon={<FaChartLine />}
+          label="Results"
+          active={location.pathname === "/student-dashboard/results"}
+          onClick={() => handleNav("/student-dashboard/results")}
         />
-      )}
-
-      {["teacher", "admin"].includes(userRole) && (
         <SidebarItem
           icon={<FaCalendarAlt />}
-          label={
-            <span className="flex items-center">
-              Leaves
-              <span className="ml-2 text-red-500 text-xs animate-pulse">
-                🔴
-              </span>
-            </span>
-          }
-          active={location.pathname === "/student-dashboard/leaves"}
-          onClick={() => handleNav("/student-dashboard/leaves")}
+          label="Attendance"
+          active={location.pathname === "/student-dashboard/attendance"}
+          onClick={() => handleNav("/student-dashboard/attendance")}
         />
-      )}
+
+        {userRole === "teacher" && (
+          <SidebarItem
+            icon={<FaUsers />}
+            label="Manage Students"
+            active={
+              location.pathname === "/student-dashboard/admin/manage-users"
+            }
+            onClick={() => handleNav("/student-dashboard/admin/manage-users")}
+          />
+        )}
+
+        {userRole === "admin" && (
+          <SidebarItem
+            icon={<FaUsers />}
+            label="Manage Users"
+            active={
+              location.pathname === "/student-dashboard/admin/manage-users"
+            }
+            onClick={() => handleNav("/student-dashboard/admin/manage-users")}
+          />
+        )}
+
+        {["teacher", "admin"].includes(userRole) && (
+          <SidebarItem
+            icon={<FaCalendarAlt />}
+            label={
+              <span className="flex items-center">
+                Leaves
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                  className="ml-2 text-red-500 text-xs"
+                >
+                  🔴
+                </motion.span>
+              </span>
+            }
+            active={location.pathname === "/student-dashboard/leaves"}
+            onClick={() => handleNav("/student-dashboard/leaves")}
+          />
+        )}
+      </motion.div>
     </div>
 
     {/* Log Out */}
-    <div
-      className="text-red-600 text-sm flex items-center cursor-pointer hover:underline mt-4"
+    <motion.div
+      whileHover={{ x: 5 }}
+      className="text-red-600 text-sm flex items-center cursor-pointer hover:bg-red-50 p-2 rounded-lg transition-all duration-200"
       onClick={handleLogout}
     >
       <FaSignOutAlt className="mr-2" /> Log Out
-    </div>
+    </motion.div>
   </div>
 );
 
 const SidebarItem = ({ icon, label, active, onClick }) => (
-  <div
-    className={`flex items-center px-3 py-2 rounded-md cursor-pointer text-sm font-medium transition-all duration-200 ${
-      active ? "bg-green-800 text-white" : "text-gray-600 hover:bg-gray-200"
+  <motion.div
+    whileHover={{ x: active ? 0 : 5 }}
+    whileTap={{ scale: 0.95 }}
+    className={`flex items-center px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-all duration-200 ${
+      active
+        ? "bg-gradient-to-r from-green-700 to-green-800 text-white shadow-md"
+        : "text-gray-600 hover:bg-gray-100"
     }`}
     onClick={onClick}
   >
-    <span className="mr-3 text-lg">{icon}</span>
+    <span
+      className={`mr-3 text-lg ${active ? "text-white" : "text-green-600"}`}
+    >
+      {icon}
+    </span>
     {label}
-  </div>
+  </motion.div>
 );
 
 export default StudentDashboard;

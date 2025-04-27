@@ -7,7 +7,7 @@ import {
   FaFileExport,
   FaTrash,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 const AdminDashboardOverview = () => {
   const navigate = useNavigate();
