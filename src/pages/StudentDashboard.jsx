@@ -15,6 +15,7 @@ import {
   useLocation,
   Navigate,
 } from "react-router";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardResult from "../components/Page-Specific-Components/DashboardResult";
 import DashboardAttendance from "../components/Page-Specific-Components/DashboardAttendance";
@@ -22,6 +23,7 @@ import DashboardHome from "./DashboardHome";
 import TeacherLeaveCalendar from "../components/TeacherLeaveCalendar";
 import AdminUserManagement from "../components/AdminUserManagement";
 import CreateUserPage from "../components/CreateUserPage";
+import Leaderboards from "./Leaderboards";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -149,6 +151,16 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
+
+              <Route
+                path="leaderboards"
+                element={
+                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                    <Leaderboards />
+                  </ProtectedStudent>
+                }
+              />
+
               <Route
                 path="attendance"
                 element={
@@ -241,6 +253,13 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/results"}
           onClick={() => handleNav("/student-dashboard/results")}
         />
+        {/* <SidebarItem
+          icon={<FaUserShield />}
+          label="Leaderboards"
+          active={location.pathname === "/student-dashboard/leaderboards"}
+          onClick={() => handleNav("/student-dashboard/leaderboards")}
+        /> */}
+
         <SidebarItem
           icon={<FaCalendarAlt />}
           label="Attendance"

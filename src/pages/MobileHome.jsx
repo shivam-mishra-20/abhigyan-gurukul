@@ -10,6 +10,8 @@ import {
 } from "react-icons/fa";
 import GoogleReviews from "../components/Page-Specific-Components/GoogleReviews";
 import MobileTeachers from "../components/MobileTeachers";
+import MobileResultCarousel from "../components/MobileResultCarousel";
+import MobileVideoCarousel from "../components/MobileVideoCarousel"; // Import the new component
 
 const ImageCarousel = () => {
   // Image paths (Ensure correct paths)
@@ -60,43 +62,6 @@ const ImageCarousel = () => {
         </div>
       </div>
 
-      {/* <div className="relative w-full mt-3 h-[200px] sm:h-[350px] md:h-[450px] overflow-hidden">
-        {/* Image Container /}
-        <div className="w-full h-full relative flex justify-center items-center">
-          <AnimatePresence>
-            <motion.img
-              key={currentIndex}
-              src={images[currentIndex]}
-              alt={`Slide ${currentIndex + 1}`}
-              className="absolute w-full h-full object-cover rounded-lg"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              transition={{ duration: 1 }}
-            />
-          </AnimatePresence>
-        </div>
-
-        {/* Navigation Dots (Mobile Friendly) /}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              className={`h-4 w-4 rounded-full transition-all duration-300 ${
-                index === currentIndex
-                  ? "bg-green-500 scale-150 shadow-md"
-                  : "bg-gray-300"
-              }`}
-              onClick={() => setCurrentIndex(index)}
-            />
-          ))}
-        </div>
-      </div> */}
-
-      {/* Introduction Actual and Methodology with Divider */}
-
-      {/* <hr className="mt-10 mb-10 border-t-1 border-black opacity-[18%] my-4" /> */}
-
       <div className="bg-white px-4 py-6 border-1 border-gray-300 rounded-lg">
         {/* Heading */}
         <h1 className="text-2xl font-bold text-[#0B7077] text-center">
@@ -116,16 +81,6 @@ const ImageCarousel = () => {
         </p>
 
         <p className="mt-2 text-gray-700 text-justify leading-relaxed"></p>
-
-        {/* Section Title */}
-        {/* <h2 className="mt-8 text-lg font-bold text-[#0B7077]">
-          OUR METHODOLOGYS
-        </h2>
-        <ul className="mt-4 text-gray-700 text-justify leading-relaxed">
-          <li>
-            We at VRaZ intend to bring about quality changes in all our students
-          </li>
-        </ul> */}
       </div>
 
       <MobileTeachers InfoText={text}></MobileTeachers>
@@ -174,9 +129,14 @@ const ImageCarousel = () => {
         </div>
       </div>
 
-      {/* Reviews Sections Styles */}
-      <GoogleReviews></GoogleReviews>
+      {/* Video Tutorials Section - New Addition */}
+      <MobileVideoCarousel />
+
       {/* Results Carousel */}
+      <MobileResultCarousel />
+
+      {/* Reviews Section */}
+      {/* <GoogleReviews></GoogleReviews> */}
     </>
   );
 };

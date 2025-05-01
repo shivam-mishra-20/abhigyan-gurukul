@@ -5,6 +5,7 @@ import "../App.css";
 import Banner from "../components/Banner";
 import { MajorFeatures } from "../components/MajorFeatures";
 import ResultCarousel from "../components/ResultCarousel";
+import ReviewSlider from "../components/Reviews";
 
 const Home = () => {
   const text1 = (
@@ -65,6 +66,9 @@ const Home = () => {
 
       {/* Image Carousel */}
       <ResultCarousel></ResultCarousel>
+
+      {/* reviews */}
+      {/* <ReviewSlider></ReviewSlider> */}
     </>
   );
 };

@@ -1,61 +1,164 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll } from "framer-motion";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState("up");
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const { scrollY } = useScroll();
+
+  // Track scroll direction for mobile navbar
+  useEffect(() => {
+    const updateScrollDirection = () => {
+      const currentScrollY = window.scrollY;
+      const direction = currentScrollY > lastScrollY ? "down" : "up";
+
+      if (
+        direction !== scrollDirection &&
+        (currentScrollY - lastScrollY > 10 ||
+          currentScrollY - lastScrollY < -10)
+      ) {
+        setScrollDirection(direction);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", updateScrollDirection);
+
+    return () => {
+      window.removeEventListener("scroll", updateScrollDirection);
+    };
+  }, [scrollDirection, lastScrollY]);
+
+  // Close mobile menu when scrolling down
+  useEffect(() => {
+    if (scrollDirection === "down" && isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  }, [scrollDirection, isMenuOpen]);
+
+  // Link animation variants
+  const linkVariants = {
+    hover: {
+      scale: 1.1,
+      color: "#ffffff",
+      textShadow: "0px 0px 8px rgba(255,255,255,0.5)",
+      transition: { type: "spring", stiffness: 300 },
+    },
+    tap: { scale: 0.95 },
+  };
+
+  // Button animation variants
+  const buttonVariants = {
+    hover: {
+      scale: 1.05,
+      boxShadow: "0px 5px 15px rgba(0,0,0,0.1)",
+      backgroundColor: "#096069",
+      transition: { type: "spring", stiffness: 500 },
+    },
+    tap: { scale: 0.95 },
+  };
 
   return (
     <>
-      {/* Desktop Navbar */}
+      {/* Desktop Navbar - FIXED: Now scrolls with page */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="hidden z-3 lg:flex w-[full] relative py-7 items-center justify-center bg-[#6BC74C] h-[70px] overflow-hidden shadow-md"
+        className="hidden lg:flex w-full relative py-7 items-center justify-center bg-gradient-to-r from-[#5ab348] to-[#6BC74C] h-[70px] overflow-hidden shadow-lg z-10"
       >
+        {/* Background decorative elements */}
+        <motion.div
+          className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full z-0"
+          style={{ x: 100, y: -150 }}
+          animate={{
+            x: [100, 110, 100],
+            y: [-150, -140, -150],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 8,
+            ease: "easeInOut",
+          }}
+        />
+
         <motion.img
           src="/Group236.svg"
           alt=""
-          className="absolute z-2 mt-8 right-80 object-cover hidden lg:block"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          className="absolute mt-8 right-80 object-cover hidden lg:block z-0"
+          initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 0.8, delay: 0.4, type: "spring" }}
         />
-        <div className="flex justify-evenly px-5 items-end w-1/3 h-full">
+
+        {/* Logo and Title Section */}
+        <div className="flex justify-evenly px-5 items-end w-1/3 h-full relative z-10">
           <div className="flex h-full items-center">
             <a href="/">
-              <motion.img
-                src="/ABHIGYAN_GURUKUL_logo.svg"
-                className="self-center h-[60px] w-[60px] rounded-full"
-                alt=""
-                initial={{ opacity: 0, rotate: -10 }}
-                animate={{ opacity: 1, rotate: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-              />
+              <motion.div
+                className="relative"
+                whileHover={{ scale: 1.08, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 200 }}
+              >
+                <motion.img
+                  src="/ABHIGYAN_GURUKUL_logo.svg"
+                  className="self-center h-[60px] w-[60px] rounded-full shadow-md"
+                  alt="Abhigyan Gurukul Logo"
+                  initial={{ opacity: 0, rotate: -10 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                />
+
+                {/* Decorative element for logo */}
+                {/* <motion.div
+                  className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                /> */}
+              </motion.div>
             </a>
           </div>
 
-          <h1 className="text-white font-bold mb-1 text-xl">
+          <motion.h1
+            className="text-white font-bold mb-1 text-xl"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
             Abhigyan Gurukul
-          </h1>
+          </motion.h1>
         </div>
 
+        {/* Tagline with enhanced animation */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="absolute -bottom-[2px] text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white py-1 hidden lg:flex lg:left-[170px] 2xl:left-[250px]"
+          className="absolute -bottom-[2px] text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white py-1 hidden lg:flex lg:left-[170px] 2xl:left-[250px] shadow-md z-20"
+          whileHover={{
+            y: -2,
+            boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+            backgroundColor: "#f8f9fa",
+          }}
         >
-          Never stop learning
+          <span className="mr-1">✨</span> Never stop learning
         </motion.div>
 
-        <div className="flex z-5 justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full">
-          {["Home", "About Us", "Faculties"].map((text) => (
+        {/* Navigation Links */}
+        <div className="flex justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full relative z-10">
+          {["Home", "About Us", "Faculties"].map((text, i) => (
             <motion.div
               key={text}
-              whileHover={{ scale: 1.1, backgroundColor: "#0b707739" }}
-              className="text-white text-center px-2 py-1 hover:rounded-xl font-semibold"
+              variants={linkVariants}
+              whileHover="hover"
+              whileTap="tap"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 + i * 0.1, duration: 0.5 }}
+              className="text-white text-center px-3 py-2 hover:rounded-xl font-semibold relative"
             >
               <Link
                 to={
@@ -65,27 +168,43 @@ const Navbar = () => {
                     ? "/about"
                     : "/faculties"
                 }
+                className="relative z-10"
               >
                 {text}
               </Link>
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full"
+                initial={{ scaleX: 0 }}
+                whileHover={{ scaleX: 1 }}
+                transition={{ duration: 0.3 }}
+              />
             </motion.div>
           ))}
         </div>
 
-        <div className="flex justify-evenly px-5 items-center w-1/3 h-full gap-4">
+        {/* Action Buttons */}
+        <div className="flex justify-evenly px-5 items-center w-1/3 h-full gap-4 relative z-10">
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.5 }}
+            className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300 shadow-md"
             onClick={() => (window.location.href = "/enrollnow")}
           >
             CONTACT US
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0, duration: 0.5 }}
+            className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300 shadow-md"
             onClick={() => (window.location.href = "/login")}
           >
             LOGIN
@@ -93,30 +212,71 @@ const Navbar = () => {
         </div>
       </motion.div>
 
-      {/* Mobile Navbar */}
+      {/* Mobile Navbar - FIXED: Now has proper stacking with dashboard content */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="lg:hidden h-[93px] w-full relative bg-[#6BC74C]"
+        animate={{
+          opacity: 1,
+          y: scrollDirection === "down" && !isMenuOpen ? -93 : 0,
+        }}
+        transition={{ duration: 0.4 }}
+        className="lg:hidden sticky top-0 left-0 right-0 z-20 h-[93px] w-full bg-gradient-to-r from-[#5ab348] to-[#6BC74C] shadow-lg"
       >
-        <div className="flex justify-between items-center p-5">
+        {/* Background decor for mobile */}
+        <div className="absolute inset-0 overflow-hidden z-0">
+          <motion.div
+            className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full"
+            style={{ x: 20, y: -40 }}
+            animate={{
+              x: [20, 30, 20],
+              y: [-40, -30, -40],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 8,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+
+        <div className="flex justify-between items-center p-5 relative z-10">
           <div className="flex items-center space-x-3">
             <Link to="/">
-              <motion.img
-                src="/ABHIGYAN_GURUKUL_logo.svg"
-                alt=""
-                className="h-10"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              />
+              <motion.div whileTap={{ scale: 0.95 }} className="relative">
+                <motion.img
+                  src="/ABHIGYAN_GURUKUL_logo.svg"
+                  alt=""
+                  className="h-10"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                />
+                <motion.div
+                  className="absolute -bottom-1 -right-1 w-2 h-2 bg-white rounded-full"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              </motion.div>
             </Link>
-            <h1 className="text-white font-bold text-lg">Abhigyan Gurukul</h1>
+            <motion.h1
+              className="text-white font-bold text-lg"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              Abhigyan Gurukul
+            </motion.h1>
           </div>
+
+          {/* Enhanced hamburger button */}
           <motion.button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white focus:outline-none"
+            className="text-white focus:outline-none p-2 rounded-full relative z-20"
+            whileHover={{
+              scale: 1.1,
+              backgroundColor: "rgba(255,255,255,0.3)",
+            }}
             whileTap={{ scale: 0.9 }}
           >
             {isMenuOpen ? (
@@ -158,18 +318,36 @@ const Navbar = () => {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="bg-[#6BC74C] border-t border-[#5ab33f] pb-6 shadow-lg"
+              className="bg-gradient-to-b from-[#6BC74C] to-[#5ab348] border-t border-[#5ab33f] pb-6 shadow-lg overflow-hidden relative z-10"
             >
-              <div className="flex flex-col items-center gap-4 py-4 font-semibold text-black text-md">
-                {["Home", "About Us", "Faculties"].map((text) => (
+              {/* Background decoration for mobile menu */}
+              <div className="absolute inset-0 overflow-hidden z-0">
+                <motion.div
+                  className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full"
+                  animate={{
+                    x: [0, 10, 0],
+                    y: [0, -5, 0],
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 5,
+                    ease: "easeInOut",
+                  }}
+                />
+              </div>
+
+              <div className="flex flex-col items-center gap-4 py-4 font-semibold text-white text-md px-5 relative z-10">
+                {["Home", "About Us", "Faculties"].map((text, i) => (
                   <motion.div
                     key={text}
-                    whileTap={{ scale: 1.05 }}
-                    whileHover={{ scale: 1.05 }}
+                    className="w-full"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
                   >
                     <Link
                       to={
@@ -179,28 +357,33 @@ const Navbar = () => {
                           ? "/about"
                           : "/faculties"
                       }
-                      className="hover:text-[#0B7077] transition-all"
+                      className="block py-2 px-4 w-full text-center rounded-lg hover:bg-white hover:bg-opacity-20 transition-all relative z-10"
                     >
                       {text}
                     </Link>
                   </motion.div>
                 ))}
 
-                {/* ENROLL NOW Button */}
+                {/* Action buttons with enhanced styling */}
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold"
+                  className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold shadow-md mt-2 relative z-10"
                   onClick={() => (window.location.href = "/enrollnow")}
                 >
-                  ENROLL NOW
+                  CONTACT US
                 </motion.button>
 
-                {/* LOGIN Button */}
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold"
+                  className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold shadow-md relative z-10"
                   onClick={() => (window.location.href = "/login")}
                 >
                   LOGIN
@@ -210,6 +393,8 @@ const Navbar = () => {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* No spacer needed now since navbar is sticky/relative */}
     </>
   );
 };
