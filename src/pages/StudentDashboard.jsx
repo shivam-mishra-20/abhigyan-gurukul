@@ -24,6 +24,7 @@ import TeacherLeaveCalendar from "../components/TeacherLeaveCalendar";
 import AdminUserManagement from "../components/AdminUserManagement";
 import CreateUserPage from "../components/CreateUserPage";
 import Leaderboards from "./Leaderboards";
+import DevConsole from "../components/DevConsole";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -162,6 +163,15 @@ const StudentDashboard = () => {
               />
 
               <Route
+                path="dev-console"
+                element={
+                  <ProtectedStudent roles={["admin"]}>
+                    <DevConsole />
+                  </ProtectedStudent>
+                }
+              />
+
+              <Route
                 path="attendance"
                 element={
                   <ProtectedStudent roles={["student", "admin", "teacher"]}>
@@ -253,12 +263,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/results"}
           onClick={() => handleNav("/student-dashboard/results")}
         />
-        {/* <SidebarItem
+        <SidebarItem
           icon={<FaUserShield />}
           label="Leaderboards"
           active={location.pathname === "/student-dashboard/leaderboards"}
           onClick={() => handleNav("/student-dashboard/leaderboards")}
-        /> */}
+        />
 
         <SidebarItem
           icon={<FaCalendarAlt />}
@@ -279,14 +289,23 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
         )}
 
         {userRole === "admin" && (
-          <SidebarItem
-            icon={<FaUsers />}
-            label="Manage Users"
-            active={
-              location.pathname === "/student-dashboard/admin/manage-users"
-            }
-            onClick={() => handleNav("/student-dashboard/admin/manage-users")}
-          />
+          <>
+            <SidebarItem
+              icon={<FaUsers />}
+              label="Manage Users"
+              active={
+                location.pathname === "/student-dashboard/admin/manage-users"
+              }
+              onClick={() => handleNav("/student-dashboard/admin/manage-users")}
+            />
+
+            {/* <SidebarItem
+              icon={<FaUserShield />}
+              label="Developer Console"
+              active={location.pathname === "/student-dashboard/dev-console"}
+              onClick={() => handleNav("/student-dashboard/dev-console")}
+            /> */}
+          </>
         )}
 
         {["teacher", "admin"].includes(userRole) && (

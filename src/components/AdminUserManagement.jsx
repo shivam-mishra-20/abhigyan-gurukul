@@ -21,8 +21,11 @@ const AdminUserManagement = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedClass, setSelectedClass] = useState("All");
   const [selectedRole, setSelectedRole] = useState("All");
+  const [selectedBatch, setSelectedBatch] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [editUser, setEditUser] = useState(null); // null means modal hidden
+
   const usersPerPage = 9;
   const navigate = useNavigate();
   const userRole = localStorage.getItem("userRole");
@@ -31,7 +34,11 @@ const AdminUserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       const snap = await getDocs(collection(db, "Users"));
-      const users = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const users = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+        batch: d.data().batch || "", // Ensure batch is always defined
+      }));
       users.sort((a, b) => a.name.localeCompare(b.name));
       setAllUsers(users);
       setFilteredUsers(users);
@@ -42,21 +49,42 @@ const AdminUserManagement = () => {
   // Apply filters + alphabetical sort
   useEffect(() => {
     let u = [...allUsers];
+
     if (selectedClass !== "All") {
       u = u.filter((user) => user.Class === selectedClass);
     }
+
     if (selectedRole !== "All") {
-      u = u.filter((user) => user.role === selectedRole);
+      u = u.filter(
+        (user) => user.role?.toLowerCase() === selectedRole.toLowerCase()
+      );
     }
+
+    if (selectedBatch !== "All") {
+      u = u.filter((user) => user.batch === selectedBatch);
+    }
+
     if (searchQuery.trim()) {
       u = u.filter((user) =>
         user.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    u.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Role + name (A-Z) sorting
+    const rolePriority = { admin: 0, teacher: 1, student: 2 };
+    u.sort((a, b) => {
+      const roleA = a.role?.toLowerCase() || "student";
+      const roleB = b.role?.toLowerCase() || "student";
+
+      const roleDiff = rolePriority[roleA] - rolePriority[roleB];
+      if (roleDiff !== 0) return roleDiff;
+
+      return a.name.localeCompare(b.name);
+    });
+
     setFilteredUsers(u);
     setCurrentPage(1);
-  }, [allUsers, selectedClass, selectedRole, searchQuery]);
+  }, [allUsers, selectedClass, selectedRole, selectedBatch, searchQuery]);
 
   // Delete a user
   const handleDelete = async (user) => {
@@ -64,45 +92,6 @@ const AdminUserManagement = () => {
     await deleteDoc(doc(db, "Users", user.id));
     setAllUsers((prev) => prev.filter((u) => u.id !== user.id));
   };
-
-  // Clear ALL leaves
-  // const handleClearLeaves = async () => {
-  //   if (
-  //     !window.confirm(
-  //       "This will delete every document in teacherLeaves. Are you sure?"
-  //     )
-  //   )
-  //     return;
-  //   const snap = await getDocs(collection(db, "teacherLeaves"));
-  //   for (const d of snap.docs) {
-  //     await deleteDoc(doc(db, "teacherLeaves", d.id));
-  //   }
-  //   alert("✅ All teacher leaves cleared.");
-  // };
-
-  // // Initialize teacherLeaves for every teacher in Users
-  // const handleInitTeacherLeaves = async () => {
-  //   if (
-  //     !window.confirm(
-  //       "This will create/overwrite a teacherLeaves doc for each teacher in Users. Proceed?"
-  //     )
-  //   )
-  //     return;
-  //   // grab all teachers
-  //   const snap = await getDocs(collection(db, "Users"));
-  //   const teachers = snap.docs
-  //     .map((d) => ({ id: d.id, ...d.data() }))
-  //     .filter((u) => u.role === "teacher");
-  //   // write into teacherLeaves
-  //   for (const t of teachers) {
-  //     await setDoc(
-  //       doc(db, "teacherLeaves", t.id),
-  //       { name: t.name, leaves: [] },
-  //       { merge: true }
-  //     );
-  //   }
-  //   alert("✅ teacherLeaves initialized for all teachers.");
-  // };
 
   // Export handlers
   const handleExportPDF = () => {
@@ -134,6 +123,10 @@ const AdminUserManagement = () => {
     XLSX.writeFile(wb, "users.xlsx");
   };
 
+  const handleEditUser = (user) => {
+    setEditUser({ ...user }); // Copy to avoid mutating state directly
+  };
+
   // Change a user’s role
   const handleRoleChange = async (userId, newRole) => {
     await updateDoc(doc(db, "Users", userId), { role: newRole });
@@ -142,7 +135,7 @@ const AdminUserManagement = () => {
     );
   };
 
-  const branchOptions = ["Lakshya", "Adarshila", "Basic"];
+  const branchOptions = ["Lakshya", "Aadharshila", "Basic"];
 
   const handleBatchChange = async (userId, newBatch) => {
     try {
@@ -150,11 +143,20 @@ const AdminUserManagement = () => {
       setAllUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, batch: newBatch } : u))
       );
+      // Refresh the filtered users to show the update immediately
+      const updatedUser = allUsers.find((u) => u.id === userId);
+      if (updatedUser) {
+        updatedUser.batch = newBatch;
+        setFilteredUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, batch: newBatch } : u))
+        );
+      }
     } catch (err) {
       console.error("Failed to update batch:", err);
       alert("❌ Could not update batch.");
     }
   };
+
   // Reset password
   const handleResetPassword = async (userId) => {
     const pw = prompt("Enter the new password:");
@@ -216,6 +218,19 @@ const AdminUserManagement = () => {
           <option value="admin">Admin</option>
         </select>
 
+        <select
+          className="border px-3 py-2 rounded"
+          onChange={(e) => setSelectedBatch(e.target.value)}
+          value={selectedBatch}
+        >
+          <option value="All">All Batches</option>
+          {branchOptions.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </select>
+
         <input
           className="border px-3 py-2 rounded w-56"
           placeholder="Search by name"
@@ -244,18 +259,6 @@ const AdminUserManagement = () => {
             >
               Create User
             </button>
-            {/* <button
-              onClick={handleClearLeaves}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-            >
-              Clear All Leaves
-            </button> */}
-            {/* <button
-              onClick={handleInitTeacherLeaves}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
-            >
-              Init Teacher Leaves
-            </button> */}
             {/* ← New Backup button */}
             <button
               onClick={handleBackupUsers}
@@ -377,6 +380,12 @@ const AdminUserManagement = () => {
                       {userRole === "admin" && (
                         <>
                           <button
+                            className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-gray-200 transition"
+                            onClick={() => handleEditUser(user)}
+                          >
+                            Edit
+                          </button>
+                          <button
                             className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-gray-200 transition"
                             onClick={() => handleResetPassword(user.id)}
                           >
@@ -417,6 +426,109 @@ const AdminUserManagement = () => {
           </button>
         ))}
       </div>
+      {editUser && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center"
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg relative border border-gray-200"
+          >
+            <h2 className="text-2xl font-bold text-center text-green-700 mb-4">
+              ✏️ Edit User
+            </h2>
+            <button
+              className="absolute top-3 right-4 text-gray-400 hover:text-red-500 text-2xl font-bold"
+              onClick={() => setEditUser(null)}
+            >
+              ×
+            </button>
+
+            <div className="space-y-4">
+              {["name", "email", "phone"].map((field) => (
+                <input
+                  key={field}
+                  type="text"
+                  className="w-full border px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
+                  value={editUser[field] || ""}
+                  placeholder={field.toUpperCase()}
+                  onChange={(e) =>
+                    setEditUser({ ...editUser, [field]: e.target.value })
+                  }
+                />
+              ))}
+
+              <select
+                className="w-full border px-4 py-2 rounded-lg shadow-sm focus:ring-2 focus:ring-green-400"
+                value={editUser.Class}
+                onChange={(e) =>
+                  setEditUser({ ...editUser, Class: e.target.value })
+                }
+              >
+                <option value="">Select Class</option>
+                <option value="Class 8">Class 8</option>
+                <option value="Class 9">Class 9</option>
+                <option value="Class 10">Class 10</option>
+                <option value="Class 11">Class 11</option>
+              </select>
+
+              <select
+                className="w-full border px-4 py-2 rounded-lg shadow-sm focus:ring-2 focus:ring-green-400"
+                value={editUser.batch}
+                onChange={(e) =>
+                  setEditUser({ ...editUser, batch: e.target.value })
+                }
+              >
+                <option value="">Select Batch</option>
+                <option value="Lakshya">Lakshya</option>
+                <option value="Aadharshila">Aadharshila</option>
+                <option value="Basic">Basic</option>
+              </select>
+
+              <select
+                className="w-full border px-4 py-2 rounded-lg shadow-sm focus:ring-2 focus:ring-green-400"
+                value={editUser.role}
+                onChange={(e) =>
+                  setEditUser({ ...editUser, role: e.target.value })
+                }
+              >
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+              </select>
+
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full bg-green-600 text-white py-2 rounded-lg shadow-md hover:bg-green-700 transition-all font-semibold"
+                onClick={async () => {
+                  await updateDoc(doc(db, "Users", editUser.id), {
+                    name: editUser.name,
+                    email: editUser.email,
+                    phone: editUser.phone,
+                    Class: editUser.Class,
+                    role: editUser.role,
+                    batch: editUser.batch,
+                  });
+                  setAllUsers((prev) =>
+                    prev.map((u) => (u.id === editUser.id ? editUser : u))
+                  );
+                  setEditUser(null);
+                  alert("✅ User updated!");
+                }}
+              >
+                Save Changes
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };

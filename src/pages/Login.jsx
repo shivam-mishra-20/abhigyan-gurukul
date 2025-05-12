@@ -1,10 +1,18 @@
 import React, { useState } from "react";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { useNavigate } from "react-router";
+import bcrypt from "bcryptjs";
 
 const Login = () => {
-  const auth = getAuth();
   const navigate = useNavigate();
+  const db = getFirestore();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -12,10 +20,39 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard"); // Redirect on successful login
-    } catch (error) {
-      setError("Invalid email or password.");
+      // Query user from Firestore by email
+      const q = query(collection(db, "Users"), where("email", "==", email));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        setError("User not found.");
+        return;
+      }
+
+      const docSnap = snapshot.docs[0];
+      const userData = docSnap.data();
+
+      // Validate password using bcrypt
+      const passwordMatch = await bcrypt.compare(password, userData.password);
+
+      if (!passwordMatch) {
+        setError("Invalid email or password.");
+        return;
+      }
+
+      // ✅ Store user data and timestamp
+      localStorage.setItem("role", userData.role);
+      localStorage.setItem("studentClass", userData.Class);
+      localStorage.setItem("studentBatch", userData.batch);
+      localStorage.setItem("studentName", userData.name);
+      localStorage.setItem("studentEmail", userData.email);
+      localStorage.setItem("uid", userData.uid);
+      localStorage.setItem("loginTimestamp", Date.now().toString());
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again.");
     }
   };
 
@@ -23,7 +60,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full">
         <h2 className="text-2xl font-bold text-center text-purple-600">
-          Admin Login
+          User Login
         </h2>
         {error && <p className="text-red-500 text-center mt-2">{error}</p>}
         <form onSubmit={handleLogin} className="mt-4">

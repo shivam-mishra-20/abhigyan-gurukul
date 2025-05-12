@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import http from "http";
 import admin from "firebase-admin";
 import express from "express";

@@ -24,7 +24,7 @@ const Leaders = ({ info, isFlagged }) => {
       subject: "Chemistry - Ph.D",
       img: "/AnkitSirCropped.jpg",
     },
-    { name: "Bhanu Sir", subject: "Biology - Ph.D", img: "/placeholder.png" },
+    // { name: "Bhanu Sir", subject: "Biology - Ph.D", img: "/placeholder.png" },
     {
       name: "Sonia Ma'am",
       subject: "Commerce - Accounts",
@@ -38,7 +38,11 @@ const Leaders = ({ info, isFlagged }) => {
   ];
 
   const Others = [
-    { name: "Nitish Sir", subject: "Social Science", img: "/Nitish.png" },
+    {
+      name: "Nitish Sir",
+      subject: "Social Science",
+      img: "/NitishSirNewimg.jpg",
+    },
     {
       name: "Dhara Ma'am",
       subject: "English/EVS/Social Science",

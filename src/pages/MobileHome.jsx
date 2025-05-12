@@ -12,6 +12,7 @@ import GoogleReviews from "../components/Page-Specific-Components/GoogleReviews"
 import MobileTeachers from "../components/MobileTeachers";
 import MobileResultCarousel from "../components/MobileResultCarousel";
 import MobileVideoCarousel from "../components/MobileVideoCarousel"; // Import the new component
+import HomePageMainCarousel from "../components/Page-Specific-Components/HomePageMainCarousel";
 
 const ImageCarousel = () => {
   // Image paths (Ensure correct paths)
@@ -61,6 +62,8 @@ const ImageCarousel = () => {
           </button>
         </div>
       </div>
+
+      <HomePageMainCarousel />
 
       <div className="bg-white px-4 py-6 border-1 border-gray-300 rounded-lg">
         {/* Heading */}

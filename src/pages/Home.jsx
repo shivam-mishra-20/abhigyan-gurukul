@@ -6,6 +6,9 @@ import Banner from "../components/Banner";
 import { MajorFeatures } from "../components/MajorFeatures";
 import ResultCarousel from "../components/ResultCarousel";
 import ReviewSlider from "../components/Reviews";
+import HomePageMainCarousel from "../components/Page-Specific-Components/HomePageMainCarousel";
+import MiniLeaderboardCard from "../components/MiniLeaderboardCard";
+//       </h3>
 
 const Home = () => {
   const text1 = (
@@ -36,10 +39,15 @@ const Home = () => {
 
   return (
     <>
+      <HomePageMainCarousel />
+      {/* Floating leaderboard card */}
+      <MiniLeaderboardCard limit={3} />
+
       <Banner />
 
       {/* Image Carousel */}
       {/* <ImageCarousel /> */}
+      <hr className="mt-30 mb-20 border-t-1 border-black opacity-[18%] my-4" />
       {/* Introduction */}
       <Introduction
         title="Introduction"
@@ -68,7 +76,7 @@ const Home = () => {
       <ResultCarousel></ResultCarousel>
 
       {/* reviews */}
-      {/* <ReviewSlider></ReviewSlider> */}
+      {/* <ReviewSlider></ReviewSlider>  */}
     </>
   );
 };

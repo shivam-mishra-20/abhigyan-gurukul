@@ -184,20 +184,20 @@ export default function MobileResultCarousel() {
         </motion.div>
 
         {/* Mobile-Optimized Carousel */}
-        <div className="relative">
+        <div className="relative w-full max-w-[500px] mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="relative mx-auto overflow-hidden rounded-lg shadow-lg"
+            className="relative overflow-hidden rounded-lg shadow-lg"
             style={{
-              width: Math.min(dimensions.width - 32, 500), // Max width with padding
+              width: "100%", // Ensure it takes the full width of the container
               height: Math.min(dimensions.width * 0.8, 300), // Maintain aspect ratio
             }}
           >
             <div
               {...handlers}
-              className="relative w-full h-full flex items-center bg-gray-50"
+              className="relative w-full h-full flex items-center bg-gray-50 overflow-hidden"
               onClick={handleInteraction}
             >
               <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -213,7 +213,7 @@ export default function MobileResultCarousel() {
                   <motion.div
                     variants={imageVariants}
                     whileTap="tap"
-                    className="w-[90%] h-[90%] flex items-center justify-center bg-white rounded-lg shadow-md overflow-hidden"
+                    className="w-full max-w-[90%] h-[90%] flex items-center justify-center bg-white rounded-lg shadow-md overflow-hidden mx-auto"
                   >
                     <img
                       src={images[currentIndex]}
@@ -225,7 +225,7 @@ export default function MobileResultCarousel() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Navigation Arrows - Mobile Sized */}
+              {/* Navigation Arrows */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
@@ -234,10 +234,10 @@ export default function MobileResultCarousel() {
                   prevSlide();
                   handleInteraction();
                 }}
-                className="absolute top-1/2 left-0 transform -translate-y-1/2 bg-black/30 text-white p-1.5 rounded-full hover:bg-black/50 transition-all duration-300 z-10"
+                className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 transition-all duration-300 z-10"
                 aria-label="Previous"
               >
-                <FaChevronLeft size={14} />
+                <FaChevronLeft size={16} />
               </motion.button>
 
               <motion.button
@@ -248,15 +248,15 @@ export default function MobileResultCarousel() {
                   nextSlide();
                   handleInteraction();
                 }}
-                className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-black/30 text-white p-1.5 rounded-full hover:bg-black/50 transition-all duration-300 z-10"
+                className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 transition-all duration-300 z-10"
                 aria-label="Next"
               >
-                <FaChevronRight size={14} />
+                <FaChevronRight size={16} />
               </motion.button>
             </div>
           </motion.div>
 
-          {/* Indicators - Mobile Friendly Size */}
+          {/* Indicators */}
           <div className="flex justify-center mt-3">
             {images.map((_, idx) => (
               <motion.button
@@ -269,7 +269,7 @@ export default function MobileResultCarousel() {
                 }}
                 className={`mx-1 rounded-full transition-all duration-300 ${
                   currentIndex === idx
-                    ? "bg-green-600 w-3 h-2"
+                    ? "bg-green-600 w-3 h-3"
                     : "bg-gray-300 w-2 h-2"
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
