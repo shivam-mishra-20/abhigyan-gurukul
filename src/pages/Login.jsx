@@ -19,7 +19,25 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+
+        // Add auth tracking for admin login as well
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRole", "admin");
+        localStorage.setItem("studentName", "Admin");
+
+        // Notify components about auth state change
+        notifyAuthStateChange();
+
+        navigate("/dashboard"); // Redirect on successful login
+        return; // Exit function after successful Firebase auth
+      } catch (firebaseError) {
+        // If Firebase auth fails, continue with Firestore authentication
+      }
+
       // Query user from Firestore by email
       const q = query(collection(db, "Users"), where("email", "==", email));
       const snapshot = await getDocs(q);

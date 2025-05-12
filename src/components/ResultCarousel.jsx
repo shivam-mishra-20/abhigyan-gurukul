@@ -1,388 +1,452 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSwipeable } from "react-swipeable";
 import {
-  FaChevronLeft,
-  FaChevronRight,
   FaTrophy,
   FaMedal,
+  FaChevronLeft,
+  FaChevronRight,
+  FaStar,
+  FaGraduationCap,
 } from "react-icons/fa";
 
-const images = [
-  "/Hriday.png",
-  "/Dhyey.png",
-  "/Jisha.png",
-  "/Jwalin.png",
-  "/kenit.png",
-  "/Freya.png",
+const studentAchievements = [
+  {
+    id: 1,
+    name: "Hriday",
+    imageSrc: "/Hriday.png",
+    achievement: "Top scorer in Mathematics Olympiad",
+    score: "98%",
+    rank: "School Topper",
+    subject: "Mathematics",
+  },
+  {
+    id: 2,
+    name: "Dhyey",
+    imageSrc: "/Dhyey.png",
+    achievement: "First place in Science Exhibition",
+    score: "96%",
+    rank: "District Rank 2",
+    subject: "Science",
+  },
+  {
+    id: 3,
+    name: "Jisha",
+    imageSrc: "/Jisha.png",
+    achievement: "Excellence in Literary Competition",
+    score: "95%",
+    rank: "School Rank 3",
+    subject: "English",
+  },
+  {
+    id: 4,
+    name: "Jwalin",
+    imageSrc: "/Jwalin.png",
+    achievement: "Outstanding performance in Regional Quiz",
+    score: "97%",
+    rank: "State Merit List",
+    subject: "Social Studies",
+  },
+  {
+    id: 5,
+    name: "Kenit",
+    imageSrc: "/kenit.png",
+    achievement: "National level Chess Champion",
+    score: "99%",
+    rank: "State Topper",
+    subject: "Mathematics",
+  },
+  {
+    id: 6,
+    name: "Freya",
+    imageSrc: "/Freya.png",
+    achievement: "Gold medalist in Inter-school Debate",
+    score: "94%",
+    rank: "School Merit List",
+    subject: "Languages",
+  },
 ];
 
-// Animation variants for multi-image carousel with slower animations
+// Animation variants
 const containerVariants = {
-  enter: (direction) => ({
-    x: direction > 0 ? "100%" : "-100%",
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    transition: {
-      x: { type: "spring", stiffness: 120, damping: 35, duration: 0.6 },
-      opacity: { duration: 0.5 },
-    },
-  },
-  exit: (direction) => ({
-    x: direction < 0 ? "100%" : "-100%",
-    opacity: 0,
-    transition: {
-      x: { type: "spring", stiffness: 120, damping: 35, duration: 0.6 },
-      opacity: { duration: 0.5 },
-    },
-  }),
-};
-
-// New animation variants for the subheading components
-const headingVariants = {
-  hidden: { opacity: 0, y: -10 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
     y: 0,
+    opacity: 1,
     transition: {
       type: "spring",
       stiffness: 100,
       damping: 20,
-      duration: 0.8,
     },
   },
 };
 
-const highlightVariants = {
-  hidden: { scale: 0.9, opacity: 0 },
+const cardVariants = {
+  hidden: { y: 20, opacity: 0, scale: 0.95 },
   visible: {
-    scale: 1,
+    y: 0,
     opacity: 1,
+    scale: 1,
     transition: {
       type: "spring",
-      stiffness: 120,
+      stiffness: 100,
       damping: 20,
-      delay: 0.3,
     },
   },
-};
-
-// Individual image animation with slower transitions
-const imageVariants = {
   hover: {
-    scale: 1.05,
-    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-    transition: { duration: 0.6 },
-  },
-  tap: {
-    scale: 0.98,
-    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-    transition: { duration: 0.4 },
+    scale: 1.03,
+    y: -5,
+    boxShadow: "0 10px 25px rgba(22, 163, 74, 0.15)",
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 
-export default function ResultCarousel() {
-  const [currentGroup, setCurrentGroup] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+const ResultCarousel = () => {
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [autoplay, setAutoplay] = useState(true);
   const [direction, setDirection] = useState(0);
-  const [dimensions, setDimensions] = useState({
-    width: undefined,
-    height: undefined,
-  });
+  const carouselRef = useRef(null);
 
-  // Calculate the number of image groups (each with 3 images)
-  const imagesPerGroup = 3;
-  const totalGroups = Math.ceil(images.length / imagesPerGroup);
-
-  // Get current images to display
-  const getCurrentImages = useCallback(() => {
-    const startIdx = currentGroup * imagesPerGroup;
-    return images.slice(startIdx, startIdx + imagesPerGroup);
-  }, [currentGroup]);
-
-  // Track window resize for responsive sizing
+  // Track window resize for responsiveness
   useEffect(() => {
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
+    if (typeof window === "undefined") return;
 
-    handleResize();
+    const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Auto-play functionality
-  useEffect(() => {
-    let intervalId;
-    if (isAutoPlaying) {
-      intervalId = setInterval(() => {
-        setDirection(1);
-        setCurrentGroup((prev) => (prev === totalGroups - 1 ? 0 : prev + 1));
-      }, 5000); // Change slide every 5 seconds
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [isAutoPlaying, totalGroups]);
-
-  // Navigation functions
-  const prevGroup = useCallback(() => {
-    setDirection(-1);
-    setCurrentGroup((prev) => (prev === 0 ? totalGroups - 1 : prev - 1));
-  }, [totalGroups]);
-
-  const nextGroup = useCallback(() => {
-    setDirection(1);
-    setCurrentGroup((prev) => (prev === totalGroups - 1 ? 0 : prev + 1));
-  }, [totalGroups]);
-
-  // Pause auto-play when user interacts
-  const handleInteraction = () => {
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+  // Calculate how many slides to show based on screen width
+  const getSlidesPerView = () => {
+    if (windowWidth < 640) return 1;
+    if (windowWidth < 1024) return 2;
+    return 3;
   };
 
-  // Swipe handlers
-  const handlers = useSwipeable({
-    onSwipedLeft: () => {
-      nextGroup();
-      handleInteraction();
+  const slidesPerView = getSlidesPerView();
+  const totalSlides = Math.ceil(studentAchievements.length / slidesPerView);
+
+  // Autoplay functionality
+  useEffect(() => {
+    if (!autoplay) return;
+
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [autoplay, currentSlide]);
+
+  const nextSlide = () => {
+    setDirection(1);
+    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1));
+  };
+
+  const prevSlide = () => {
+    setDirection(-1);
+    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
+  };
+
+  const goToSlide = (index) => {
+    setDirection(index > currentSlide ? 1 : -1);
+    setCurrentSlide(index);
+  };
+
+  const pauseAutoplay = () => {
+    setAutoplay(false);
+    setTimeout(() => setAutoplay(true), 10000);
+  };
+
+  const slideVariants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 500 : -500,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.4 },
+      },
     },
-    onSwipedRight: () => {
-      prevGroup();
-      handleInteraction();
-    },
-    preventDefaultTouchmoveEvent: true,
-    trackMouse: true,
-    swipeDuration: 500,
-    trackTouch: true,
-  });
+    exit: (direction) => ({
+      x: direction > 0 ? -500 : 500,
+      opacity: 0,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.3 },
+      },
+    }),
+  };
 
-  // Calculate optimal container size based on viewport
-  const getOptimalSize = useCallback(() => {
-    const isMobile = dimensions.width < 640;
-    const isTablet = dimensions.width >= 640 && dimensions.width < 1024;
+  const renderSlideContent = (slideIndex) => {
+    const startIndex = slideIndex * slidesPerView;
+    const endIndex = Math.min(
+      startIndex + slidesPerView,
+      studentAchievements.length
+    );
+    const slideStudents = studentAchievements.slice(startIndex, endIndex);
 
-    const maxContainerWidth = dimensions.width * (isMobile ? 0.95 : 0.9);
-    // Reduced height for wider format
-    const maxContainerHeight = isMobile ? 200 : isTablet ? 250 : 300;
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {slideStudents.map((student, index) => (
+          <motion.div
+            key={student.id}
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            whileHover="hover"
+            custom={index}
+            transition={{ delay: index * 0.1 }}
+            className="h-full"
+          >
+            <div className="bg-white rounded-xl overflow-hidden shadow-md h-full flex flex-col border border-green-100 transform-gpu">
+              <div className="p-4 text-center border-b border-green-50">
+                <h3 className="font-bold text-lg text-green-800">
+                  {student.name}
+                </h3>
+                <div className="flex items-center justify-center mt-1">
+                  <FaStar className="text-amber-400 text-xs mr-1" />
+                  <span className="text-sm text-gray-600">{student.rank}</span>
+                </div>
+              </div>
 
-    return {
-      width: maxContainerWidth,
-      height: maxContainerHeight,
-      isMobile,
-      isTablet,
-    };
-  }, [dimensions]);
+              <div className="flex-1 bg-gradient-to-b from-green-50 to-white p-4 flex items-center justify-center">
+                <div className="relative w-full h-48 flex items-center justify-center">
+                  <img
+                    src={student.imageSrc}
+                    alt={`${student.name}'s achievement`}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              </div>
 
-  const {
-    width: containerWidth,
-    height: containerHeight,
-    isMobile,
-    isTablet,
-  } = getOptimalSize();
+              <div className="p-4 bg-white">
+                <div className="mb-3">
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Subject
+                  </div>
+                  <div className="font-medium text-gray-800">
+                    {student.subject}
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Score
+                  </div>
+                  <div className="font-bold text-green-600 text-lg">
+                    {student.score}
+                  </div>
+                </div>
+
+                <div className="bg-green-50 rounded-lg px-3 py-2 mt-2">
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Achievement
+                  </div>
+                  <div className="text-sm text-green-800">
+                    {student.achievement}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <section className="py-10 sm:py-12 bg-gradient-to-b from-gray-50 to-white bg">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2 }}
-          className="text-center mb-8 sm:mb-10"
-        >
-          <div className="flex items-center justify-center mb-3">
-            <FaTrophy className="text-yellow-500 text-2xl sm:text-3xl mr-3" />
-            <h2 className="text-3xl sm:text-4xl font-bold text-green-700">
-              Our Results
-            </h2>
-            <FaMedal className="text-yellow-500 text-2xl sm:text-3xl ml-3" />
-          </div>
-          <div className="w-20 sm:w-24 h-1 bg-gradient-to-r from-green-500 to-yellow-500 mx-auto rounded-full"></div>
-          <p className="mt-3 sm:mt-4 text-gray-600 max-w-2xl mx-auto">
-            Celebrating the success of our students - excellence through
-            dedicated education
-          </p>
-        </motion.div>
+    <section
+      className="py-16 lg:py-24 relative overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)",
+      }}
+    >
+      {/* Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 via-green-500 to-green-400"></div>
+      <div className="absolute -top-40 -left-40 w-80 h-80 bg-green-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
 
-        {/* Subheading for Class 9th */}
+      <div className="container mx-auto px-4 relative">
         <motion.div
+          ref={carouselRef}
           initial="hidden"
           animate="visible"
-          variants={headingVariants}
-          className="text-center mb-6"
+          variants={containerVariants}
+          className="text-center mb-14"
         >
-          <h3 className="text-2xl sm:text-3xl font-semibold text-blue-600">
-            Class 9th Achievements
-          </h3>
           <motion.div
-            variants={highlightVariants}
-            className="w-16 sm:w-20 h-1 bg-blue-500 mx-auto mt-2 rounded-full"
-          ></motion.div>
-          <p className="mt-3 text-gray-500 max-w-xl mx-auto">
-            Outstanding performance by our Class 9th students in academics and
-            extracurricular activities.
-          </p>
-        </motion.div>
-
-        {/* Multi-Image Carousel Container */}
-        <div className="relative">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.7 }}
-            className="relative mx-auto overflow-hidden "
-            style={{
-              width: containerWidth,
-              height: containerHeight,
-            }}
+            variants={itemVariants}
+            className="inline-flex items-center justify-center mb-2"
           >
-            <div
-              {...handlers}
-              className="relative w-full h-full flex items-center"
-              onClick={handleInteraction}
-            >
-              <AnimatePresence initial={false} custom={direction} mode="wait">
-                <motion.div
-                  key={currentGroup}
-                  custom={direction}
-                  variants={containerVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  className="absolute inset-0 flex items-center justify-between gap-2 sm:gap-4 px-2 sm:px-4"
-                >
-                  {getCurrentImages().map((src, idx) => (
-                    <motion.div
-                      key={`${currentGroup}-${idx}`}
-                      variants={imageVariants}
-                      whileHover="hover"
-                      whileTap="tap"
-                      className="flex-1 h-full flex items-center justify-center bg-white  overflow-hidden"
-                      style={{
-                        boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-                        maxWidth: `${
-                          100 / imagesPerGroup - (isMobile ? 2 : 4)
-                        }%`,
-                      }}
-                    >
-                      <img
-                        src={src}
-                        alt={`Student success ${
-                          currentGroup * imagesPerGroup + idx + 1
-                        }`}
-                        className="max-w-full max-h-full object-contain p-2"
-                        style={{
-                          height: isMobile ? "90%" : "85%",
-                        }}
-                        loading={idx === 0 ? "eager" : "lazy"}
-                      />
-                    </motion.div>
-                  ))}
-
-                  {/* Fill in empty slots when needed */}
-                  {getCurrentImages().length < imagesPerGroup &&
-                    [...Array(imagesPerGroup - getCurrentImages().length)].map(
-                      (_, idx) => (
-                        <div
-                          key={`empty-${idx}`}
-                          className="flex-1 invisible"
-                          style={{
-                            maxWidth: `${
-                              100 / imagesPerGroup - (isMobile ? 2 : 4)
-                            }%`,
-                          }}
-                        ></div>
-                      )
-                    )}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Navigation Arrows */}
-              <motion.button
-                whileHover={{
-                  scale: 1.1,
-                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prevGroup();
-                  handleInteraction();
-                }}
-                className="absolute top-1/2 -left-1 sm:left-0 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-all duration-300 z-10"
-                aria-label="Previous group"
-              >
-                <FaChevronLeft size={isMobile ? 12 : 16} />
-              </motion.button>
-
-              <motion.button
-                whileHover={{
-                  scale: 1.1,
-                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  nextGroup();
-                  handleInteraction();
-                }}
-                className="absolute top-1/2 -right-1 sm:right-0 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-all duration-300 z-10"
-                aria-label="Next group"
-              >
-                <FaChevronRight size={isMobile ? 12 : 16} />
-              </motion.button>
+            <div className="flex items-center justify-center bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-2 rounded-full shadow-sm mb-2">
+              <FaTrophy className="text-amber-500 text-2xl mr-3" />
+              <h2 className="text-3xl md:text-4xl font-bold text-green-800 tracking-tight">
+                Our Results
+              </h2>
+              <FaMedal className="text-amber-500 text-2xl ml-3" />
             </div>
           </motion.div>
 
-          {/* Indicators */}
-          <div className="flex justify-center mt-4">
-            {[...Array(totalGroups)].map((_, idx) => (
-              <motion.button
-                key={idx}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                onClick={() => {
-                  setDirection(idx > currentGroup ? 1 : -1);
-                  setCurrentGroup(idx);
-                  handleInteraction();
-                }}
-                className={`w-2 h-2 sm:w-3 sm:h-3 mx-1 rounded-full transition-all duration-300 ${
-                  currentGroup === idx
-                    ? "bg-green-600 w-4 sm:w-6"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Go to group ${idx + 1}`}
-              />
-            ))}
+          <motion.div
+            variants={itemVariants}
+            className="w-24 h-1.5 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto rounded-full mb-6"
+          />
+
+          <motion.p
+            variants={itemVariants}
+            className="text-lg text-gray-600 max-w-3xl mx-auto"
+          >
+            Celebrating the excellence of our students through dedicated
+            education and rigorous academic training
+          </motion.p>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="text-center mb-12">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <FaGraduationCap className="text-green-600 text-xl" />
+            <h3 className="text-2xl font-bold text-green-800">
+              Class 9th Achievements
+            </h3>
           </div>
+
+          <div className="flex flex-wrap justify-center gap-4 mb-10">
+            <motion.div
+              whileHover={{ scale: 1.05, y: -3 }}
+              className="bg-white px-5 py-3 rounded-lg shadow-sm border border-green-100"
+            >
+              <p className="text-sm text-green-500 font-medium">Top Scores</p>
+              <p className="text-green-800 font-bold text-xl">90%+</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -3 }}
+              className="bg-white px-5 py-3 rounded-lg shadow-sm border border-green-100"
+            >
+              <p className="text-sm text-green-500 font-medium">Pass Rate</p>
+              <p className="text-green-800 font-bold text-xl">100%</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -3 }}
+              className="bg-white px-5 py-3 rounded-lg shadow-sm border border-green-100"
+            >
+              <p className="text-sm text-green-500 font-medium">
+                District Toppers
+              </p>
+              <p className="text-green-800 font-bold text-xl">6</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -3 }}
+              className="bg-white px-5 py-3 rounded-lg shadow-sm border border-green-100"
+            >
+              <p className="text-sm text-green-500 font-medium">Distinction</p>
+              <p className="text-green-800 font-bold text-xl">15</p>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        <div
+          className="relative"
+          onMouseEnter={() => setAutoplay(false)}
+          onMouseLeave={() => setAutoplay(true)}
+        >
+          <div className="mx-auto overflow-hidden px-4 py-2">
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div
+                key={currentSlide}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                {renderSlideContent(currentSlide)}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Navigation Arrows */}
+          <motion.button
+            whileHover={{ scale: 1.1, backgroundColor: "#fff" }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              prevSlide();
+              pauseAutoplay();
+            }}
+            className="absolute top-1/2 -left-3 md:left-0 transform -translate-y-1/2 bg-white text-green-600 p-3 rounded-full shadow-lg z-10 transition-all focus:outline-none"
+            aria-label="Previous slide"
+          >
+            <FaChevronLeft size={18} />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.1, backgroundColor: "#fff" }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              nextSlide();
+              pauseAutoplay();
+            }}
+            className="absolute top-1/2 -right-3 md:right-0 transform -translate-y-1/2 bg-white text-green-600 p-3 rounded-full shadow-lg z-10 transition-all focus:outline-none"
+            aria-label="Next slide"
+          >
+            <FaChevronRight size={18} />
+          </motion.button>
         </div>
 
-        {/* Caption */}
+        {/* Pagination Dots */}
+        <div className="flex justify-center mt-10 space-x-2">
+          {Array.from({ length: totalSlides }).map((_, index) => (
+            <motion.button
+              key={index}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                goToSlide(index);
+                pauseAutoplay();
+              }}
+              className={`transition-all duration-300 rounded-full ${
+                currentSlide === index
+                  ? "bg-green-600 w-8 h-2"
+                  : "bg-gray-300 w-2 h-2 hover:bg-green-300"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-center mt-4 sm:mt-6"
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="text-center mt-12"
         >
-          <p className="text-base sm:text-lg text-gray-700">
-            <span className="font-semibold">Our students excel</span> in
-            competitive exams and academic achievements
-          </p>
+          <div className="inline-block bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-3 rounded-xl shadow-sm">
+            <p className="text-lg text-green-800">
+              <span className="font-bold">Our students excel</span> in
+              competitive exams and academic achievements
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>
   );
-}
+};
+
+export default ResultCarousel;

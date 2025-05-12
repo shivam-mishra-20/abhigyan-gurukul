@@ -1,38 +1,45 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
-import { FaUserFriends, FaChartLine, FaCrown, FaHandshake, FaClock, FaGraduationCap } from "react-icons/fa";
+import {
+  FaUserFriends,
+  FaChartLine,
+  FaCrown,
+  FaHandshake,
+  FaClock,
+  FaGraduationCap,
+} from "react-icons/fa";
 
 const features = [
-  { 
-    icon: <FaUserFriends className="text-green-600" />, 
+  {
+    icon: <FaUserFriends className="text-green-600" />,
     text: "Limited Batch Size (15 Students)",
-    description: "Personalized attention for every student"
+    description: "Personalized attention for every student",
   },
-  { 
-    icon: <FaChartLine className="text-blue-600" />, 
+  {
+    icon: <FaChartLine className="text-blue-600" />,
     text: "Proven Success Ratio",
-    description: "Track record of excellent results" 
+    description: "Track record of excellent results",
   },
-  { 
-    icon: <FaCrown className="text-yellow-500" />, 
+  {
+    icon: <FaCrown className="text-yellow-500" />,
     text: "Special Mentorship Program",
-    description: "One-on-one guidance for academic excellence" 
+    description: "One-on-one guidance for academic excellence",
   },
-  { 
-    icon: <FaHandshake className="text-purple-600" />, 
+  {
+    icon: <FaHandshake className="text-purple-600" />,
     text: "Student Centric Approach",
-    description: "Customized learning paths for individual needs" 
+    description: "Customized learning paths for individual needs",
   },
-  { 
-    icon: <FaClock className="text-red-500" />, 
+  {
+    icon: <FaClock className="text-red-500" />,
     text: "360° Support System",
-    description: "Round-the-clock assistance for all concerns" 
+    description: "Round-the-clock assistance for all concerns",
   },
-  { 
-    icon: <FaGraduationCap className="text-indigo-600" />, 
+  {
+    icon: <FaGraduationCap className="text-indigo-600" />,
     text: "Young and Enthusiastic Mentors",
-    description: "Relatable teachers who connect with students" 
+    description: "Relatable teachers who connect with students",
   },
 ];
 
@@ -44,21 +51,21 @@ export const MajorFeatures = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
-      }
-    }
+        staggerChildren: 0.2,
+      },
+    },
   };
-  
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   return (
@@ -67,7 +74,7 @@ export const MajorFeatures = () => {
         {/* Background decorations */}
         <div className="absolute top-10 left-0 w-40 h-40 bg-green-100 rounded-full opacity-30 -z-10 blur-2xl"></div>
         <div className="absolute bottom-10 right-0 w-60 h-60 bg-blue-100 rounded-full opacity-30 -z-10 blur-3xl"></div>
-      
+
         <hr className="w-1/2 mx-auto border-t-2 border-gray-200 mb-12" />
 
         <section className="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8">
@@ -108,9 +115,10 @@ export const MajorFeatures = () => {
               <motion.div
                 key={index}
                 variants={itemVariants}
-                whileHover={{ 
+                whileHover={{
                   scale: 1.03,
-                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                  boxShadow:
+                    "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                 }}
                 className="flex flex-col bg-white p-6 rounded-xl border border-gray-100 shadow-sm transition-all duration-300 hover:border-green-200"
               >
@@ -128,9 +136,9 @@ export const MajorFeatures = () => {
               </motion.div>
             ))}
           </motion.div>
-          
+
           {/* Call to action */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
@@ -140,6 +148,7 @@ export const MajorFeatures = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => (window.location.href = "/about")}
             >
               Learn More About Our Approach
             </motion.button>

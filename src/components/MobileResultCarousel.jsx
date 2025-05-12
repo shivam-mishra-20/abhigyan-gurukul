@@ -6,38 +6,75 @@ import {
   FaChevronRight,
   FaTrophy,
   FaMedal,
+  FaStar,
+  FaGraduationCap,
 } from "react-icons/fa";
 
-// Student result images
-const images = [
-  "/Hriday.png",
-  "/Dhyey.png",
-  "/Jisha.png",
-  "/Jwalin.png",
-  "/kenit.png",
-  "/Freya.png",
+// Enhanced student data with achievements
+const studentData = [
+  {
+    name: "Hriday",
+    image: "/Hriday.png",
+    achievement: "98% in Science",
+    rank: "School Topper",
+  },
+  {
+    name: "Dhyey",
+    image: "/Dhyey.png",
+    achievement: "96% in Mathematics",
+    rank: "District Rank 2",
+  },
+  {
+    name: "Jisha",
+    image: "/Jisha.png",
+    achievement: "95% Overall",
+    rank: "School Rank 3",
+  },
+  {
+    name: "Jwalin",
+    image: "/Jwalin.png",
+    achievement: "97% in English",
+    rank: "State Merit List",
+  },
+  {
+    name: "Kenit",
+    image: "/kenit.png",
+    achievement: "99% in Mathematics",
+    rank: "State Topper",
+  },
+  {
+    name: "Freya",
+    image: "/Freya.png",
+    achievement: "94% Overall",
+    rank: "School Merit List",
+  },
 ];
 
 // Animation variants optimized for mobile
 const containerVariants = {
   enter: (direction) => ({
-    x: direction > 0 ? "80%" : "-80%",
+    x: direction > 0 ? "50%" : "-50%",
     opacity: 0,
+    scale: 0.92,
   }),
   center: {
     x: 0,
     opacity: 1,
+    scale: 1,
     transition: {
-      x: { type: "spring", stiffness: 100, damping: 25, duration: 0.5 },
+      x: { type: "spring", stiffness: 300, damping: 30, duration: 0.5 },
       opacity: { duration: 0.4 },
+      scale: { duration: 0.4, ease: "easeOut" },
     },
   },
   exit: (direction) => ({
-    x: direction < 0 ? "80%" : "-80%",
+    x: direction < 0 ? "50%" : "-50%",
     opacity: 0,
+    scale: 0.92,
     transition: {
-      x: { type: "spring", stiffness: 100, damping: 25, duration: 0.5 },
-      opacity: { duration: 0.4 },
+      x: { type: "spring", stiffness: 300, damping: 30, duration: 0.5 },
+      opacity: { duration: 0.3 },
+      scale: { duration: 0.3 },
     },
   }),
 };
@@ -46,18 +83,36 @@ const containerVariants = {
 const imageVariants = {
   hover: {
     scale: 1.03,
-    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-    transition: { duration: 0.5 },
+    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+    transition: { duration: 0.4 },
   },
   tap: {
-    scale: 0.97,
-    transition: { duration: 0.3 },
+    scale: 0.98,
+    transition: { duration: 0.2 },
   },
 };
 
 // Title animation variants
 const titleVariants = {
   hidden: { opacity: 0, y: -10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
+
+const statsVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut", staggerChildren: 0.1 },
+  },
+};
+
+const statItemVariants = {
+  hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
     y: 0,
@@ -70,12 +125,14 @@ export default function MobileResultCarousel() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [direction, setDirection] = useState(0);
   const [dimensions, setDimensions] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: typeof window !== "undefined" ? window.innerWidth : 375,
+    height: typeof window !== "undefined" ? window.innerHeight : 667,
   });
 
   // Track window resize
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const handleResize = () => {
       setDimensions({
         width: window.innerWidth,
@@ -93,8 +150,10 @@ export default function MobileResultCarousel() {
     if (isAutoPlaying) {
       intervalId = setInterval(() => {
         setDirection(1);
-        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-      }, 4000); // Slightly faster for mobile attention spans
+        setCurrentIndex((prev) =>
+          prev === studentData.length - 1 ? 0 : prev + 1
+        );
+      }, 5000); // Slightly faster for mobile attention spans
     }
 
     return () => {
@@ -105,12 +164,12 @@ export default function MobileResultCarousel() {
   // Navigation functions
   const prevSlide = useCallback(() => {
     setDirection(-1);
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? studentData.length - 1 : prev - 1));
   }, []);
 
   const nextSlide = useCallback(() => {
     setDirection(1);
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev === studentData.length - 1 ? 0 : prev + 1));
   }, []);
 
   // Pause auto-play when user interacts
@@ -136,68 +195,89 @@ export default function MobileResultCarousel() {
     delta: 10, // Lower threshold for better response
   });
 
+  const currentStudent = studentData[currentIndex];
+
   return (
-    <section className="py-8 bg-gradient-to-b from-gray-50 to-white">
-      <div className="px-4">
+    <section className="py-12 bg-gradient-to-b from-green-50 to-white overflow-hidden">
+      <div className="px-4 relative">
+        {/* Decorative Elements */}
+        <div className="absolute top-0 left-0 w-20 h-20 bg-green-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob"></div>
+        <div className="absolute top-10 right-0 w-20 h-20 bg-emerald-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+
         {/* Section Header - Mobile Optimized */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={titleVariants}
-          className="text-center mb-6"
+          className="text-center mb-8"
         >
-          <div className="flex items-center justify-center mb-2">
-            <FaTrophy className="text-yellow-500 text-xl mr-2" />
-            <h2 className="text-2xl font-bold text-green-700">Our Results</h2>
-            <FaMedal className="text-yellow-500 text-xl ml-2" />
+          <div className="inline-block bg-gradient-to-r from-green-50 to-emerald-50 px-5 py-2 rounded-full shadow-sm mb-2">
+            <div className="flex items-center justify-center">
+              <FaTrophy className="text-amber-500 text-xl mr-2" />
+              <h2 className="text-2xl font-bold text-green-700">Our Results</h2>
+              <FaMedal className="text-amber-500 text-xl ml-2" />
+            </div>
           </div>
-          <div className="w-16 h-1 bg-gradient-to-r from-green-500 to-yellow-500 mx-auto rounded-full"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-green-400 to-emerald-500 mx-auto rounded-full"></div>
         </motion.div>
 
         {/* Class Title - Mobile Optimized */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-5 text-center"
+          initial="hidden"
+          animate="visible"
+          variants={statsVariants}
+          className="mb-6 text-center"
         >
-          <h3 className="text-xl font-semibold text-blue-600 inline-block relative">
-            <span className="relative z-10">Class 9th</span>
-            <span
-              className="absolute bottom-0 left-0 h-2 bg-yellow-200 w-full z-0 rounded-sm"
-              style={{ opacity: 0.6 }}
-            ></span>
-          </h3>
+          <div className="flex items-center justify-center mb-3">
+            <FaGraduationCap className="text-green-600 mr-2" />
+            <h3 className="text-xl font-semibold text-green-800">
+              Class 9th Achievements
+            </h3>
+          </div>
 
           {/* Key Stats - Mobile Friendly Layout */}
-          <div className="flex justify-center mt-3 gap-3">
-            <div className="bg-gradient-to-r from-blue-50 to-green-50 px-2 py-1 rounded-lg shadow-sm border border-green-100 text-xs">
-              <span className="text-green-700 font-semibold">90%+</span>
-            </div>
-            <div className="bg-gradient-to-r from-blue-50 to-green-50 px-2 py-1 rounded-lg shadow-sm border border-green-100 text-xs">
-              <span className="text-green-700 font-semibold">100%</span> Pass
-            </div>
-            <div className="bg-gradient-to-r from-blue-50 to-green-50 px-2 py-1 rounded-lg shadow-sm border border-green-100 text-xs">
-              <span className="text-green-700 font-semibold">6</span> Toppers
-            </div>
+          <div className="flex justify-center gap-3">
+            <motion.div
+              className="bg-gradient-to-br from-green-50 to-emerald-50 px-3 py-2 rounded-lg shadow-sm border border-green-100"
+              variants={statItemVariants}
+            >
+              <p className="text-xs text-green-500 font-medium">Top Scores</p>
+              <p className="text-green-700 font-bold text-lg">90%+</p>
+            </motion.div>
+
+            <motion.div
+              className="bg-gradient-to-br from-green-50 to-emerald-50 px-3 py-2 rounded-lg shadow-sm border border-green-100"
+              variants={statItemVariants}
+            >
+              <p className="text-xs text-green-500 font-medium">Pass Rate</p>
+              <p className="text-green-700 font-bold text-lg">100%</p>
+            </motion.div>
+
+            <motion.div
+              className="bg-gradient-to-br from-green-50 to-emerald-50 px-3 py-2 rounded-lg shadow-sm border border-green-100"
+              variants={statItemVariants}
+            >
+              <p className="text-xs text-green-500 font-medium">Toppers</p>
+              <p className="text-green-700 font-bold text-lg">6</p>
+            </motion.div>
           </div>
         </motion.div>
 
         {/* Mobile-Optimized Carousel */}
-        <div className="relative w-full max-w-[500px] mx-auto">
+        <div className="relative mb-6">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="relative overflow-hidden rounded-lg shadow-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="relative mx-auto overflow-hidden rounded-2xl shadow-lg bg-white"
             style={{
-              width: "100%", // Ensure it takes the full width of the container
-              height: Math.min(dimensions.width * 0.8, 300), // Maintain aspect ratio
+              width: Math.min(dimensions.width - 32, 500), // Max width with padding
+              height: Math.min(dimensions.width * 1, 440), // Taller for better layout
             }}
           >
             <div
               {...handlers}
-              className="relative w-full h-full flex items-center bg-gray-50 overflow-hidden"
+              className="relative w-full h-full flex flex-col bg-white"
               onClick={handleInteraction}
             >
               <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -208,26 +288,61 @@ export default function MobileResultCarousel() {
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="absolute inset-0 flex flex-col items-center p-4"
                 >
+                  {/* Student Name & Achievement Header */}
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="w-full mb-3"
+                  >
+                    <h4 className="text-xl font-bold text-green-800 text-center">
+                      {currentStudent.name}
+                    </h4>
+                    <div className="flex items-center justify-center gap-1 mt-1">
+                      <FaStar className="text-amber-400 text-xs" />
+                      <span className="text-sm text-gray-600">
+                        {currentStudent.rank}
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {/* Student Score Image */}
                   <motion.div
                     variants={imageVariants}
                     whileTap="tap"
-                    className="w-full max-w-[90%] h-[90%] flex items-center justify-center bg-white rounded-lg shadow-md overflow-hidden mx-auto"
+                    className="w-full flex-1 bg-gradient-to-b from-green-50 to-white rounded-xl shadow-sm overflow-hidden border border-green-100 flex items-center justify-center p-2"
                   >
                     <img
-                      src={images[currentIndex]}
-                      alt={`Student success ${currentIndex + 1}`}
-                      className="max-w-full max-h-full object-contain p-1"
+                      src={currentStudent.image}
+                      alt={`${currentStudent.name}'s achievement`}
+                      className="max-w-full max-h-full object-contain"
                       loading={currentIndex === 0 ? "eager" : "lazy"}
                     />
+                  </motion.div>
+
+                  {/* Achievement Details */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
+                    className="w-full mt-4 text-center"
+                  >
+                    <div className="bg-green-50 rounded-lg px-4 py-3">
+                      <p className="text-sm text-gray-500 mb-1">Achievement</p>
+                      <p className="text-green-700 font-semibold">
+                        {currentStudent.achievement}
+                      </p>
+                    </div>
                   </motion.div>
                 </motion.div>
               </AnimatePresence>
 
               {/* Navigation Arrows */}
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05, backgroundColor: "rgba(0,0,0,0.5)" }}
+                whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -241,7 +356,8 @@ export default function MobileResultCarousel() {
               </motion.button>
 
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05, backgroundColor: "rgba(0,0,0,0.5)" }}
+                whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -256,39 +372,44 @@ export default function MobileResultCarousel() {
             </div>
           </motion.div>
 
-          {/* Indicators */}
-          <div className="flex justify-center mt-3">
-            {images.map((_, idx) => (
+          {/* Indicators - Modern Design */}
+          <div className="flex justify-center mt-4 gap-2">
+            {studentData.map((_, idx) => (
               <motion.button
                 key={idx}
+                whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
                   setDirection(idx > currentIndex ? 1 : -1);
                   setCurrentIndex(idx);
                   handleInteraction();
                 }}
-                className={`mx-1 rounded-full transition-all duration-300 ${
+                className={`transition-all duration-200 ${
                   currentIndex === idx
-                    ? "bg-green-600 w-3 h-3"
+                    ? "bg-green-600 w-6 h-2"
                     : "bg-gray-300 w-2 h-2"
-                }`}
+                } rounded-full`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
             ))}
           </div>
         </div>
 
-        {/* Caption - Mobile Sized */}
+        {/* Footer Caption */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="text-center mt-4"
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="text-center mt-6"
         >
-          <p className="text-sm text-gray-700">
-            <span className="font-semibold">Our students excel</span> in
-            competitive exams
-          </p>
+          <div className="inline-block bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg shadow-sm">
+            <p className="text-sm text-green-800">
+              <span className="font-semibold">
+                Our students consistently excel
+              </span>{" "}
+              in competitive exams and board results
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

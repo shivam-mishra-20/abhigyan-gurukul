@@ -24,6 +24,8 @@ import TeacherLeaveCalendar from "../components/TeacherLeaveCalendar";
 import AdminUserManagement from "../components/AdminUserManagement";
 import CreateUserPage from "../components/CreateUserPage";
 import Leaderboards from "./Leaderboards";
+import AdminEvents from "../components/AdminEvents";
+import { notifyAuthStateChange } from "../components/Navbar";
 import DevConsole from "../components/DevConsole";
 
 const ProtectedStudent = ({ children, roles }) => {
@@ -48,12 +50,18 @@ const StudentDashboard = () => {
       localStorage.setItem("userRole", "student");
       localStorage.setItem("studentName", "Dev Student");
       localStorage.setItem("studentClass", "10A");
+      localStorage.setItem("isAuthenticated", "true");
       window.location.reload();
     }
   }, [userRole]);
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.clear(); // This removes all localStorage items
+    localStorage.removeItem("isAuthenticated"); // Explicitly remove auth flag
+
+    // Notify components about auth state change
+    notifyAuthStateChange();
+
     navigate("/login");
   };
 
@@ -200,6 +208,15 @@ const StudentDashboard = () => {
                 element={
                   <ProtectedStudent roles={["admin"]}>
                     <CreateUserPage />
+                  </ProtectedStudent>
+                }
+              />
+              {/* Admin Events Management Route */}
+              <Route
+                path="/adminevents"
+                element={
+                  <ProtectedStudent roles={["admin", "teacher"]}>
+                    <AdminEvents />
                   </ProtectedStudent>
                 }
               />

@@ -21,6 +21,11 @@ import StudentLogin from "./pages/StudentLogin";
 import DashboardResult from "./components/Page-Specific-Components/DashboardResult";
 import DashboardHome from "./pages/DashboardHome"; // ✅ use this one
 
+// New Pages
+import Admissions from "./pages/Admissions";
+import Courses from "./pages/Courses";
+import Events from "./pages/Events";
+
 function App() {
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
@@ -38,6 +43,12 @@ function App() {
         <Route path="/adminlogin" element={<Login />} />
         {/* <Route path="/verysecretregister" element={<StudentRegister />} /> */}
         <Route path="/login" element={<StudentLogin />} />
+
+        {/* New Routes */}
+        <Route path="/admissions" element={<Admissions />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/events" element={<Events />} />
+
         {/* Protected student route */}
         <Route
           path="/student-dashboard/*"

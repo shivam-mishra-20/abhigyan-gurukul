@@ -1,11 +1,18 @@
-const ProtectedStudentRoute = ({ children }) => {
-  const userRole = localStorage.getItem("userRole");
-  const email =
-    localStorage.getItem("studentEmail") ||
-    localStorage.getItem("teacherEmail") ||
-    localStorage.getItem("adminEmail");
+import { Navigate } from "react-router";
 
-  if (!userRole || !email) {
+const ProtectedStudentRoute = ({ children, roles }) => {
+  const userRole = localStorage.getItem("userRole");
+  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+
+  // Check if user has a name stored (indicates they completed login)
+  const hasUserData = !!localStorage.getItem("studentName");
+
+  // If not authenticated or missing required role, redirect to login
+  if (
+    !isAuthenticated ||
+    !hasUserData ||
+    (roles && !roles.includes(userRole))
+  ) {
     return <Navigate to="/login" replace />;
   }
 

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { db } from "../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import bcrypt from "bcryptjs";
 import { motion } from "framer-motion";
+import { notifyAuthStateChange } from "../components/Navbar";
 
 const StudentLogin = () => {
   const navigate = useNavigate();
@@ -11,6 +12,17 @@ const StudentLogin = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    const userRole = localStorage.getItem("userRole");
+    const studentName = localStorage.getItem("studentName");
+
+    if (isAuthenticated && userRole && studentName) {
+      navigate("/student-dashboard");
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setCredentials((prev) => ({
@@ -54,10 +66,14 @@ const StudentLogin = () => {
       localStorage.setItem("studentName", userData.name);
       localStorage.setItem("userRole", userData.role || "student");
       localStorage.setItem("uid", userData.uid || "");
+      localStorage.setItem("isAuthenticated", "true"); // Set authentication flag
 
       if (userData.Class) {
         localStorage.setItem("studentClass", userData.Class);
       }
+
+      // Notify components about auth state change
+      notifyAuthStateChange();
 
       setMessage(`🎉 Welcome, ${userData.name}!`);
 

@@ -9,6 +9,7 @@ import {
   FaUserEdit,
   FaBell,
   FaChartLine,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 const DashboardHome = ({ name }) => {
@@ -30,7 +31,7 @@ const DashboardHome = ({ name }) => {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2, 
+        delayChildren: 0.2,
       },
     },
   };
@@ -76,6 +77,14 @@ const DashboardHome = ({ name }) => {
       bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800",
       route: "/student-dashboard/attendance",
       highlight: false,
+    },
+    {
+      icon: <FaCalendarAlt className="text-3xl" />,
+      title: "Manage Events",
+      description: "Create and edit events",
+      bg: "bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-800",
+      route: "/student-dashboard/adminevents",
+      highlight: true,
     },
   ];
 

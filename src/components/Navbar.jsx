@@ -1,12 +1,43 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence, useScroll } from "framer-motion";
+import { FaUserCircle } from "react-icons/fa";
+
+// Custom event name for auth state changes
+const AUTH_STATE_CHANGE_EVENT = "authStateChange";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollDirection, setScrollDirection] = useState("up");
   const [lastScrollY, setLastScrollY] = useState(0);
   const { scrollY } = useScroll();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  // Function to check authentication status
+  const checkAuth = () => {
+    const authStatus = localStorage.getItem("isAuthenticated") === "true";
+    const name = localStorage.getItem("studentName");
+
+    setIsAuthenticated(authStatus && name);
+    setUserName(name || "");
+  };
+
+  // Check authentication status on mount and when storage changes
+  useEffect(() => {
+    checkAuth();
+
+    // Listen for storage events to detect login/logout from other tabs
+    window.addEventListener("storage", checkAuth);
+
+    // Listen for our custom auth state change event
+    window.addEventListener(AUTH_STATE_CHANGE_EVENT, checkAuth);
+
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      window.removeEventListener(AUTH_STATE_CHANGE_EVENT, checkAuth);
+    };
+  }, []);
 
   // Track scroll direction for mobile navbar
   useEffect(() => {
@@ -111,13 +142,6 @@ const Navbar = () => {
                   animate={{ opacity: 1, rotate: 0 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
                 />
-
-                {/* Decorative element for logo */}
-                {/* <motion.div
-                  className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full"
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                /> */}
               </motion.div>
             </a>
           </div>
@@ -137,7 +161,7 @@ const Navbar = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="absolute -bottom-[2px] text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white py-1 hidden lg:flex lg:left-[170px] 2xl:left-[250px] shadow-md z-20"
+          className="absolute -bottom-[2px] text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white py-1 hidden lg:flex lg:left-[100px] 2xl:left-[160px] shadow-md z-20"
           whileHover={{
             y: -2,
             boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
@@ -148,8 +172,15 @@ const Navbar = () => {
         </motion.div>
 
         {/* Navigation Links */}
-        <div className="flex justify-center items-center sm:gap-18 gap-10 font-semibold text-black text-md w-1/2 h-full relative z-10">
-          {["Home", "About Us", "Faculties"].map((text, i) => (
+        <div className="flex justify-center items-center gap-4 lg:gap-6 xl:gap-8 font-semibold text-black text-md w-2/3 h-full relative z-10">
+          {[
+            "Home",
+            "About Us",
+            "Faculties",
+            "Admissions",
+            "Courses",
+            "Events",
+          ].map((text, i) => (
             <motion.div
               key={text}
               variants={linkVariants}
@@ -158,7 +189,7 @@ const Navbar = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 + i * 0.1, duration: 0.5 }}
-              className="text-white text-center px-3 py-2 hover:rounded-xl font-semibold relative"
+              className="text-white text-center px-2 py-2 hover:rounded-xl font-semibold relative"
             >
               <Link
                 to={
@@ -166,7 +197,13 @@ const Navbar = () => {
                     ? "/"
                     : text === "About Us"
                     ? "/about"
-                    : "/faculties"
+                    : text === "Faculties"
+                    ? "/faculties"
+                    : text === "Admissions"
+                    ? "/admissions"
+                    : text === "Courses"
+                    ? "/courses"
+                    : "/events"
                 }
                 className="relative z-10"
               >
@@ -183,7 +220,7 @@ const Navbar = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-evenly px-5 items-center w-1/3 h-full gap-4 relative z-10">
+        <div className="flex justify-end px-5 items-center w-1/3 h-full gap-3 relative z-10">
           <motion.button
             variants={buttonVariants}
             whileHover="hover"
@@ -197,18 +234,35 @@ const Navbar = () => {
             CONTACT US
           </motion.button>
 
-          <motion.button
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0, duration: 0.5 }}
-            className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300 shadow-md"
-            onClick={() => (window.location.href = "/login")}
-          >
-            LOGIN
-          </motion.button>
+          {isAuthenticated ? (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0, duration: 0.5 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => (window.location.href = "/student-dashboard")}
+              className="flex items-center gap-2 bg-[#0B7077] text-white px-4 py-2 rounded-xl cursor-pointer hover:bg-[#314f51] transition-all duration-300 shadow-md"
+            >
+              <FaUserCircle className="text-xl" />
+              <span className="font-semibold truncate max-w-[100px]">
+                {userName}
+              </span>
+            </motion.div>
+          ) : (
+            <motion.button
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0, duration: 0.5 }}
+              className="text-white w-[130px] h-[42px] rounded-xl font-semibold bg-[#0B7077] hover:bg-[#314f51] transition-all duration-300 shadow-md"
+              onClick={() => (window.location.href = "/login")}
+            >
+              LOGIN
+            </motion.button>
+          )}
         </div>
       </motion.div>
 
@@ -341,7 +395,14 @@ const Navbar = () => {
               </div>
 
               <div className="flex flex-col items-center gap-4 py-4 font-semibold text-white text-md px-5 relative z-10">
-                {["Home", "About Us", "Faculties"].map((text, i) => (
+                {[
+                  "Home",
+                  "About Us",
+                  "Faculties",
+                  "Admissions",
+                  "Courses",
+                  "Events",
+                ].map((text, i) => (
                   <motion.div
                     key={text}
                     className="w-full"
@@ -355,7 +416,13 @@ const Navbar = () => {
                           ? "/"
                           : text === "About Us"
                           ? "/about"
-                          : "/faculties"
+                          : text === "Faculties"
+                          ? "/faculties"
+                          : text === "Admissions"
+                          ? "/admissions"
+                          : text === "Courses"
+                          ? "/courses"
+                          : "/events"
                       }
                       className="block py-2 px-4 w-full text-center rounded-lg hover:bg-white hover:bg-opacity-20 transition-all relative z-10"
                     >
@@ -377,26 +444,46 @@ const Navbar = () => {
                   CONTACT US
                 </motion.button>
 
-                <motion.button
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold shadow-md relative z-10"
-                  onClick={() => (window.location.href = "/login")}
-                >
-                  LOGIN
-                </motion.button>
+                {isAuthenticated ? (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold shadow-md relative z-10 flex items-center justify-center gap-2"
+                    onClick={() =>
+                      (window.location.href = "/student-dashboard")
+                    }
+                  >
+                    <FaUserCircle className="text-lg" />
+                    <span>{userName}</span>
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full h-[42px] bg-[#0B7077] text-white rounded-xl font-semibold shadow-md relative z-10"
+                    onClick={() => (window.location.href = "/login")}
+                  >
+                    LOGIN
+                  </motion.button>
+                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
-
-      {/* No spacer needed now since navbar is sticky/relative */}
     </>
   );
 };
 
 export default Navbar;
+
+// Export the auth event name for other components to use
+export const notifyAuthStateChange = () => {
+  window.dispatchEvent(new Event(AUTH_STATE_CHANGE_EVENT));
+};

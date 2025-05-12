@@ -4,6 +4,7 @@ import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import bcrypt from "bcryptjs";
 import { useNavigate } from "react-router"; // ✅ Step 1: Import useNavigate
+import { notifyAuthStateChange } from "../components/Navbar";
 
 const StudentRegister = () => {
   const navigate = useNavigate(); // ✅ Step 2: Initialize navigate
@@ -67,6 +68,10 @@ const StudentRegister = () => {
       localStorage.setItem("studentName", student.name);
       localStorage.setItem("studentClass", student.Class);
       localStorage.setItem("userRole", student.role);
+      localStorage.setItem("isAuthenticated", "true"); // Set authentication flag
+
+      // Notify components about auth state change
+      notifyAuthStateChange();
 
       setMessage("🎉 User registered successfully!");
       setStudent({
