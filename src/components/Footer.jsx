@@ -4,7 +4,7 @@ import { Link } from "react-router";
 const Footer = () => {
   return (
     <>
-      <hr class="mt-30 mb-30 border-t-1 border-black opacity-[18%] my-4" />
+      {/* <hr class="mt-30 mb-30 border-t-1 border-black opacity-[18%] my-4" /> */}
 
       <footer className="bg-[#6BC74C] text-white py-8 px-4 md:px-16 overflow-hidden">
         {/* Design */}

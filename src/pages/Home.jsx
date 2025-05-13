@@ -17,7 +17,6 @@ import FeaturedPrograms from "../components/FeaturedPrograms";
 
 import VideoCarousel from "../components/VideoCarousel";
 import HeroSection from "../components/HeroSection";
-import StatisticsSection from "../components/StatisticsSection";
 
 import {
   FaGraduationCap,
@@ -26,6 +25,7 @@ import {
 } from "react-icons/fa";
 import HomePageMainCarousel from "../components/Page-Specific-Components/HomePageMainCarousel";
 import MiniLeaderboardCard from "../components/MiniLeaderboardCard";
+import StudentCarousel from "../components/StudentCarousel";
 //       </h3>
 
 const Home = () => {
@@ -105,8 +105,9 @@ const Home = () => {
           {text1}
         </motion.div>
       </motion.section>
-      {/*Statistics with counters */}
-      <StatisticsSection />
+      {/* Main Carousel */}
+      <StudentCarousel />
+
       {/* Faculty Spotlight with improved design */}
       <FacultySpotlight />
       {/* Featured Programs */}
@@ -123,8 +124,7 @@ const Home = () => {
       <VideoCarousel />
       {/* Results Carousel */}
       <ResultCarousel />
-      {/* reviews */}
-      <ReviewSlider />
+
       {/* CTA Section */}
       <motion.div
         initial={{ opacity: 0 }}

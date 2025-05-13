@@ -59,6 +59,7 @@ function App() {
           }
         />
       </Routes>
+      <hr class="mt-30 mb-30 border-t-1 border-black opacity-[18%] my-4" />
       <Footer />
     </Router>
   );

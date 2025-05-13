@@ -17,6 +17,7 @@ import MobileTeachers from "../components/MobileTeachers";
 import MobileResultCarousel from "../components/MobileResultCarousel";
 import HomePageMainCarousel from "../components/Page-Specific-Components/HomePageMainCarousel";
 import MobileVideoCarousel from "../components/MobileVideoCarousel";
+import StudeentCarousel from "../components/StudentCarousel";
 
 const MobileHome = () => {
   // Image paths
@@ -77,6 +78,7 @@ const MobileHome = () => {
 
   return (
     <>
+      <StudeentCarousel />
       {/* Enhanced Hero Section - Mobile Version */}
       <motion.div
         initial={{ opacity: 0 }}
