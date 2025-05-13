@@ -293,6 +293,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/attendance"}
           onClick={() => handleNav("/student-dashboard/attendance")}
         />
+        <SidebarItem
+          icon={<FaCalendarAlt />}
+          label="Complaints"
+          active={location.pathname === "/student-dashboard/attendance"}
+          onClick={() => handleNav("/student-dashboard/attendance")}
+        />
 
         {userRole === "teacher" && (
           <SidebarItem
@@ -316,12 +322,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               onClick={() => handleNav("/student-dashboard/admin/manage-users")}
             />
 
-            {/* <SidebarItem
+            <SidebarItem
               icon={<FaUserShield />}
               label="Developer Console"
               active={location.pathname === "/student-dashboard/dev-console"}
               onClick={() => handleNav("/student-dashboard/dev-console")}
-            /> */}
+            />
           </>
         )}
 

@@ -51,22 +51,28 @@ const StudentPerformanceChart = () => {
         const firstHalf = sortedResults.slice(0, mid);
         const secondHalf = sortedResults.slice(mid);
 
-        const calculateAverage = (arr) =>
+        // Calculate average percentage
+        const calculateAveragePercentage = (arr) =>
           arr.length > 0
             ? parseFloat(
                 (
-                  arr.reduce((sum, r) => sum + parseFloat(r.marks || 0), 0) /
-                  arr.length
+                  arr.reduce(
+                    (sum, r) =>
+                      sum +
+                      (parseFloat(r.marks || 0) / parseFloat(r.outOf || 100)) *
+                        100,
+                    0
+                  ) / arr.length
                 ).toFixed(2)
               )
             : 0;
 
-        const avgBefore = calculateAverage(firstHalf);
-        const avgAfter = calculateAverage(secondHalf);
+        const avgBefore = calculateAveragePercentage(firstHalf);
+        const avgAfter = calculateAveragePercentage(secondHalf);
 
         setChartData([
-          { name: "Before", Marks: avgBefore },
-          { name: "After", Marks: avgAfter },
+          { name: "Before", Percentage: avgBefore },
+          { name: "After", Percentage: avgAfter },
         ]);
 
         const subjectTotals = {};
@@ -76,23 +82,25 @@ const StudentPerformanceChart = () => {
           if (!res.subject) return;
           const sub = res.subject.trim();
           const marks = parseFloat(res.marks || 0);
+          const outOf = parseFloat(res.outOf || 100);
+          const percentage = outOf ? (marks / outOf) * 100 : 0;
           const testDate = res.testDate || "Unknown Date";
 
           if (!subjectTotals[sub]) {
             subjectTotals[sub] = { total: 0, count: 0 };
           }
-          subjectTotals[sub].total += marks;
+          subjectTotals[sub].total += percentage;
           subjectTotals[sub].count += 1;
 
           if (!subjectWiseTestData[sub]) {
             subjectWiseTestData[sub] = [];
           }
-          subjectWiseTestData[sub].push({ testDate, Marks: marks });
+          subjectWiseTestData[sub].push({ testDate, Percentage: percentage });
         });
 
         const subjectAverages = Object.keys(subjectTotals).map((subject) => ({
           subject,
-          Marks: parseFloat(
+          Percentage: parseFloat(
             (
               subjectTotals[subject].total / subjectTotals[subject].count
             ).toFixed(2)
@@ -112,10 +120,10 @@ const StudentPerformanceChart = () => {
   }, [studentName, studentClass]);
 
   const getMinMax = (data) => {
-    const marksArray = data.map((d) => d.Marks);
+    const percArray = data.map((d) => d.Percentage);
     return {
-      min: Math.min(...marksArray),
-      max: Math.max(...marksArray),
+      min: Math.min(...percArray),
+      max: Math.max(...percArray),
     };
   };
 
@@ -141,19 +149,30 @@ const StudentPerformanceChart = () => {
             >
               <CartesianGrid strokeDasharray="5 5" stroke="#ccc" />
               <XAxis dataKey="name" padding={{ left: 10, right: 10 }} />
-              <YAxis domain={[0, 100]} padding={{ top: 10, bottom: 10 }} />
-              <Tooltip contentStyle={{ borderRadius: 10, fontSize: 14 }} />
+              <YAxis
+                domain={[0, 100]}
+                padding={{ top: 10, bottom: 10 }}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip
+                contentStyle={{ borderRadius: 10, fontSize: 14 }}
+                formatter={(v) => `${v}%`}
+              />
               <Legend />
               <Line
                 type="monotone"
-                dataKey="Marks"
+                dataKey="Percentage"
                 stroke="#6366F1"
                 strokeWidth={3}
                 dot={{ r: 6, stroke: "#6366F1", strokeWidth: 2, fill: "white" }}
                 activeDot={{ r: 10 }}
                 isAnimationActive
               >
-                <LabelList dataKey="Marks" position="top" />
+                <LabelList
+                  dataKey="Percentage"
+                  position="top"
+                  formatter={(v) => `${v}%`}
+                />
               </Line>
             </LineChart>
           </ResponsiveContainer>
@@ -181,12 +200,19 @@ const StudentPerformanceChart = () => {
             >
               <CartesianGrid strokeDasharray="5 5" stroke="#ccc" />
               <XAxis dataKey="subject" padding={{ left: 10, right: 10 }} />
-              <YAxis domain={[0, 100]} padding={{ top: 10, bottom: 10 }} />
-              <Tooltip contentStyle={{ borderRadius: 10, fontSize: 14 }} />
+              <YAxis
+                domain={[0, 100]}
+                padding={{ top: 10, bottom: 10 }}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip
+                contentStyle={{ borderRadius: 10, fontSize: 14 }}
+                formatter={(v) => `${v}%`}
+              />
               <Legend />
               <Line
                 type="monotone"
-                dataKey="Marks"
+                dataKey="Percentage"
                 stroke="#10B981"
                 strokeWidth={3}
                 dot={{ r: 6, stroke: "#10B981", strokeWidth: 2, fill: "white" }}
@@ -194,14 +220,14 @@ const StudentPerformanceChart = () => {
                 isAnimationActive
               >
                 <LabelList
-                  dataKey="Marks"
+                  dataKey="Percentage"
                   position="top"
                   formatter={(value) =>
                     value === minSubject
-                      ? `⬇️ ${value}`
+                      ? `⬇️ ${value}%`
                       : value === maxSubject
-                      ? `⬆️ ${value}`
-                      : value
+                      ? `⬆️ ${value}%`
+                      : `${value}%`
                   }
                 />
               </Line>
@@ -231,11 +257,18 @@ const StudentPerformanceChart = () => {
                   tick={{ fontSize: 10 }}
                   padding={{ left: 5, right: 5 }}
                 />
-                <YAxis domain={[0, 100]} padding={{ top: 10, bottom: 10 }} />
-                <Tooltip contentStyle={{ borderRadius: 10, fontSize: 13 }} />
+                <YAxis
+                  domain={[0, 100]}
+                  padding={{ top: 10, bottom: 10 }}
+                  tickFormatter={(v) => `${v}%`}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 10, fontSize: 13 }}
+                  formatter={(v) => `${v}%`}
+                />
                 <Line
                   type="monotone"
-                  dataKey="Marks"
+                  dataKey="Percentage"
                   stroke="#3B82F6"
                   strokeWidth={2.5}
                   dot={{
