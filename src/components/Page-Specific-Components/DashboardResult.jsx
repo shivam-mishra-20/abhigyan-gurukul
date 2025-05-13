@@ -281,14 +281,22 @@ export default function DashboardResult() {
 
               <motion.div variants={itemVariants} className="relative">
                 <FaBook className="absolute left-3 top-3 text-gray-400" />
-                <motion.input
-                  whileFocus={formControlVariants.focus}
-                  type="text"
-                  placeholder="Subject"
-                  className="p-2 pl-10 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                <select
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                />
+                  className="p-2 pl-10 border border-gray-300 rounded-lg w-full appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                >
+                  <option value="">Select Subject</option>
+                  <option value="English">English</option>
+                  <option value="Social Science">SS</option>
+                  <option value="Mathematics">Maths</option>
+                  <option value="Science">Science</option>
+                  <option value="Physics">Physics</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Biology">Biology</option>
+                  <option value="Language">Hindi</option>
+                  <option value="Language">Gujarati</option>
+                </select>
               </motion.div>
 
               <div className="grid grid-cols-2 gap-2">

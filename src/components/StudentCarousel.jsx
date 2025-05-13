@@ -56,65 +56,62 @@ const StudentCarousel = () => {
     setIndex((prev) => (prev + 1) % students.length);
   };
 
-  // Get visible students based on device type
+  // Get visible students - always show three regardless of device
   const getVisibleStudents = () => {
-    if (isMobile) {
-      // Only show one student at a time on mobile
-      return [students[index % students.length]];
-    } else {
-      // Show three students on desktop
-      return [
-        students[index % students.length],
-        students[(index + 1) % students.length],
-        students[(index + 2) % students.length],
-      ];
-    }
+    return [
+      students[index % students.length],
+      students[(index + 1) % students.length],
+      students[(index + 2) % students.length],
+    ];
   };
 
-  // Mobile view renderer
+  // Mobile view renderer - now showing three cards
   const renderMobileView = () => {
-    const student = students[index % students.length];
-
     return (
-      <div className="flex justify-center items-center overflow-hidden">
+      <div className="flex justify-center items-center gap-1 overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div
-            key={`student-mobile-${index}`}
-            initial={{ opacity: 0, x: 80, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -80, scale: 0.9 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="bg-white rounded-lg p-3 shadow-md text-center w-[280px] mx-auto"
-            style={{ border: "2px solid #22c55e" }}
-          >
-            <div className="bg-white rounded-md overflow-hidden">
-              <img
-                src={student.image}
-                alt={student.name}
-                className="w-full h-36 object-cover"
-              />
-            </div>
-            <h3 className="text-green-600 font-semibold text-lg mt-2">
-              {student.name}
-            </h3>
-            <div className="mt-1">
-              <p className="text-green-600 text-sm">
-                Science -{" "}
-                <span className="text-blue-600">{student.science}/100</span>
-              </p>
-              <p className="text-orange-600 text-sm">
-                Math - <span className="text-blue-600">{student.math}/100</span>
-              </p>
-            </div>
-          </motion.div>
+          {getVisibleStudents().map((student, i) => (
+            <motion.div
+              key={`student-mobile-${index + i}`}
+              initial={{ opacity: 0, x: 40, scale: 0.8 }}
+              animate={{ opacity: 1, x: 0, scale: i === 1 ? 1 : 0.9 }}
+              exit={{ opacity: 0, x: -40, scale: 0.8 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className={`bg-white rounded-lg p-1 shadow-md text-center
+                ${i === 1 ? "w-[110px]" : "w-[100px]"}`}
+              style={{ 
+                border: i === 1 ? "2px solid #22c55e" : "1px solid #e0e0e0",
+                transform: `translateY(${i === 1 ? "-3px" : "0px"})`,
+              }}
+            >
+              <div className="bg-white rounded-md overflow-hidden">
+                <img
+                  src={student.image}
+                  alt={student.name}
+                  className="w-full h-20 object-cover"
+                />
+              </div>
+              <h3 className={`text-green-600 font-semibold text-xs mt-1`}>
+                {student.name}
+              </h3>
+              <div className="mt-0.5">
+                <p className="text-green-600 text-xs">
+                  Sci <span className="text-blue-600">{student.science}</span>
+                </p>
+                <p className="text-orange-600 text-xs">
+                  Math <span className="text-blue-600">{student.math}</span>
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </AnimatePresence>
-
+        
         {/* Navigation dots for mobile */}
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 mt-2">
+        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1 mt-1">
           {students.map((_, i) => (
             <span
               key={`dot-${i}`}
-              className={`inline-block h-2 w-2 rounded-full ${
+              className={`inline-block h-1 w-1 rounded-full ${
                 i === index % students.length ? "bg-green-600" : "bg-gray-300"
               }`}
             ></span>
