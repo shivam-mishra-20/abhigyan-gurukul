@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { useMediaQuery } from "react-responsive";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import FloatingLeaderboardButton from "./components/FloatingLeaderboardButton";
 
 // Desktop Pages
 import Home from "./pages/Home";
@@ -61,6 +62,7 @@ function App() {
       </Routes>
       <hr class="mt-30 mb-30 border-t-1 border-black opacity-[18%] my-4" />
       <Footer />
+      <FloatingLeaderboardButton />
     </Router>
   );
 }

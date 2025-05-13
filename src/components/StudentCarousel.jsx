@@ -232,7 +232,7 @@ const StudentCarousel = () => {
     >
       {/* Batch size indicator */}
       <div className="absolute top-3 right-5 bg-white px-3 py-1 rounded-full text-pink-600 font-medium text-sm shadow-sm">
-        Batch Size
+        Batch Size 7/7
       </div>
 
       <div className="flex justify-center items-center mb-6 pt-2">

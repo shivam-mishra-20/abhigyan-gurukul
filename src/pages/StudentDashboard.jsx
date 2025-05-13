@@ -316,12 +316,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               onClick={() => handleNav("/student-dashboard/admin/manage-users")}
             />
 
-            {/* <SidebarItem
+            <SidebarItem
               icon={<FaUserShield />}
               label="Developer Console"
               active={location.pathname === "/student-dashboard/dev-console"}
               onClick={() => handleNav("/student-dashboard/dev-console")}
-            /> */}
+            />
           </>
         )}
 
