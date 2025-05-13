@@ -7,21 +7,44 @@ const students = [
     name: "Shreya",
     science: 99,
     math: 98,
-    image: "/images/shreya.png",
+    image: "/Shreya.png",
   },
   {
     name: "Priyani",
     science: 99,
     math: 97,
-    image: "/images/priyani.png",
+    image: "/Priyani Rana.png",
   },
   {
     name: "Dhyani",
     science: 88,
     math: 84,
-    image: "/images/dhyani.png",
+    image: "/Dhyani.png",
   },
-  // Add more as needed
+  {
+    name: "Prarthna",
+    science: 68,
+    math: 68,
+    image: "/Prathna.png",
+  },
+  {
+    name: "Prajakta",
+    science: 68,
+    math: 69,
+    image: "/Prajakta.png",
+  },
+  {
+    name: "Rishit",
+    science: 84,
+    math: 68,
+    image: "/Rishit-cropped.png",
+  },
+  {
+    name: "Naman",
+    science: 62,
+    math: 65,
+    image: "/Naman.png",
+  },
 ];
 
 const StudentCarousel = () => {
@@ -56,42 +79,62 @@ const StudentCarousel = () => {
     setIndex((prev) => (prev + 1) % students.length);
   };
 
-  // Get visible students - always show three regardless of device
+  // Get visible students - show four in desktop, three in mobile
   const getVisibleStudents = () => {
-    return [
-      students[index % students.length],
-      students[(index + 1) % students.length],
-      students[(index + 2) % students.length],
-    ];
+    // Use modulo operations to cycle through all 7 students
+    if (isMobile) {
+      return [
+        students[index % students.length],
+        students[(index + 1) % students.length],
+        students[(index + 2) % students.length],
+      ];
+    } else {
+      return [
+        students[index % students.length],
+        students[(index + 1) % students.length],
+        students[(index + 2) % students.length],
+        students[(index + 3) % students.length],
+      ];
+    }
   };
 
-  // Mobile view renderer - now showing three cards
+  // Mobile view renderer with bigger cards
   const renderMobileView = () => {
     return (
-      <div className="flex justify-center items-center gap-1 overflow-hidden">
+      <div className="flex justify-center items-center gap-2 overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
           {getVisibleStudents().map((student, i) => (
             <motion.div
               key={`student-mobile-${index + i}`}
               initial={{ opacity: 0, x: 40, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: i === 1 ? 1 : 0.9 }}
+              animate={{
+                opacity: 1,
+                x: 0,
+                scale: i === 1 ? 1 : 0.9,
+                zIndex: i === 1 ? 2 : 1,
+              }}
               exit={{ opacity: 0, x: -40, scale: 0.8 }}
               transition={{ duration: 0.4, ease: "easeInOut" }}
-              className={`bg-white rounded-lg p-1 shadow-md text-center
-                ${i === 1 ? "w-[110px]" : "w-[100px]"}`}
-              style={{ 
-                border: i === 1 ? "2px solid #22c55e" : "1px solid #e0e0e0",
-                transform: `translateY(${i === 1 ? "-3px" : "0px"})`,
+              className={`bg-white rounded-lg p-2 shadow-md text-center ${
+                i === 1 ? "w-[140px]" : "w-[120px]"
+              }`}
+              style={{
+                border: i === 1 ? "1px solid #22c55e" : "1px solid #e0e0e0",
+                boxShadow: i === 1 ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)" : "",
               }}
             >
               <div className="bg-white rounded-md overflow-hidden">
                 <img
                   src={student.image}
                   alt={student.name}
-                  className="w-full h-20 object-cover"
+                  className={`w-full object-cover ${i === 1 ? "h-28" : "h-24"}`}
                 />
               </div>
-              <h3 className={`text-green-600 font-semibold text-xs mt-1`}>
+              <h3
+                className={`text-green-600 font-semibold ${
+                  i === 1 ? "text-sm" : "text-xs"
+                } mt-1`}
+              >
                 {student.name}
               </h3>
               <div className="mt-0.5">
@@ -105,9 +148,9 @@ const StudentCarousel = () => {
             </motion.div>
           ))}
         </AnimatePresence>
-        
+
         {/* Navigation dots for mobile */}
-        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1 mt-1">
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 mt-1">
           {students.map((_, i) => (
             <span
               key={`dot-${i}`}
@@ -121,78 +164,79 @@ const StudentCarousel = () => {
     );
   };
 
-  // Desktop view renderer
+  // Desktop view renderer - now showing four cards with two center ones enlarged
   const renderDesktopView = () => {
     return (
-      <div className="flex justify-center items-center gap-3 overflow-hidden">
+      <div className="flex justify-center items-center gap-4 overflow-hidden py-2">
         <AnimatePresence mode="popLayout" initial={false}>
-          {getVisibleStudents().map((student, i) => (
-            <motion.div
-              key={`student-${index + i}`}
-              initial={{ opacity: 0, x: 60, scale: 0.8 }}
-              animate={{
-                opacity: 1,
-                x: 0,
-                scale: i === 1 ? 1.05 : 0.9,
-                zIndex: i === 1 ? 10 : 1,
-              }}
-              exit={{ opacity: 0, x: -60, scale: 0.8 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className={`bg-white rounded-lg p-2 shadow-md text-center
-                ${i === 1 ? "z-10 w-[190px]" : "z-0 w-[160px]"}`}
-              style={{
-                border: i === 1 ? "2px solid #22c55e" : "1px solid #e0e0e0",
-                transform: `translateY(${i === 1 ? "-5px" : "0px"})`,
-              }}
-            >
-              <div className="bg-white rounded-md overflow-hidden">
-                <img
-                  src={student.image}
-                  alt={student.name}
-                  className={`w-full object-cover ${i === 1 ? "h-34" : "h-30"}`}
-                />
-              </div>
-              <h3
-                className={`text-green-600 font-semibold mt-1 ${
-                  i === 1 ? "text-base" : "text-sm"
+          {getVisibleStudents().map((student, i) => {
+            // Determine if this is a center card (position 1 or 2)
+            const isCenter = i === 1 || i === 2;
+
+            return (
+              <motion.div
+                key={`student-${index + i}`}
+                initial={{ opacity: 0, x: 60, scale: 0.8 }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  scale: isCenter ? 1.03 : 0.95,
+                  zIndex: isCenter ? 2 : 1,
+                }}
+                exit={{ opacity: 0, x: -60, scale: 0.8 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className={`bg-white rounded-lg p-3 shadow-md text-center ${
+                  isCenter ? "w-[220px]" : "w-[180px]"
                 }`}
+                style={{
+                  border: isCenter ? "2px solid #22c55e" : "1px solid #e0e0e0",
+                  boxShadow: isCenter
+                    ? "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                    : "",
+                }}
               >
-                {student.name}
-              </h3>
-              <div className="mt-0.5">
-                <p
-                  className={`text-green-600 ${
-                    i === 1 ? "text-xs" : "text-xs"
-                  }`}
-                >
-                  Science -{" "}
-                  <span className="text-blue-600">{student.science}/100</span>
-                </p>
-                <p
-                  className={`text-orange-600 ${
-                    i === 1 ? "text-xs" : "text-xs"
-                  }`}
-                >
-                  Math -{" "}
-                  <span className="text-blue-600">{student.math}/100</span>
-                </p>
-              </div>
-            </motion.div>
-          ))}
+                <div className="bg-white rounded-md overflow-hidden">
+                  <img
+                    src={student.image}
+                    alt={student.name}
+                    className={`w-full object-cover ${
+                      isCenter ? "h-44" : "h-40"
+                    }`}
+                  />
+                </div>
+                <h3 className="text-green-600 font-semibold mt-2 text-base">
+                  {student.name}
+                </h3>
+                <div className="mt-1">
+                  <p className="text-green-600 text-xs">
+                    Science -{" "}
+                    <span className="text-blue-600">{student.science}/100</span>
+                  </p>
+                  <p className="text-orange-600 text-xs">
+                    Math -{" "}
+                    <span className="text-blue-600">{student.math}/100</span>
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
     );
   };
 
   return (
-    <div className="bg-pink-50 py-4 px-3 md:px-6 rounded-xl shadow-lg w-full max-w-5xl mx-auto relative">
+    <div
+      className="py-4 px-3 md:px-6 rounded-xl shadow-lg w-full mx-auto relative bg-gradient-to-br from-pink-50 to-blue-50"
+      style={{ maxWidth: "100%", minHeight: "380px" }}
+    >
       {/* Batch size indicator */}
-      <div className="absolute top-2 right-4 text-pink-500 font-medium text-sm">
-        Batch Size - {index + 1}/{students.length}
+      <div className="absolute top-3 right-5 bg-white px-3 py-1 rounded-full text-pink-600 font-medium text-sm shadow-sm">
+        Batch Size 7/7
       </div>
 
-      <div className="flex items-center mb-4">
-        <div className="text-left">
+      <div className="flex justify-center items-center mb-6 pt-2">
+        <div className="text-center">
           <h2
             className="text-3xl md:text-4xl font-bold"
             style={{ color: "#D35400" }}
