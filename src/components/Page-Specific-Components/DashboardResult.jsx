@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -39,6 +48,9 @@ export default function DashboardResult() {
   const role = localStorage.getItem("userRole");
   const currentUserName = localStorage.getItem("studentName");
   const currentUserClass = localStorage.getItem("studentClass");
+
+  const [editIdx, setEditIdx] = useState(null);
+  const [editData, setEditData] = useState({});
 
   // Animation variants
   const containerVariants = {
@@ -184,7 +196,10 @@ export default function DashboardResult() {
         where("name", "==", selectedViewStudentName)
       );
       const snapshot = await getDocs(q);
-      const results = snapshot.docs.map((doc) => doc.data());
+      const results = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
       console.log("Fetched results:", results);
       setViewedResults(results);
     } catch (err) {
@@ -203,6 +218,50 @@ export default function DashboardResult() {
     if (percentage >= 40)
       return "bg-yellow-100 border-yellow-300 text-yellow-800";
     return "bg-red-100 border-red-300 text-red-800";
+  };
+
+  // For editing a result
+  const handleEdit = (idx, res) => {
+    // Remove id from editData
+    const { id, ...rest } = res;
+    setEditIdx(idx);
+    setEditData({ ...rest });
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleUpdate = async (docId) => {
+    try {
+      // Prepare only the fields you want to update
+      const { id, ...dataToUpdate } = editData;
+      // Convert marks and outOf to numbers
+      dataToUpdate.marks = Number(dataToUpdate.marks);
+      dataToUpdate.outOf = Number(dataToUpdate.outOf);
+
+      await updateDoc(doc(db, "Results", docId), dataToUpdate);
+      setEditIdx(null);
+      setEditData({});
+      handleViewResults();
+    } catch (err) {
+      alert("Failed to update result.");
+    }
+  };
+
+  const handleDelete = async (docId) => {
+    if (!window.confirm("Are you sure you want to delete this result?")) return;
+    try {
+      await deleteDoc(doc(db, "Results", docId));
+      // Refresh results
+      if (role === "student") {
+        fetchResult();
+      } else {
+        handleViewResults();
+      }
+    } catch (err) {
+      alert("Failed to delete result.");
+    }
   };
 
   return (
@@ -468,24 +527,14 @@ export default function DashboardResult() {
               {filteredStudentResults.map((res, idx) => {
                 const gradeClass = getGradeColor(res.marks, res.outOf);
                 const percentage = ((res.marks / res.outOf) * 100).toFixed(1);
+                // const docId = res.id || res.docId; // Not needed for students
 
                 return (
                   <motion.div
                     key={idx}
                     variants={itemVariants}
-                    whileHover={{
-                      y: -4,
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    }}
                     className={`p-4 border rounded-lg ${gradeClass} overflow-hidden relative transition-all duration-300`}
                   >
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${percentage}%` }}
-                      transition={{ duration: 1, delay: 0.2 + idx * 0.1 }}
-                      className="absolute top-0 left-0 h-1 bg-current opacity-20"
-                    />
-
                     <div className="flex flex-col md:flex-row md:items-center justify-between">
                       <div>
                         <h3 className="text-md font-semibold mb-1 flex items-center">
@@ -500,7 +549,6 @@ export default function DashboardResult() {
                           })}
                         </p>
                       </div>
-
                       <div className="mt-2 md:mt-0 flex flex-col items-end">
                         <div className="flex items-center">
                           <strong className="mr-1">Marks:</strong>
@@ -513,12 +561,12 @@ export default function DashboardResult() {
                         </div>
                       </div>
                     </div>
-
                     {res.remarks && (
                       <p className="text-sm mt-2 border-t pt-2 border-opacity-30">
                         <strong>Remarks:</strong> {res.remarks}
                       </p>
                     )}
+                    {/* No Edit/Delete buttons here */}
                   </motion.div>
                 );
               })}
@@ -650,6 +698,7 @@ export default function DashboardResult() {
                 {viewedResults.map((res, idx) => {
                   const gradeClass = getGradeColor(res.marks, res.outOf);
                   const percentage = ((res.marks / res.outOf) * 100).toFixed(1);
+                  const docId = res.id || res.docId;
 
                   return (
                     <motion.div
@@ -663,50 +712,115 @@ export default function DashboardResult() {
                       }}
                       className={`p-4 border rounded-lg ${gradeClass} overflow-hidden relative transition-all duration-300`}
                     >
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${percentage}%` }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="absolute top-0 left-0 h-1 bg-current opacity-30"
-                      />
-
-                      <div className="flex flex-col md:flex-row md:items-center justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold mb-1 flex items-center">
-                            <FaBook className="mr-2" />
-                            {res.subject}
-                          </h3>
-                          <p className="text-sm flex items-center">
-                            <FaCalendarAlt className="mr-1 opacity-70" />
-                            <span className="opacity-80">
-                              {new Date(res.testDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                }
-                              )}
-                            </span>
-                          </p>
-                        </div>
-
-                        <div className="mt-2 md:mt-0">
-                          <div className="flex items-center">
-                            <span className="text-xl font-bold">
-                              {res.marks} / {res.outOf}
-                            </span>
-                            <span className="ml-2 text-xs bg-white bg-opacity-50 px-2 py-0.5 rounded-full">
-                              {percentage}%
-                            </span>
+                      {editIdx === idx ? (
+                        <div className="space-y-2">
+                          <input
+                            className="border p-1 rounded w-full"
+                            value={editData.subject}
+                            onChange={(e) =>
+                              handleEditChange("subject", e.target.value)
+                            }
+                          />
+                          <input
+                            className="border p-1 rounded w-full"
+                            type="number"
+                            value={editData.marks}
+                            onChange={(e) =>
+                              handleEditChange("marks", e.target.value)
+                            }
+                          />
+                          <input
+                            className="border p-1 rounded w-full"
+                            type="number"
+                            value={editData.outOf}
+                            onChange={(e) =>
+                              handleEditChange("outOf", e.target.value)
+                            }
+                          />
+                          <input
+                            className="border p-1 rounded w-full"
+                            value={editData.remarks}
+                            onChange={(e) =>
+                              handleEditChange("remarks", e.target.value)
+                            }
+                          />
+                          <input
+                            className="border p-1 rounded w-full"
+                            type="date"
+                            value={editData.testDate}
+                            onChange={(e) =>
+                              handleEditChange("testDate", e.target.value)
+                            }
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              className="bg-green-500 text-white px-3 py-1 rounded"
+                              onClick={() => handleUpdate(docId)}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="bg-gray-300 px-3 py-1 rounded"
+                              onClick={() => setEditIdx(null)}
+                            >
+                              Cancel
+                            </button>
                           </div>
                         </div>
-                      </div>
+                      ) : (
+                        <>
+                          <div className="flex flex-col md:flex-row md:items-center justify-between">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-1 flex items-center">
+                                <FaBook className="mr-2" />
+                                {res.subject}
+                              </h3>
+                              <p className="text-sm flex items-center">
+                                <FaCalendarAlt className="mr-1 opacity-70" />
+                                <span className="opacity-80">
+                                  {new Date(res.testDate).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )}
+                                </span>
+                              </p>
+                            </div>
 
-                      {res.remarks && (
-                        <p className="text-sm mt-2 pt-2 border-t border-current border-opacity-20">
-                          <strong>Remarks:</strong> {res.remarks}
-                        </p>
+                            <div className="mt-2 md:mt-0">
+                              <div className="flex items-center">
+                                <span className="text-xl font-bold">
+                                  {res.marks} / {res.outOf}
+                                </span>
+                                <span className="ml-2 text-xs bg-white bg-opacity-50 px-2 py-0.5 rounded-full">
+                                  {percentage}%
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          {res.remarks && (
+                            <p className="text-sm mt-2 pt-2 border-t border-current border-opacity-20">
+                              <strong>Remarks:</strong> {res.remarks}
+                            </p>
+                          )}
+                          <div className="flex justify-end gap-2 mt-2">
+                            <button
+                              className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow transition-all duration-150"
+                              onClick={() => handleEdit(idx, res)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-semibold shadow transition-all duration-150"
+                              onClick={() => handleDelete(docId)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </>
                       )}
                     </motion.div>
                   );
