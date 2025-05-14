@@ -7,6 +7,8 @@ import {
   FaChartLine,
   FaUserShield,
   FaBars,
+  FaBook,
+  FaExclamationCircle,
 } from "react-icons/fa";
 import {
   useNavigate,
@@ -15,7 +17,6 @@ import {
   useLocation,
   Navigate,
 } from "react-router";
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardResult from "../components/Page-Specific-Components/DashboardResult";
 import DashboardAttendance from "../components/Page-Specific-Components/DashboardAttendance";
@@ -27,6 +28,9 @@ import Leaderboards from "./Leaderboards";
 import AdminEvents from "../components/AdminEvents";
 import { notifyAuthStateChange } from "../components/Navbar";
 import DevConsole from "../components/DevConsole";
+import SyllabusManager from "../components/SyllabusManager";
+import SyllabusProgress from "../components/SyllabusProgress";
+import Complaints from "./Complaints";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -56,12 +60,9 @@ const StudentDashboard = () => {
   }, [userRole]);
 
   const handleLogout = () => {
-    localStorage.clear(); // This removes all localStorage items
-    localStorage.removeItem("isAuthenticated"); // Explicitly remove auth flag
-
-    // Notify components about auth state change
+    localStorage.clear();
+    localStorage.removeItem("isAuthenticated");
     notifyAuthStateChange();
-
     navigate("/login");
   };
 
@@ -72,7 +73,6 @@ const StudentDashboard = () => {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
-      {/* Sidebar for desktop */}
       <motion.aside
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -87,7 +87,6 @@ const StudentDashboard = () => {
         />
       </motion.aside>
 
-      {/* Sidebar drawer for mobile */}
       <AnimatePresence>
         {isSidebarOpen && (
           <div className="fixed inset-0 z-40 flex">
@@ -117,9 +116,7 @@ const StudentDashboard = () => {
         )}
       </AnimatePresence>
 
-      {/* Main content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 w-full min-h-full">
-        {/* Mobile Menu Toggle */}
         <div className="md:hidden mb-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -160,7 +157,6 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-
               <Route
                 path="leaderboards"
                 element={
@@ -169,7 +165,6 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-
               <Route
                 path="dev-console"
                 element={
@@ -178,7 +173,6 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-
               <Route
                 path="attendance"
                 element={
@@ -211,12 +205,35 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-              {/* Admin Events Management Route */}
               <Route
                 path="/adminevents"
                 element={
                   <ProtectedStudent roles={["admin", "teacher"]}>
                     <AdminEvents />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="/syllabus"
+                element={
+                  <ProtectedStudent roles={["admin", "teacher"]}>
+                    <SyllabusManager />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="/syllabus-progress"
+                element={
+                  <ProtectedStudent roles={["student", "admin", "teacher"]}>
+                    <SyllabusProgress />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="/complaints"
+                element={
+                  <ProtectedStudent roles={["admin", "teacher", "student"]}>
+                    <Complaints />
                   </ProtectedStudent>
                 }
               />
@@ -231,7 +248,6 @@ const StudentDashboard = () => {
 const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
   <div className="flex flex-col justify-between h-full">
     <div>
-      {/* Logo + Name */}
       <motion.div
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -247,8 +263,6 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
         <h1 className="text-lg font-bold text-green-800 text-center">
           Abhigyan Gurukul
         </h1>
-
-        {/* Role Badge */}
         <motion.span
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
@@ -257,11 +271,8 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
         >
           ROLE: {userRole?.toUpperCase() || "UNKNOWN"}
         </motion.span>
-
         <hr className="border-green-600 w-full mt-3 opacity-50" />
       </motion.div>
-
-      {/* Navigation Items */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -286,14 +297,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/leaderboards"}
           onClick={() => handleNav("/student-dashboard/leaderboards")}
         />
-
         <SidebarItem
           icon={<FaCalendarAlt />}
           label="Attendance"
           active={location.pathname === "/student-dashboard/attendance"}
           onClick={() => handleNav("/student-dashboard/attendance")}
         />
-
         {userRole === "teacher" && (
           <SidebarItem
             icon={<FaUsers />}
@@ -304,7 +313,6 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/admin/manage-users")}
           />
         )}
-
         {userRole === "admin" && (
           <>
             <SidebarItem
@@ -315,7 +323,6 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               }
               onClick={() => handleNav("/student-dashboard/admin/manage-users")}
             />
-
             <SidebarItem
               icon={<FaUserShield />}
               label="Developer Console"
@@ -324,7 +331,6 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             />
           </>
         )}
-
         {["teacher", "admin"].includes(userRole) && (
           <SidebarItem
             icon={<FaCalendarAlt />}
@@ -344,10 +350,34 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/leaves")}
           />
         )}
+        {["teacher", "admin"].includes(userRole) && (
+          <SidebarItem
+            icon={<FaBook />}
+            label="Syllabus Management"
+            active={location.pathname === "/student-dashboard/syllabus"}
+            onClick={() => handleNav("/student-dashboard/syllabus")}
+          />
+        )}
+        {userRole === "student" && (
+          <SidebarItem
+            icon={<FaBook />}
+            label="View Syllabus"
+            active={
+              location.pathname === "/student-dashboard/syllabus-progress"
+            }
+            onClick={() => handleNav("/student-dashboard/syllabus-progress")}
+          />
+        )}
+        {["teacher", "admin", "student"].includes(userRole) && (
+          <SidebarItem
+            icon={<FaExclamationCircle />}
+            label="Complaints"
+            active={location.pathname === "/student-dashboard/complaints"}
+            onClick={() => handleNav("/student-dashboard/complaints")}
+          />
+        )}
       </motion.div>
     </div>
-
-    {/* Log Out */}
     <motion.div
       whileHover={{ x: 5 }}
       className="text-red-600 text-sm flex items-center cursor-pointer hover:bg-red-50 p-2 rounded-lg transition-all duration-200"

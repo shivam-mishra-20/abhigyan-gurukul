@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import StudentPerformanceChart from "../components/Page-Specific-Components/StudentPerformanceChart";
+import StudentComplaintsWidget from "../components/StudentComplaintsWidget";
 import {
   FaUsers,
   FaChalkboardTeacher,
@@ -10,6 +11,8 @@ import {
   FaBell,
   FaChartLine,
   FaCalendarAlt,
+  FaBook,
+  FaExclamationCircle,
 } from "react-icons/fa";
 
 const DashboardHome = ({ name }) => {
@@ -86,6 +89,92 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/adminevents",
       highlight: true,
     },
+    {
+      icon: <FaBook className="text-3xl" />,
+      title: "Syllabus Management",
+      description: "Update syllabus progress",
+      bg: "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-800",
+      route: "/student-dashboard/syllabus",
+      highlight: true,
+    },
+    {
+      icon: <FaExclamationCircle className="text-3xl" />,
+      title: "Manage Complaints",
+      description: "Record student complaints",
+      bg: "bg-gradient-to-br from-red-50 to-red-100 text-red-800",
+      route: "/student-dashboard/complaints",
+      highlight: false,
+    },
+  ];
+
+  const teacherCards = [
+    {
+      icon: <FaChalkboardTeacher className="text-3xl" />,
+      title: "My Leave Calendar",
+      description: "Manage your leaves",
+      bg: "bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800",
+      route: "/student-dashboard/leaves",
+      highlight: true,
+    },
+    {
+      icon: <FaClipboardList className="text-3xl" />,
+      title: "Student Results",
+      description: "View and update results",
+      bg: "bg-gradient-to-br from-purple-50 to-purple-100 text-purple-800",
+      route: "/student-dashboard/results",
+      highlight: true,
+    },
+    {
+      icon: <FaBook className="text-3xl" />,
+      title: "Update Syllabus",
+      description: "Track teaching progress",
+      bg: "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-800",
+      route: "/student-dashboard/syllabus",
+      highlight: true,
+    },
+    {
+      icon: <FaExclamationCircle className="text-3xl" />,
+      title: "Student Complaints",
+      description: "Record behavioral issues",
+      bg: "bg-gradient-to-br from-red-50 to-red-100 text-red-800",
+      route: "/student-dashboard/complaints",
+      highlight: false,
+    },
+  ];
+
+  const studentCards = [
+    {
+      icon: <FaChartLine className="text-3xl" />,
+      title: "My Results",
+      description: "View your academic results",
+      bg: "bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800",
+      route: "/student-dashboard/results",
+      highlight: true,
+    },
+    {
+      icon: <FaCalendarAlt className="text-3xl" />,
+      title: "My Attendance",
+      description: "Check your attendance records",
+      bg: "bg-gradient-to-br from-purple-50 to-purple-100 text-purple-800",
+      route: "/student-dashboard/attendance",
+      highlight: true,
+    },
+    {
+      icon: <FaBook className="text-3xl" />,
+      title: "Syllabus Progress",
+      description: "Track class syllabus status",
+      bg: "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-800",
+      route: "/student-dashboard/syllabus-progress",
+      highlight: true,
+    },
+    {
+      icon: <FaExclamationCircle className="text-3xl" />,
+      title: "My Complaints",
+      description: "View complaints filed by teachers",
+      bg: "bg-gradient-to-br from-red-50 to-red-100 text-red-800",
+      route: "/student-dashboard/complaints",
+      highlight: false,
+    },
   ];
 
   const currentDate = new Date();
@@ -96,6 +185,15 @@ const DashboardHome = ({ name }) => {
     day: "numeric",
   };
   const formattedDate = currentDate.toLocaleDateString("en-US", options);
+
+  let dashboardCards;
+  if (role === "admin") {
+    dashboardCards = adminCards;
+  } else if (role === "teacher") {
+    dashboardCards = teacherCards;
+  } else {
+    dashboardCards = studentCards;
+  }
 
   return (
     <motion.div
@@ -117,241 +215,53 @@ const DashboardHome = ({ name }) => {
             </h1>
             <p className="text-gray-500 mt-1">{formattedDate}</p>
           </div>
-          {/* <motion.div
-            className="mt-3 md:mt-0 flex items-center bg-green-50 px-3 py-2 rounded-lg border border-green-100"
-            whileHover={{ scale: 1.03 }}
-          >
-            //Notification icon and message can be added here
-            <FaBell className="text-green-500 mr-2" />
-            <span className="text-sm text-green-700 font-medium">
-              {role === "student"
-                ? "All assignments up to date"
-                : "No pending approvals"}
-            </span>
-          </motion.div> */}
         </div>
       </motion.div>
 
-      {/* STUDENT VIEW */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+      >
+        {dashboardCards.map((card, index) => (
+          <motion.div
+            key={index}
+            variants={itemVariants}
+            whileHover={{
+              y: -5,
+              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)",
+            }}
+            className={`${card.bg} rounded-lg p-6 shadow-md cursor-pointer ${
+              card.highlight ? "border-l-4 border-green-500" : ""
+            }`}
+            onClick={() => navigate(card.route)}
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-xl mb-2">{card.title}</h3>
+                <p className="text-sm opacity-80">{card.description}</p>
+              </div>
+              <div className="rounded-full p-3 bg-white bg-opacity-60">
+                {card.icon}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
       {role === "student" && (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-8"
-        >
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
-          >
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate("/student-dashboard/results")}
-              className="bg-gradient-to-br from-purple-50 to-purple-100 text-purple-800 p-5 rounded-xl shadow-sm border border-purple-200 flex items-center gap-4 cursor-pointer transition-all"
-            >
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <FaClipboardList className="text-2xl text-purple-600" />
-              </div>
-              <div>
-                <div className="text-sm font-bold">View Results</div>
-                <div className="text-xs text-purple-600">
-                  Check your academic performance
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate("/student-dashboard/attendance")}
-              className="bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800 p-5 rounded-xl shadow-sm border border-indigo-200 flex items-center gap-4 cursor-pointer transition-all"
-            >
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <FaChartLine className="text-2xl text-indigo-600" />
-              </div>
-              <div>
-                <div className="text-sm font-bold">Attendance</div>
-                <div className="text-xs text-indigo-600">
-                  Track your classroom attendance
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="rounded-xl bg-white shadow-md border border-gray-100 overflow-hidden"
-          >
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-4">
-              <h2 className="text-lg font-semibold text-white">
-                Performance Analytics
-              </h2>
-              <p className="text-xs text-indigo-100">
-                Track your academic progress over time
-              </p>
-            </div>
-
-            {/* 👉 Remove fixed height */}
-            <div className="p-5 space-y-8">
-              <StudentPerformanceChart
-                previous={previousScore}
-                current={currentScore}
-              />
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* TEACHER VIEW */}
-      {role === "teacher" && (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-6"
-        >
-          <motion.h2
-            variants={itemVariants}
-            className="text-xl font-semibold text-gray-700"
-          >
-            Quick Access
-          </motion.h2>
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-          >
-            <EnhancedCard
-              icon={<FaClipboardList className="text-2xl" />}
-              title="Results"
-              description="Manage or view student results"
-              bgClass="from-purple-50 to-purple-100 text-purple-800 border-purple-200"
-              iconClass="text-purple-500 bg-purple-100"
-              onClick={() => navigate("/student-dashboard/results")}
-            />
-            <EnhancedCard
-              icon={<FaChalkboardTeacher className="text-2xl" />}
-              title="Leaves"
-              description="Apply leave or view teacher leaves"
-              bgClass="from-green-50 to-green-100 text-green-800 border-green-200"
-              iconClass="text-green-500 bg-green-100"
-              onClick={() => navigate("/student-dashboard/leaves")}
-              badge={3}
-            />
-            <EnhancedCard
-              icon={<FaUserEdit className="text-2xl" />}
-              title="Manage Users"
-              description="Create, edit, delete users"
-              bgClass="from-blue-50 to-blue-100 text-blue-800 border-blue-200"
-              iconClass="text-blue-500 bg-blue-100"
-              onClick={() => navigate("/student-dashboard/admin/manage-users")}
-            />
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ADMIN VIEW */}
-      {role === "admin" && (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="bg-white p-6 shadow-md rounded-xl border border-gray-100 space-y-6"
-        >
-          <motion.div variants={itemVariants}>
-            <h2 className="text-lg font-semibold mb-1 text-gray-800">
-              Admin Dashboard
-            </h2>
-            <div className="flex items-center text-gray-600">
-              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-2">
-                ADMIN
-              </span>
-              <p>You have full access to system management</p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {adminCards.map((card, index) => (
-              <EnhancedCard
-                key={index}
-                icon={card.icon}
-                title={card.title}
-                description={card.description}
-                bgClass={card.bg.replace("bg-", "from-").replace("to-", "")}
-                iconClass={`text-${
-                  card.bg.split(" ")[1].split("-")[0]
-                }-500 bg-${card.bg.split(" ")[1].split("-")[0]}-100`}
-                onClick={() => navigate(card.route)}
-                highlight={card.highlight}
-              />
-            ))}
-          </motion.div>
-        </motion.div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <StudentPerformanceChart />
+          </div>
+          <div>
+            <StudentComplaintsWidget />
+          </div>
+        </div>
       )}
     </motion.div>
   );
 };
-
-const EnhancedCard = ({
-  icon,
-  title,
-  description,
-  onClick,
-  bgClass,
-  iconClass,
-  highlight,
-  badge,
-}) => (
-  <motion.div
-    whileHover={{ y: -5, scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    onClick={onClick}
-    className={`cursor-pointer transition-all duration-300 p-5 rounded-xl shadow-sm border bg-gradient-to-br ${bgClass} relative overflow-hidden group`}
-  >
-    <div className="flex items-start gap-4">
-      <div
-        className={`p-3 rounded-lg ${iconClass} flex items-center justify-center shadow-sm transition-all group-hover:scale-110`}
-      >
-        {icon}
-      </div>
-      <div>
-        <div className="text-base font-semibold flex items-center gap-2">
-          {title}
-          {badge && (
-            <motion.span
-              className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500, delay: 0.5 }}
-            >
-              {badge} new
-            </motion.span>
-          )}
-        </div>
-        <div className="text-sm mt-1 opacity-80">{description}</div>
-      </div>
-    </div>
-
-    {highlight && (
-      <div className="absolute top-0 right-0">
-        <div className="bg-yellow-400 text-yellow-800 text-xs transform rotate-45 translate-y-2 translate-x-6 px-8 py-0.5 shadow-sm">
-          New
-        </div>
-      </div>
-    )}
-
-    <motion.div
-      className="absolute bottom-0 left-0 w-full h-1 bg-white opacity-0 group-hover:opacity-30"
-      initial={{ scaleX: 0 }}
-      whileHover={{ scaleX: 1 }}
-      transition={{ duration: 0.3 }}
-    />
-  </motion.div>
-);
 
 export default DashboardHome;
