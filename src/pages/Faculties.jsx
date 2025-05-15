@@ -1,7 +1,9 @@
 import React from "react";
 import Leaders from "../components/Page-Specific-Components/Leaders";
+import { facultyMembers } from "../data/facultyData";
 
 const Faculties = ({ info, isFlagged }) => {
+  // Export the faculty data for use in other components
   return (
     <>
       {/* Logo */}
@@ -21,6 +23,7 @@ const Faculties = ({ info, isFlagged }) => {
           title: "Abhigyan Gautam",
           title2: "Chandan Sir",
           Heading: "Our Leaders",
+          facultyData: facultyMembers,
         }}
         isFlagged={false}
       ></Leaders>
@@ -29,3 +32,4 @@ const Faculties = ({ info, isFlagged }) => {
 };
 
 export default Faculties;
+export { facultyMembers };

@@ -151,7 +151,7 @@ const HeroSection = () => {
         {/* Image/Illustration */}
         <motion.div variants={fadeIn} className="relative flex justify-center">
           <img
-            src="/Photo.png"
+            src="/Ab-Banner.jpg"
             alt="Students at Abhigyan Gurukul"
             className="rounded-lg shadow-2xl max-w-full object-cover h-[400px]"
           />

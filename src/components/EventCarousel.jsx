@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where,
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import {
   FaCalendarAlt,
@@ -13,7 +20,9 @@ import {
   FaRegCalendarCheck,
   FaExclamationCircle,
   FaArrowRight,
+  FaExternalLinkAlt,
 } from "react-icons/fa";
+import EventDetailsModal from "./EventDetailsModal";
 
 const EventCarousel = ({ maxEvents = 6 }) => {
   const [events, setEvents] = useState([]);
@@ -23,6 +32,9 @@ const EventCarousel = ({ maxEvents = 6 }) => {
   const [loaded, setLoaded] = useState(false);
   const [autoplay, setAutoplay] = useState(true);
   const autoplayRef = useRef(null);
+  const [indexError, setIndexError] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [sliderRef, instanceRef] = useKeenSlider({
     slides: {
@@ -32,7 +44,7 @@ const EventCarousel = ({ maxEvents = 6 }) => {
         return 3;
       },
       spacing: 24,
-      origin: "center", // Align to center
+      origin: "center",
     },
     slideChanged(slider) {
       setCurrentSlide(slider.track.details.rel);
@@ -40,23 +52,57 @@ const EventCarousel = ({ maxEvents = 6 }) => {
     created() {
       setLoaded(true);
     },
-    loop: true, // Already set for infinite scrolling
-    renderMode: "performance", // Better performance for transformations
+    loop: true,
+    renderMode: "performance",
   });
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const eventsRef = collection(db, "events");
-        const q = query(
-          eventsRef,
-          orderBy("createdAt", "desc"),
-          limit(maxEvents)
-        );
-        const querySnapshot = await getDocs(q);
+        console.log("Fetching events for carousel...");
+
+        let querySnapshot;
+
+        try {
+          const featuredQuery = query(
+            collection(db, "events"),
+            where("featured", "==", true),
+            orderBy("createdAt", "desc"),
+            limit(maxEvents)
+          );
+
+          querySnapshot = await getDocs(featuredQuery);
+          setIndexError(null);
+        } catch (indexErr) {
+          console.warn("Index error with featured query:", indexErr.message);
+
+          if (indexErr.message && indexErr.message.includes("index")) {
+            const indexUrlMatch = indexErr.message.match(
+              /https:\/\/console\.firebase\.google\.com[^\s]+/
+            );
+            const indexUrl = indexUrlMatch ? indexUrlMatch[0] : null;
+
+            setIndexError({
+              message:
+                "The events query requires a database index to be created.",
+              url: indexUrl,
+            });
+
+            const simpleQuery = query(
+              collection(db, "events"),
+              orderBy("createdAt", "desc"),
+              limit(maxEvents)
+            );
+
+            querySnapshot = await getDocs(simpleQuery);
+          } else {
+            throw indexErr;
+          }
+        }
 
         if (querySnapshot.empty) {
+          console.log("No events found");
           setEvents([]);
           setLoading(false);
           return;
@@ -64,22 +110,31 @@ const EventCarousel = ({ maxEvents = 6 }) => {
 
         const fetchedEvents = querySnapshot.docs.map((doc) => {
           const data = doc.data();
+          console.log("Event data:", doc.id, data);
+
+          const processedImages = processEventImages(data, doc.id);
+
           return {
             id: doc.id,
             title: data.title || "Untitled Event",
             description: data.description || "No description provided",
             eventDate: data.eventDate || null,
             location: data.location || "TBA",
-            imageUrl: data.imageUrl || "/event-placeholder.jpg",
+            date: data.date || null,
+            imageUrl: processedImages.primaryImageUrl,
+            images: processedImages.images,
+            badge: data.badge !== "None" ? data.badge : null,
+            featured: data.featured || false,
             createdBy: data.createdBy || "admin",
             createdAt: data.createdAt || null,
-            ...data,
           };
         });
 
+        console.log("Processed events for carousel:", fetchedEvents.length);
         setEvents(fetchedEvents);
         setLoading(false);
       } catch (err) {
+        console.error("Failed to load events:", err);
         setError(`Failed to load events: ${err.message}`);
         setLoading(false);
       }
@@ -87,6 +142,92 @@ const EventCarousel = ({ maxEvents = 6 }) => {
 
     fetchEvents();
   }, [maxEvents]);
+
+  const processEventImages = (eventData, docId) => {
+    const defaultImage = "/event-placeholder.jpg";
+    let processedImages = [];
+    let primaryImageUrl = defaultImage;
+
+    if (
+      eventData.images &&
+      Array.isArray(eventData.images) &&
+      eventData.images.length > 0
+    ) {
+      processedImages = eventData.images.map((img, index) => {
+        if (typeof img === "string") {
+          return {
+            id: `img-${docId}-${index}-${Math.random()
+              .toString(36)
+              .substring(2, 9)}`,
+            url: img,
+            isDefault: false,
+          };
+        }
+
+        if (img && typeof img === "object") {
+          return {
+            id:
+              img.id ||
+              `img-${docId}-${index}-${Math.random()
+                .toString(36)
+                .substring(2, 9)}`,
+            url: img.url || defaultImage,
+            path: img.path || null,
+            isDefault: !img.url,
+          };
+        }
+
+        return {
+          id: `img-${docId}-fallback-${index}`,
+          url: defaultImage,
+          isDefault: true,
+        };
+      });
+
+      processedImages = processedImages.filter((img) => img && img.url);
+
+      if (processedImages.length > 0) {
+        primaryImageUrl = processedImages[0].url;
+      }
+    } else if (eventData.image && typeof eventData.image === "string") {
+      primaryImageUrl = eventData.image;
+      processedImages = [
+        {
+          id: `img-${docId}-main`,
+          url: eventData.image,
+          isDefault: false,
+        },
+      ];
+    } else {
+      processedImages = [
+        {
+          id: `img-${docId}-default`,
+          url: defaultImage,
+          isDefault: true,
+        },
+      ];
+    }
+
+    return {
+      images: processedImages,
+      primaryImageUrl: primaryImageUrl,
+    };
+  };
+
+  const getEventImageUrl = (event) => {
+    if (
+      event.images &&
+      Array.isArray(event.images) &&
+      event.images.length > 0
+    ) {
+      const firstImage = event.images[0];
+      return typeof firstImage === "object" ? firstImage.url : firstImage;
+    }
+    if (event.imageUrl) {
+      return event.imageUrl;
+    }
+    return "/event-placeholder.jpg";
+  };
 
   useEffect(() => {
     if (autoplay && loaded && instanceRef.current && events.length > 1) {
@@ -186,8 +327,19 @@ const EventCarousel = ({ maxEvents = 6 }) => {
     return event.location || event.venue || "TBA";
   };
 
-  const handleEventClick = (eventId) => {
-    window.location.href = `/events/${eventId}`;
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+    if (autoplayRef.current) {
+      clearInterval(autoplayRef.current);
+    }
+    setAutoplay(false);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+    setTimeout(() => setAutoplay(true), 1000);
   };
 
   const containerVariants = {
@@ -323,11 +475,15 @@ const EventCarousel = ({ maxEvents = 6 }) => {
 
                     <div className="relative h-52 overflow-hidden">
                       <motion.img
-                        src={event.imageUrl || "/event-placeholder.jpg"}
+                        src={getEventImageUrl(event)}
                         alt={event.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
+                          console.error("Image failed to load:", e.target.src);
                           e.target.src = "/event-placeholder.jpg";
+                          if (!e.target.src.includes("event-placeholder")) {
+                            e.target.src = "/event-placeholder.jpg";
+                          }
                         }}
                         whileHover={{ scale: 1.08 }}
                         transition={{ duration: 0.6 }}
@@ -382,7 +538,7 @@ const EventCarousel = ({ maxEvents = 6 }) => {
                       </div>
 
                       <button
-                        onClick={() => handleEventClick(event.id)}
+                        onClick={() => handleEventClick(event)}
                         className="mt-auto inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-600 transition-all duration-300 shadow-sm"
                       >
                         View Details
@@ -433,7 +589,7 @@ const EventCarousel = ({ maxEvents = 6 }) => {
             </div>
 
             {loaded && instanceRef.current && (
-              <div className="flex justify-center mt-6">
+              <div className="flex justify-center mt-1">
                 {Array.from({
                   length: instanceRef.current.track.details.slides.length,
                 }).map((_, idx) => (
@@ -461,11 +617,11 @@ const EventCarousel = ({ maxEvents = 6 }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="text-center mt-14"
+            className="text-center mt-5"
           >
             <button
               onClick={() => (window.location.href = "/events")}
-              className="inline-flex items-center px-7 py-3.5 bg-gradient-to-r from-green-600 to-green-500 text-white font-medium rounded-full shadow-lg hover:shadow-xl hover:from-green-700 hover:to-green-600 transition-all duration-300 text-lg"
+              className="inline-flex items-center px-7 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white font-medium rounded-2xl shadow-lg hover:shadow-xl hover:from-green-700 hover:to-green-600 transition-all duration-300 text-lg"
             >
               View All Events
               <svg
@@ -485,6 +641,16 @@ const EventCarousel = ({ maxEvents = 6 }) => {
           </motion.div>
         )}
       </div>
+
+      <AnimatePresence>
+        {isModalOpen && selectedEvent && (
+          <EventDetailsModal
+            event={selectedEvent}
+            onClose={closeModal}
+            isOpen={isModalOpen}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 };

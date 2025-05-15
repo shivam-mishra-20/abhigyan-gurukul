@@ -9,6 +9,7 @@ import {
   FaSearch,
   FaArrowRight,
 } from "react-icons/fa";
+import EventDetailsModal from "../components/EventDetailsModal";
 
 const Events = () => {
   const [events, setEvents] = useState([]);
@@ -16,6 +17,8 @@ const Events = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch all events on component mount
   useEffect(() => {
@@ -32,10 +35,20 @@ const Events = () => {
           setEvents([]);
           setFilteredEvents([]);
         } else {
-          const eventsList = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+          const eventsList = snapshot.docs.map((doc) => {
+            const data = doc.data();
+
+            // Process images consistently with EventCarousel
+            const processedImages = processEventImages(data, doc.id);
+
+            return {
+              id: doc.id,
+              ...data,
+              imageUrl: processedImages.primaryImageUrl,
+              images: processedImages.images,
+            };
+          });
+
           setEvents(eventsList);
           setFilteredEvents(eventsList);
         }
@@ -48,6 +61,87 @@ const Events = () => {
 
     fetchEvents();
   }, []);
+
+  // Process event images consistently with EventCarousel
+  const processEventImages = (eventData, docId) => {
+    const defaultImage = "/event-placeholder.jpg";
+    let processedImages = [];
+    let primaryImageUrl = defaultImage;
+
+    // Case 1: Modern format with images array of objects
+    if (
+      eventData.images &&
+      Array.isArray(eventData.images) &&
+      eventData.images.length > 0
+    ) {
+      processedImages = eventData.images.map((img, index) => {
+        // Handle if image is a string URL
+        if (typeof img === "string") {
+          return {
+            id: `img-${docId}-${index}-${Math.random()
+              .toString(36)
+              .substring(2, 9)}`,
+            url: img,
+            isDefault: false,
+          };
+        }
+
+        // Handle if image is an object with url property
+        if (img && typeof img === "object") {
+          return {
+            id:
+              img.id ||
+              `img-${docId}-${index}-${Math.random()
+                .toString(36)
+                .substring(2, 9)}`,
+            url: img.url || defaultImage,
+            path: img.path || null,
+            isDefault: !img.url,
+          };
+        }
+
+        return {
+          id: `img-${docId}-fallback-${index}`,
+          url: defaultImage,
+          isDefault: true,
+        };
+      });
+
+      // Filter out any invalid images
+      processedImages = processedImages.filter((img) => img && img.url);
+
+      // Set primary image URL if we have valid images
+      if (processedImages.length > 0) {
+        primaryImageUrl = processedImages[0].url;
+      }
+    }
+    // Case 2: Legacy format with single image string
+    else if (eventData.image && typeof eventData.image === "string") {
+      primaryImageUrl = eventData.image;
+      processedImages = [
+        {
+          id: `img-${docId}-main`,
+          url: eventData.image,
+          isDefault: false,
+        },
+      ];
+    }
+    // Case 3: No images found, use default
+    else {
+      processedImages = [
+        {
+          id: `img-${docId}-default`,
+          url: defaultImage,
+          isDefault: true,
+        },
+      ];
+    }
+
+    return {
+      images: processedImages,
+      primaryImageUrl: primaryImageUrl,
+    };
+  };
 
   // Apply filters and search
   useEffect(() => {
@@ -71,6 +165,16 @@ const Events = () => {
 
     setFilteredEvents(result);
   }, [filter, searchTerm, events]);
+
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   // Get unique badge types for filter dropdown
   const badgeTypes = [
@@ -198,23 +302,18 @@ const Events = () => {
                   >
                     {/* Event Image */}
                     <div className="relative h-48 sm:h-64 bg-gray-200">
-                      {event.image ? (
-                        <img
-                          src={event.image}
-                          alt={event.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src =
-                              "https://via.placeholder.com/800x400?text=No+Image";
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                          <span className="text-gray-400 text-lg">
-                            No image available
-                          </span>
-                        </div>
-                      )}
+                      <img
+                        src={
+                          event.imageUrl ||
+                          event.image ||
+                          "/event-placeholder.jpg"
+                        }
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = "/event-placeholder.jpg";
+                        }}
+                      />
 
                       {/* Badge */}
                       {event.badge && event.badge !== "None" && (
@@ -257,10 +356,7 @@ const Events = () => {
                       <div className="mt-auto">
                         <button
                           className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors"
-                          onClick={() => {
-                            // You can implement a modal or a separate view for event details here
-                            alert(`Event details for: ${event.title}`);
-                          }}
+                          onClick={() => handleEventClick(event)}
                         >
                           View Details
                           <FaArrowRight className="ml-2" />
@@ -274,6 +370,17 @@ const Events = () => {
           </div>
         )}
       </div>
+
+      {/* Event Details Modal */}
+      <AnimatePresence>
+        {isModalOpen && selectedEvent && (
+          <EventDetailsModal
+            event={selectedEvent}
+            onClose={closeModal}
+            isOpen={isModalOpen}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

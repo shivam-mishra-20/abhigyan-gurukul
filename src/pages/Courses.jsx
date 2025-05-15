@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import {
   FaBook,
@@ -11,11 +11,13 @@ import {
   FaQuoteLeft,
   FaQuoteRight,
   FaStar,
+  FaUserGraduate,
 } from "react-icons/fa";
+import { facultyMembers } from "../data/facultyData";
 
 const Courses = () => {
-  // State for active faculty tab
-  const [activeTab, setActiveTab] = useState("all");
+  // Reference to check if component is mounted
+  const isMounted = useRef(true);
 
   // Animation variants
   const fadeInUp = {
@@ -86,64 +88,6 @@ const Courses = () => {
       description:
         "Specialized courses for National and International Olympiads with advanced problem-solving techniques.",
       courses: ["Math Olympiad", "Science Olympiad", "Informatics Olympiad"],
-    },
-  ];
-
-  // Faculty data
-  const facultyMembers = [
-    {
-      id: 1,
-      name: "Abhigyan Gautam",
-      subject: "Mathematics",
-      experience: "8+ years",
-      image: "/Photo.png",
-      education: "M.Tech from IIT Delhi",
-      specialty: "Vedic Mathematics, JEE Advanced",
-    },
-    {
-      id: 2,
-      name: "Chandan Sir",
-      subject: "Physics",
-      experience: "10+ years",
-      image: "/Photo.png",
-      education: "M.Sc. Physics",
-      specialty: "Mechanics, Electromagnetism",
-    },
-    {
-      id: 3,
-      name: "Prakash Sharma",
-      subject: "Chemistry",
-      experience: "7+ years",
-      image: "/Photo.png",
-      education: "Ph.D. in Organic Chemistry",
-      specialty: "Organic Reactions, NEET Preparation",
-    },
-    {
-      id: 4,
-      name: "Aarti Patel",
-      subject: "Biology",
-      experience: "9+ years",
-      image: "/Photo.png",
-      education: "M.Sc. Bio-Sciences",
-      specialty: "Human Physiology, Genetics",
-    },
-    {
-      id: 5,
-      name: "Rajesh Gupta",
-      subject: "Computer Science",
-      experience: "6+ years",
-      image: "/Photo.png",
-      education: "B.Tech in Computer Science",
-      specialty: "Programming, Web Development",
-    },
-    {
-      id: 6,
-      name: "Sneha Desai",
-      subject: "English",
-      experience: "8+ years",
-      image: "/Photo.png",
-      education: "M.A. English Literature",
-      specialty: "Grammar, Creative Writing",
     },
   ];
 
@@ -219,13 +163,15 @@ const Courses = () => {
     },
   ];
 
-  // Filter faculty members based on active tab
-  const filteredFaculty =
-    activeTab === "all"
-      ? facultyMembers
-      : facultyMembers.filter(
-          (member) => member.subject.toLowerCase() === activeTab.toLowerCase()
-        );
+  // Image error handler function
+  const handleImageError = (e) => {
+    console.log("Image failed to load, using fallback");
+    e.target.onerror = null; // Prevent infinite fallback loop
+    e.target.src = "/fallback-profile.png"; // Use a fallback image
+    e.target.style.display = "none";
+    e.target.parentNode.innerHTML =
+      '<div class="flex items-center justify-center h-full w-full bg-gray-200"><FaUserGraduate class="text-6xl text-gray-400" /></div>';
+  };
 
   return (
     <div className="bg-gray-50">
@@ -329,40 +275,7 @@ const Courses = () => {
             </p>
           </motion.div>
 
-          {/* Faculty Filter Tabs */}
-          <motion.div
-            className="flex flex-wrap justify-center gap-2 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {[
-              "all",
-              "mathematics",
-              "physics",
-              "chemistry",
-              "biology",
-              "computer science",
-              "english",
-            ].map((tab) => (
-              <motion.button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-full ${
-                  activeTab === tab
-                    ? "bg-green-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-100"
-                } transition-colors`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </motion.button>
-            ))}
-          </motion.div>
-
-          {/* Faculty Cards */}
+          {/* Faculty Cards - No filtering, show all faculty */}
           <motion.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
             variants={containerAnimation}
@@ -370,7 +283,7 @@ const Courses = () => {
             whileInView="show"
             viewport={{ once: true }}
           >
-            {filteredFaculty.map((member) => (
+            {facultyMembers.map((member) => (
               <motion.div
                 key={member.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100"
@@ -380,11 +293,14 @@ const Courses = () => {
                   boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
                 }}
               >
-                <div className="h-48 overflow-hidden">
+                {/* Adjusted image container for better display */}
+                <div className="h-52 sm:h-56 md:h-60 overflow-hidden flex items-center justify-center bg-gray-50">
                   <img
                     src={member.image}
                     alt={member.name}
-                    className="w-full h-full object-cover object-center"
+                    className="w-full h-auto object-contain max-h-full"
+                    onError={handleImageError}
+                    loading="lazy"
                   />
                 </div>
                 <div className="p-6">
