@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -26,7 +27,7 @@ const studentAchievements = [
     achievement: "First place in Science Exhibition",
     score: "96%",
     rank: "District Rank 2",
-    subject: "Science",
+    subject: "Mathematics",
   },
   {
     id: 3,
@@ -35,7 +36,7 @@ const studentAchievements = [
     achievement: "Excellence in Literary Competition",
     score: "95%",
     rank: "School Rank 3",
-    subject: "English",
+    subject: "Mathematics",
   },
   {
     id: 4,
@@ -44,7 +45,7 @@ const studentAchievements = [
     achievement: "Outstanding performance in Regional Quiz",
     score: "97%",
     rank: "State Merit List",
-    subject: "Social Studies",
+    subject: "Mathematics",
   },
   {
     id: 5,
@@ -62,7 +63,7 @@ const studentAchievements = [
     achievement: "Gold medalist in Inter-school Debate",
     score: "94%",
     rank: "School Merit List",
-    subject: "Languages",
+    subject: "Mathematics",
   },
 ];
 
@@ -201,7 +202,9 @@ const ResultCarousel = () => {
     const slideStudents = studentAchievements.slice(startIndex, endIndex);
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {" "}
+        {/* Reduced gap from 6 to 3 */}
         {slideStudents.map((student, index) => (
           <motion.div
             key={student.id}
@@ -214,28 +217,34 @@ const ResultCarousel = () => {
             className="h-full"
           >
             <div className="bg-white rounded-xl overflow-hidden shadow-md h-full flex flex-col border border-green-100 transform-gpu">
-              <div className="p-4 text-center border-b border-green-50">
+              <div className="p-2 text-center border-b border-green-50">
+                {" "}
+                {/* Reduced padding from p-4 to p-2 */}
                 <h3 className="font-bold text-lg text-green-800">
                   {student.name}
                 </h3>
-                <div className="flex items-center justify-center mt-1">
-                  <FaStar className="text-amber-400 text-xs mr-1" />
-                  <span className="text-sm text-gray-600">{student.rank}</span>
-                </div>
               </div>
 
-              <div className="flex-1 bg-gradient-to-b from-green-50 to-white p-4 flex items-center justify-center">
-                <div className="relative w-full h-48 flex items-center justify-center">
+              <div className="flex-1 bg-gradient-to-b from-green-50 to-white p-2 flex items-center justify-center">
+                {" "}
+                {/* Reduced padding from p-4 to p-2 */}
+                <div className="relative w-full h-36 flex items-center justify-center">
+                  {" "}
+                  {/* Reduced height from h-48 to h-36 */}
                   <img
                     src={student.imageSrc}
-                    alt={`${student.name}'s achievement`}
+                    alt={`${student.name}`}
                     className="max-h-full max-w-full object-contain"
                   />
                 </div>
               </div>
 
-              <div className="p-4 bg-white">
-                <div className="mb-3">
+              <div className="p-2 bg-white">
+                {" "}
+                {/* Reduced padding from p-4 to p-2 */}
+                <div className="mb-2">
+                  {" "}
+                  {/* Reduced margin from mb-3 to mb-2 */}
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                     Subject
                   </div>
@@ -243,22 +252,12 @@ const ResultCarousel = () => {
                     {student.subject}
                   </div>
                 </div>
-
-                <div className="mb-3">
+                <div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                     Score
                   </div>
                   <div className="font-bold text-green-600 text-lg">
                     {student.score}
-                  </div>
-                </div>
-
-                <div className="bg-green-50 rounded-lg px-3 py-2 mt-2">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                    Achievement
-                  </div>
-                  <div className="text-sm text-green-800">
-                    {student.achievement}
                   </div>
                 </div>
               </div>

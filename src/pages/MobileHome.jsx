@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,6 +21,7 @@ import MobileResultCarousel from "../components/MobileResultCarousel";
 import MobileVideoCarousel from "../components/MobileVideoCarousel";
 import StudeentCarousel from "../components/StudentCarousel";
 import EventCarousel from "../components/EventCarousel";
+import ChatButton from "../components/ChatButton";
 
 const MobileHome = () => {
   // Image paths
@@ -409,6 +412,8 @@ const MobileHome = () => {
           Enroll Now
         </motion.button>
       </motion.div>
+      {/*Chatbutton*/}
+      <ChatButton />
     </>
   );
 };

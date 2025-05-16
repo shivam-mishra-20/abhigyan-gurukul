@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable no-unused-vars */
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import {
@@ -22,7 +24,7 @@ const Courses = () => {
   // Animation variants
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.4 } }, // Reduced from 0.6 to 0.4
   };
 
   const containerAnimation = {
@@ -30,14 +32,22 @@ const Courses = () => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.05, // Reduced from 0.1 to 0.05 for faster appearance
+        duration: 0.3, // Added specific duration
       },
     },
   };
 
   const itemAnimation = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
+    hidden: { opacity: 0, y: 15 }, // Reduced y from 20 to 15
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3, // Explicit shorter duration
+        ease: "easeOut", // Smoother easing function
+      },
+    },
   };
 
   // Course categories data
@@ -208,7 +218,7 @@ const Courses = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3 }} // Already optimized
           >
             <h2 className="text-3xl font-bold text-gray-800 mb-3">
               Our Course Categories
@@ -224,14 +234,14 @@ const Courses = () => {
             variants={containerAnimation}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "50px" }} // Added margin to start animation earlier
           >
             {courseCategories.map((category, index) => (
               <motion.div
                 key={index}
-                className="bg-white p-6 rounded-lg shadow-md border border-gray-100 hover:border-green-300 hover:shadow-lg transition-all"
+                className="bg-white p-6 rounded-lg shadow-md border border-gray-100 hover:border-green-300 hover:shadow-lg transition-all will-change-transform" // Added will-change-transform for optimization
                 variants={itemAnimation}
-                whileHover={{ y: -5 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }} // Faster hover animation
               >
                 <div className="mb-4">{category.icon}</div>
                 <h3 className="text-xl font-bold mb-2 text-gray-800">
@@ -331,7 +341,7 @@ const Courses = () => {
         </div>
       </section>
 
-      {/* Curriculum PDFs Section */}
+      {/* Curriculum PDFs Section
       <section className="py-16 px-4 md:px-8 bg-white">
         <div className="container mx-auto max-w-4xl">
           <motion.div
@@ -395,7 +405,7 @@ const Courses = () => {
             </p>
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials Section */}
       <section className="py-16 px-4 md:px-8 bg-green-50">
