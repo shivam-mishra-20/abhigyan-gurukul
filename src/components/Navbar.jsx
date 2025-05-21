@@ -1,3 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react/react-in-jsx-scope */
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence, useScroll } from "framer-motion";
@@ -178,8 +181,8 @@ const Navbar = () => {
             "About Us",
             "Faculties",
             "Admissions",
-            // "Courses",
-            // "Events",
+            "Courses",
+            "Events",
           ].map((text, i) => (
             <motion.div
               key={text}

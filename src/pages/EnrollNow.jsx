@@ -1,6 +1,5 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { db } from "../firebaseConfig";
-import { doc, setDoc, getDoc, arrayUnion } from "firebase/firestore";
 import { motion } from "framer-motion";
 
 const ContactSection = () => {
@@ -24,28 +23,39 @@ const ContactSection = () => {
     setSuccessMessage("");
 
     try {
-      const contactDocRef = doc(db, "contacts", "contactForm");
-
-      // Fetch existing data (if any)
-      const contactDoc = await getDoc(contactDocRef);
-      const existingData = contactDoc.exists()
-        ? contactDoc.data()
-        : { submissions: [] };
-
-      // Append new submission to existing data
-      await setDoc(
-        contactDocRef,
-        {
-          submissions: arrayUnion(formData),
-        },
-        { merge: true }
+      // Create form data for FormSubmit
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("message", formData.message);
+      formDataToSend.append(
+        "_subject",
+        `Enrollment Inquiry from ${formData.name}`
       );
+      // Add a honeypot field to prevent spam
+      formDataToSend.append("_honey", "");
+      // Disable captcha
+      formDataToSend.append("_captcha", "false");
+
+      // Send using FormSubmit with obfuscated email
+      const response = await fetch(
+        "https://formsubmit.co/38cf222be60a9d293a62f4f037c17e69",
+        {
+          method: "POST",
+          body: formDataToSend,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Form submission failed");
+      }
 
       setSuccessMessage("Your form has been submitted successfully!");
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error) {
-      console.error("Error updating document: ", error);
-      alert("Error submitting form. Try again later.");
+      console.error("Error submitting form: ", error);
+      alert("Error submitting form. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -105,6 +115,9 @@ const ContactSection = () => {
         )}
 
         <form onSubmit={handleSubmit} className="w-full">
+          {/* Hidden honeypot field for spam protection */}
+          <input type="text" name="_honey" style={{ display: "none" }} />
+
           <label className="text-lg font-medium">Name:</label>
           <input
             type="text"

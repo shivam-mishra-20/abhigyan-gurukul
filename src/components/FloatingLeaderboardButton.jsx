@@ -1,3 +1,6 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/no-unknown-property */
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { collection, getDocs } from "firebase/firestore";
@@ -54,9 +57,7 @@ const FloatingLeaderboardButton = () => {
 
   // Fetch data when selections change
   useEffect(() => {
-    if (isOpen) {
-      fetchTopStudents(selectedClass, selectedBatch);
-    }
+    fetchTopStudents(selectedClass, selectedBatch);
   }, [selectedBatch, selectedClass]);
 
   const fetchTopStudents = async (classFilter, batchFilter) => {
@@ -411,21 +412,16 @@ const FloatingLeaderboardButton = () => {
                 </motion.div>
               ) : (
                 <>
-                  {/* Podium UI - Simplified for faster performance */}
-                  {topStudents.length >= 3 && (
-                    <motion.div
-                      className="mb-8 pt-5"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                  {/* Podium UI - Using the same rendering approach as the leaderboard ranking */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mb-8 pt-5"
+                  >
+                    {topStudents.length >= 3 && (
                       <div className="flex items-end justify-center h-[200px] relative">
                         {/* Second Place */}
-                        <motion.div
-                          variants={studentVariants}
-                          custom={1}
-                          className="relative mx-1 flex flex-col items-center"
-                        >
+                        <div className="relative mx-1 flex flex-col items-center">
                           {/* Student info - Positioned higher */}
                           <div
                             className="absolute top-2 left-0 right-0 flex flex-col items-center"
@@ -439,7 +435,7 @@ const FloatingLeaderboardButton = () => {
                                 className="font-bold text-lg"
                                 style={{ color: medalColors[1].text }}
                               >
-                                {topStudents[1]?.name.charAt(0)}
+                                {topStudents[1]?.name?.charAt(0) || ""}
                               </span>
                             </div>
                             <div className="px-2 py-0.5 rounded-full text-xs bg-gray-300 text-gray-800 shadow-sm border border-gray-200 mb-1 flex items-center">
@@ -450,7 +446,7 @@ const FloatingLeaderboardButton = () => {
                               <span>2nd</span>
                             </div>
                             <div className="text-xs font-semibold max-w-[70px] text-center truncate">
-                              {topStudents[1]?.name}
+                              {topStudents[1]?.name || ""}
                             </div>
                           </div>
 
@@ -459,24 +455,20 @@ const FloatingLeaderboardButton = () => {
                             className="w-20 rounded-t-lg flex items-center justify-center"
                             initial={{ height: 0 }}
                             animate={{ height: 70 }}
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.3, delay: 0.1 }}
                             style={{
                               background: medalColors[1].podium,
                               marginTop: "60px",
                             }}
                           >
                             <div className="font-bold text-white text-shadow">
-                              {topStudents[1]?.percentage}%
+                              {topStudents[1]?.percentage || "0"}%
                             </div>
                           </motion.div>
-                        </motion.div>
+                        </div>
 
                         {/* First Place */}
-                        <motion.div
-                          variants={studentVariants}
-                          custom={0}
-                          className="relative mx-2 flex flex-col items-center z-10"
-                        >
+                        <div className="relative mx-2 flex flex-col items-center z-10">
                           {/* Student info - Positioned higher */}
                           <div
                             className="absolute top-2 left-0 right-0 flex flex-col items-center"
@@ -491,7 +483,7 @@ const FloatingLeaderboardButton = () => {
                                 className="font-bold text-2xl"
                                 style={{ color: medalColors[0].text }}
                               >
-                                {topStudents[0]?.name.charAt(0)}
+                                {topStudents[0]?.name?.charAt(0) || ""}
                               </span>
                             </div>
                             <div className="px-2.5 py-0.5 rounded-full text-xs bg-amber-300 text-amber-900 shadow-sm border border-amber-400 mb-1 flex items-center">
@@ -502,7 +494,7 @@ const FloatingLeaderboardButton = () => {
                               <span>1st</span>
                             </div>
                             <div className="text-sm font-bold max-w-[80px] text-center truncate">
-                              {topStudents[0]?.name}
+                              {topStudents[0]?.name || ""}
                             </div>
                           </div>
 
@@ -518,17 +510,13 @@ const FloatingLeaderboardButton = () => {
                             }}
                           >
                             <div className="font-bold text-white text-shadow text-lg">
-                              {topStudents[0]?.percentage}%
+                              {topStudents[0]?.percentage || "0"}%
                             </div>
                           </motion.div>
-                        </motion.div>
+                        </div>
 
                         {/* Third Place */}
-                        <motion.div
-                          variants={studentVariants}
-                          custom={2}
-                          className="relative mx-1 flex flex-col items-center"
-                        >
+                        <div className="relative mx-1 flex flex-col items-center">
                           {/* Student info - Positioned higher */}
                           <div
                             className="absolute top-2 left-0 right-0 flex flex-col items-center"
@@ -542,7 +530,7 @@ const FloatingLeaderboardButton = () => {
                                 className="font-bold"
                                 style={{ color: medalColors[2].text }}
                               >
-                                {topStudents[2]?.name.charAt(0)}
+                                {topStudents[2]?.name?.charAt(0) || ""}
                               </span>
                             </div>
                             <div className="px-2 py-0.5 rounded-full text-xs bg-amber-200 text-amber-800 shadow-sm border border-amber-300 mb-1 flex items-center">
@@ -553,7 +541,7 @@ const FloatingLeaderboardButton = () => {
                               <span>3rd</span>
                             </div>
                             <div className="text-xs font-semibold max-w-[60px] text-center truncate">
-                              {topStudents[2]?.name}
+                              {topStudents[2]?.name || ""}
                             </div>
                           </div>
 
@@ -562,28 +550,30 @@ const FloatingLeaderboardButton = () => {
                             className="w-[4.5rem] rounded-t-lg flex items-center justify-center"
                             initial={{ height: 0 }}
                             animate={{ height: 50 }}
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.3, delay: 0.2 }}
                             style={{
                               background: medalColors[2].podium,
                               marginTop: "55px",
                             }}
                           >
                             <div className="font-bold text-white text-shadow text-sm">
-                              {topStudents[2]?.percentage}%
+                              {topStudents[2]?.percentage || "0"}%
                             </div>
                           </motion.div>
-                        </motion.div>
+                        </div>
                       </div>
+                    )}
 
-                      {/* Podium Base */}
+                    {/* Podium Base */}
+                    {topStudents.length >= 3 && (
                       <motion.div
                         initial={{ scaleY: 0, originY: 0 }}
                         animate={{ scaleY: 1 }}
                         transition={{ duration: 0.2 }}
                         className="h-2.5 rounded-lg w-full bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300"
                       />
-                    </motion.div>
-                  )}
+                    )}
+                  </motion.div>
 
                   <div className="mt-6 mb-2">
                     <div className="text-sm font-medium text-gray-500 flex items-center">

@@ -26,6 +26,7 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaExclamationTriangle,
+  FaLink,
 } from "react-icons/fa";
 import {
   ref,
@@ -53,6 +54,10 @@ const AdminEvents = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadingImages, setUploadingImages] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageUrl, setImageUrl] = useState("");
+  const [urlError, setUrlError] = useState("");
+  const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
+  const [multipleUrls, setMultipleUrls] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -265,6 +270,89 @@ const AdminEvents = () => {
       setErrorMessage(errorMsg);
     } finally {
       setUploadingImages(false);
+    }
+  };
+
+  const handleAddImageFromUrl = async () => {
+    if (!imageUrl.trim()) {
+      setUrlError("Please enter a valid URL");
+      return;
+    }
+
+    setUrlError("");
+    setIsAddingFromUrl(true);
+
+    try {
+      const urls = multipleUrls
+        ? imageUrl
+            .split("\n")
+            .map((url) => url.trim())
+            .filter((url) => url !== "")
+        : [imageUrl.trim()];
+
+      if (urls.length === 0) {
+        setUrlError("No valid URLs found");
+        setIsAddingFromUrl(false);
+        return;
+      }
+
+      const addedImages = [];
+      const failedUrls = [];
+
+      for (const url of urls) {
+        try {
+          new URL(url);
+
+          await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () =>
+              reject(new Error(`Cannot load image from: ${url}`));
+            img.src = url;
+          });
+
+          addedImages.push({
+            url: url,
+            path: null,
+            name: `url-image-${new Date().getTime()}-${Math.random()
+              .toString(36)
+              .substr(2, 9)}`,
+            contentType: "image/url",
+            isExternalUrl: true,
+            uploadedAt: new Date().getTime(),
+          });
+        } catch (error) {
+          console.error("Error with URL:", url, error);
+          failedUrls.push(url);
+        }
+      }
+
+      if (addedImages.length > 0) {
+        setCurrentEvent((prev) => ({
+          ...prev,
+          images: [...prev.images, ...addedImages],
+        }));
+
+        setImageUrl("");
+        setSuccessMessage(
+          `Successfully added ${addedImages.length} image${
+            addedImages.length !== 1 ? "s" : ""
+          } from URL${addedImages.length !== 1 ? "s" : ""}`
+        );
+      }
+
+      if (failedUrls.length > 0) {
+        setUrlError(
+          `Failed to load ${failedUrls.length} URL${
+            failedUrls.length !== 1 ? "s" : ""
+          }: ${failedUrls.join(", ")}`
+        );
+      }
+    } catch (error) {
+      console.error("Error adding image from URL:", error);
+      setUrlError(error.message || "Failed to load image from URL");
+    } finally {
+      setIsAddingFromUrl(false);
     }
   };
 
@@ -654,6 +742,73 @@ const AdminEvents = () => {
                       </div>
                     </div>
 
+                    <div className="border rounded-md p-4 bg-gray-50">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
+                        <span>Add Image from URL</span>
+                        <label className="inline-flex items-center cursor-pointer text-xs font-normal">
+                          <input
+                            type="checkbox"
+                            checked={multipleUrls}
+                            onChange={() => setMultipleUrls(!multipleUrls)}
+                            className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                          />
+                          <span className="ml-2">Multiple URLs</span>
+                        </label>
+                      </h4>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex-grow">
+                          {multipleUrls ? (
+                            <textarea
+                              value={imageUrl}
+                              onChange={(e) => setImageUrl(e.target.value)}
+                              placeholder="Enter one image URL per line"
+                              rows={3}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={imageUrl}
+                              onChange={(e) => setImageUrl(e.target.value)}
+                              placeholder="Enter image URL"
+                              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          )}
+                          {urlError && (
+                            <p className="text-red-600 text-xs mt-1">
+                              {urlError}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleAddImageFromUrl}
+                          disabled={isAddingFromUrl || !imageUrl.trim()}
+                          className={`px-4 py-2 ${
+                            isAddingFromUrl || !imageUrl.trim()
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-indigo-600 text-white hover:bg-indigo-700"
+                          } rounded-md flex items-center justify-center transition-colors w-full sm:w-auto`}
+                        >
+                          {isAddingFromUrl ? (
+                            <FaSpinner className="animate-spin mr-1" />
+                          ) : (
+                            <FaLink className="mr-1" />
+                          )}
+                          {isAddingFromUrl
+                            ? "Adding..."
+                            : multipleUrls
+                            ? "Add All URLs"
+                            : "Add URL"}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {multipleUrls
+                          ? "Enter one image URL per line. Each URL must directly link to an image."
+                          : "Paste a direct link to an image (must be publicly accessible)."}
+                      </p>
+                    </div>
+
                     {currentEvent.images.length > 0 && (
                       <div className="border rounded-md p-4 bg-gray-50">
                         <div className="mb-3 flex items-center justify-between">
@@ -761,8 +916,8 @@ const AdminEvents = () => {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    You can upload multiple images. Drag images in the thumbnail
-                    strip to reorder them.
+                    You can upload multiple images from your device or add them
+                    from URLs.
                   </p>
                 </div>
 

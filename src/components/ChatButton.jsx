@@ -1,7 +1,7 @@
+/* eslint-disable react/no-unescaped-entities */
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaComment, FaTimes, FaPaperPlane, FaWhatsapp } from "react-icons/fa";
-import emailjs from "@emailjs/browser";
 
 const ChatButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,19 +34,30 @@ const ChatButton = () => {
     setIsSending(true);
 
     try {
-      // Send email using EmailJS
-      const response = await emailjs.send(
-        "service_e72ewfh", // Replace with your EmailJS service ID
-        "template_o314ugj", // Replace with your EmailJS template ID
+      // Create form data for FormSubmit
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("message", formData.message);
+      formDataToSend.append("_subject", `Website Chat from ${formData.name}`);
+      // Add a honeypot field to prevent spam
+      formDataToSend.append("_honey", "");
+      // Disable captcha
+      formDataToSend.append("_captcha", "false");
+
+      // Send using FormSubmit with obfuscated email
+      const response = await fetch(
+        "https://formsubmit.co/38cf222be60a9d293a62f4f037c17e69",
         {
-          from_name: formData.name,
-          reply_to: formData.email,
-          message: formData.message,
-        },
-        "t-d_OiGznE76DcOnl" // Replace with your EmailJS public key
+          method: "POST",
+          body: formDataToSend,
+        }
       );
 
-      console.log("Email sent successfully:", response);
+      if (!response.ok) {
+        throw new Error("Form submission failed");
+      }
+
       setIsSending(false);
       setIsSent(true);
 
@@ -57,7 +68,7 @@ const ChatButton = () => {
         message: "",
       });
     } catch (error) {
-      console.error("Failed to send email:", error);
+      console.error("Failed to send message:", error);
       setIsSending(false);
       alert("Failed to send message. Please try again.");
     }
@@ -173,6 +184,9 @@ const ChatButton = () => {
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="p-4 space-y-3">
+                {/* Hidden honeypot field for spam protection */}
+                <input type="text" name="_honey" style={{ display: "none" }} />
+
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">
                     Name

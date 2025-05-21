@@ -10,6 +10,7 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaEnvelope,
+  FaSpinner,
 } from "react-icons/fa";
 
 const Admissions = () => {
@@ -24,6 +25,7 @@ const Admissions = () => {
   // Form validation state
   const [errors, setErrors] = useState({});
   const [submitMessage, setSubmitMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState(null);
@@ -89,21 +91,58 @@ const Admissions = () => {
       return;
     }
 
-    // Mock form submission
-    setSubmitMessage(
-      "Thank you! Your admission inquiry has been submitted successfully."
-    );
+    // Set submitting state to show loading spinner
+    setIsSubmitting(true);
 
-    // Reset form after submission
-    setTimeout(() => {
-      setFormData({
-        fullName: "",
-        email: "",
-        class: "",
-        message: "",
+    // Create form data for FormSubmit
+    const formDataToSend = new FormData();
+    formDataToSend.append("fullName", formData.fullName);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("class", formData.class);
+    formDataToSend.append(
+      "message",
+      formData.message || "No additional message provided"
+    );
+    formDataToSend.append(
+      "_subject",
+      `Admission Inquiry from ${formData.fullName}`
+    );
+    // Add a honeypot field to prevent spam
+    formDataToSend.append("_honey", "");
+    // Disable captcha
+    formDataToSend.append("_captcha", "false");
+    // Add redirect URL (optional - remove if not needed)
+    // formDataToSend.append('_next', 'https://yourwebsite.com/thanks');
+
+    // Send using FormSubmit with obfuscated email
+    fetch("https://formsubmit.co/38cf222be60a9d293a62f4f037c17e69", {
+      method: "POST",
+      body: formDataToSend,
+    })
+      .then((response) => {
+        if (response.ok) {
+          setSubmitMessage(
+            "Thank you! Your admission inquiry has been submitted successfully. We'll get back to you soon."
+          );
+          setFormData({
+            fullName: "",
+            email: "",
+            class: "",
+            message: "",
+          });
+        } else {
+          throw new Error("Form submission failed");
+        }
+      })
+      .catch((error) => {
+        console.error("Error sending form:", error);
+        setSubmitMessage(
+          "Something went wrong! Please try again later or contact us directly."
+        );
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
-      setSubmitMessage("");
-    }, 5000);
   };
 
   // Toggle FAQ accordion
@@ -147,14 +186,14 @@ const Admissions = () => {
 
   // Key dates
   const keyDates = [
-    { event: "Application Opens", date: "April 1, 2023" },
-    { event: "Early Application Deadline", date: "May 15, 2023" },
-    { event: "Regular Application Deadline", date: "June 30, 2023" },
-    { event: "Admission Tests", date: "July 10-15, 2023" },
-    { event: "Interview Rounds", date: "July 20-25, 2023" },
-    { event: "Results Announcement", date: "August 5, 2023" },
-    { event: "Registration & Fee Payment", date: "August 10-20, 2023" },
-    { event: "Orientation Day", date: "August 28, 2023" },
+    { event: "Application Opens", date: "April 1, 2025" },
+    { event: "Early Application Deadline", date: "May 15, 2025" },
+    { event: "Regular Application Deadline", date: "June 30, 2025" },
+    // { event: "Admission Tests", date: "July 10-15, 2025" },
+    // { event: "Interview Rounds", date: "July 20-25, 2025" },
+    // { event: "Results Announcement", date: "August 5, 2025" },
+    { event: "Registration & Fee Payment", date: "August 10-20, 2025" },
+    // { event: "Orientation Day", date: "August 28, 2025" },
   ];
 
   // FAQ data
@@ -436,17 +475,40 @@ const Admissions = () => {
                   animate={{ scale: 1, opacity: 1 }}
                   className="flex items-center justify-center mb-4"
                 >
-                  <div className="bg-green-100 p-3 rounded-full">
-                    <FaCheckCircle className="text-green-600 text-4xl" />
+                  <div
+                    className={`p-3 rounded-full ${
+                      submitMessage.includes("Something went wrong")
+                        ? "bg-red-100"
+                        : "bg-green-100"
+                    }`}
+                  >
+                    <FaCheckCircle
+                      className={`text-4xl ${
+                        submitMessage.includes("Something went wrong")
+                          ? "text-red-600"
+                          : "text-green-600"
+                      }`}
+                    />
                   </div>
                 </motion.div>
-                <h3 className="text-xl font-bold text-green-700 mb-2">
-                  Thank You!
+                <h3
+                  className={`text-xl font-bold mb-2 ${
+                    submitMessage.includes("Something went wrong")
+                      ? "text-red-700"
+                      : "text-green-700"
+                  }`}
+                >
+                  {submitMessage.includes("Something went wrong")
+                    ? "Oops!"
+                    : "Thank You!"}
                 </h3>
                 <p className="text-gray-600">{submitMessage}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Hidden honeypot field for spam protection */}
+                <input type="text" name="_honey" style={{ display: "none" }} />
+
                 <div>
                   <label
                     htmlFor="fullName"
@@ -544,11 +606,19 @@ const Admissions = () => {
                 <div className="pt-2">
                   <motion.button
                     type="submit"
-                    className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    disabled={isSubmitting}
+                    className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition flex items-center justify-center"
+                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                   >
-                    Submit Request
+                    {isSubmitting ? (
+                      <>
+                        <FaSpinner className="animate-spin mr-2" />{" "}
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Request"
+                    )}
                   </motion.button>
                 </div>
               </form>

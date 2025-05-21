@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unknown-property */
+/* eslint-disable react/react-in-jsx-scope */
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { useMediaQuery } from "react-responsive";
 import Navbar from "./components/Navbar";

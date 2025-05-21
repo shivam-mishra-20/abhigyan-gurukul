@@ -1,3 +1,4 @@
+/* eslint-disable react/react-in-jsx-scope */
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeable } from "react-swipeable";
@@ -10,43 +11,43 @@ import {
   FaGraduationCap,
 } from "react-icons/fa";
 
-// Enhanced student data with achievements
+// Enhanced student data with subject and score information
 const studentData = [
   {
     name: "Hriday",
     image: "/Hriday.png",
-    achievement: "98% in Science",
-    rank: "School Topper",
+    subject: "Mathematics",
+    score: "98%",
   },
   {
     name: "Dhyey",
     image: "/Dhyey.png",
-    achievement: "96% in Mathematics",
-    rank: "District Rank 2",
+    subject: "Mathematics",
+    score: "96%",
   },
   {
     name: "Jisha",
     image: "/Jisha.png",
-    achievement: "95% Overall",
-    rank: "School Rank 3",
+    subject: "Mathematics",
+    score: "95%",
   },
   {
     name: "Jwalin",
     image: "/Jwalin.png",
-    achievement: "97% in English",
-    rank: "State Merit List",
+    subject: "Mathematics",
+    score: "97%",
   },
   {
     name: "Kenit",
     image: "/kenit.png",
-    achievement: "99% in Mathematics",
-    rank: "State Topper",
+    subject: "Mathematics",
+    score: "99%",
   },
   {
     name: "Freya",
     image: "/Freya.png",
-    achievement: "94% Overall",
-    rank: "School Merit List",
+    subject: "Mathematics",
+    score: "94%",
   },
 ];
 
@@ -263,7 +264,7 @@ export default function MobileResultCarousel() {
           </div>
         </motion.div>
 
-        {/* Mobile-Optimized Carousel */}
+        {/* Mobile-Optimized Carousel - Simplified */}
         <div className="relative mb-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -272,7 +273,7 @@ export default function MobileResultCarousel() {
             className="relative mx-auto overflow-hidden rounded-2xl shadow-lg bg-white"
             style={{
               width: Math.min(dimensions.width - 32, 500), // Max width with padding
-              height: Math.min(dimensions.width * 1, 440), // Taller for better layout
+              height: Math.min(dimensions.width * 0.9, 380), // Reduced height for simpler cards
             }}
           >
             <div
@@ -288,52 +289,59 @@ export default function MobileResultCarousel() {
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  className="absolute inset-0 flex flex-col items-center p-4"
+                  className="absolute inset-0 flex flex-col items-center p-3" // reduced padding
                 >
-                  {/* Student Name & Achievement Header */}
+                  {/* Student Name Header */}
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
-                    className="w-full mb-3"
+                    className="w-full mb-2 p-2 border-b border-green-50" // Added border like desktop version
                   >
                     <h4 className="text-xl font-bold text-green-800 text-center">
                       {currentStudent.name}
                     </h4>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <FaStar className="text-amber-400 text-xs" />
-                      <span className="text-sm text-gray-600">
-                        {currentStudent.rank}
-                      </span>
-                    </div>
                   </motion.div>
 
-                  {/* Student Score Image */}
+                  {/* Student Image - Simplified */}
                   <motion.div
                     variants={imageVariants}
                     whileTap="tap"
-                    className="w-full flex-1 bg-gradient-to-b from-green-50 to-white rounded-xl shadow-sm overflow-hidden border border-green-100 flex items-center justify-center p-2"
+                    className="w-full flex-1 bg-gradient-to-b from-green-50 to-white rounded-xl overflow-hidden flex items-center justify-center p-2"
                   >
                     <img
                       src={currentStudent.image}
-                      alt={`${currentStudent.name}'s achievement`}
+                      alt={currentStudent.name}
                       className="max-w-full max-h-full object-contain"
                       loading={currentIndex === 0 ? "eager" : "lazy"}
                     />
                   </motion.div>
 
-                  {/* Achievement Details */}
+                  {/* Subject and Score - Simplified */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.3 }}
-                    className="w-full mt-4 text-center"
+                    className="w-full mt-2 p-2" // reduced margin and padding
                   >
-                    <div className="bg-green-50 rounded-lg px-4 py-3">
-                      <p className="text-sm text-gray-500 mb-1">Achievement</p>
-                      <p className="text-green-700 font-semibold">
-                        {currentStudent.achievement}
-                      </p>
+                    <div className="mb-2">
+                      {" "}
+                      {/* Matching desktop layout */}
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                        Subject
+                      </div>
+                      <div className="font-medium text-gray-800">
+                        {currentStudent.subject}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                        Score
+                      </div>
+                      <div className="font-bold text-green-600 text-lg">
+                        {currentStudent.score}
+                      </div>
                     </div>
                   </motion.div>
                 </motion.div>
