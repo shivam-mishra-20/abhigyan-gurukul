@@ -38,16 +38,16 @@ const HeroSection = () => {
       text: "Admissions",
       path: "/admissions",
     },
-    {
-      icon: <FaChalkboardTeacher className="text-lg" />,
-      text: "Courses",
-      path: "/courses",
-    },
-    {
-      icon: <FaCalendarAlt className="text-lg" />,
-      text: "Events",
-      path: "/events",
-    },
+    // {
+    //   icon: <FaChalkboardTeacher className="text-lg" />,
+    //   text: "Courses",
+    //   path: "/courses",
+    // },
+    // {
+    //   icon: <FaCalendarAlt className="text-lg" />,
+    //   text: "Events",
+    //   path: "/events",
+    // },
   ];
 
   return (
