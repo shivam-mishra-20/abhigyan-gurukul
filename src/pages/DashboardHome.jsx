@@ -18,10 +18,33 @@ import {
   FaExclamationCircle,
 } from "react-icons/fa";
 
+// Custom hook for responsive design
+const useResponsiveDisplay = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkIsMobile();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkIsMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
+
+  return isMobile;
+};
+
 const DashboardHome = ({ name }) => {
   const role = localStorage.getItem("userRole");
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
+  const isMobile = useResponsiveDisplay();
 
   useEffect(() => {
     setMounted(true);
@@ -198,69 +221,129 @@ const DashboardHome = ({ name }) => {
     dashboardCards = studentCards;
   }
 
+  // Desktop welcome section rendering
+  const renderDesktopWelcome = () => (
+    <motion.div
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="bg-gradient-to-r from-white to-gray-50 p-6 rounded-xl shadow-sm border border-gray-100"
+    >
+      <div className="flex flex-row justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Welcome, <span className="text-green-700">{name}!</span>
+          </h1>
+          <p className="text-gray-500 mt-1">{formattedDate}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  // Mobile welcome section rendering
+  const renderMobileWelcome = () => (
+    <motion.div
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="bg-gradient-to-r from-white to-gray-50 p-4 rounded-xl shadow-sm border border-gray-100"
+    >
+      <div className="flex flex-col items-start">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Hi, <span className="text-green-700">{name}!</span>
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">{formattedDate}</p>
+      </div>
+    </motion.div>
+  );
+
+  // Desktop cards rendering
+  const renderDesktopCards = () => (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-3 gap-6 mb-8"
+    >
+      {dashboardCards.map((card, index) => (
+        <motion.div
+          key={index}
+          variants={itemVariants}
+          whileHover={{
+            y: -5,
+            boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)",
+          }}
+          className={`${card.bg} rounded-lg p-6 shadow-md cursor-pointer ${
+            card.highlight ? "border-l-4 border-green-500" : ""
+          }`}
+          onClick={() => navigate(card.route)}
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-bold text-xl mb-2">{card.title}</h3>
+              <p className="text-sm opacity-80">{card.description}</p>
+            </div>
+            <div className="rounded-full p-3 bg-white bg-opacity-60">
+              {card.icon}
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+
+  // Mobile cards rendering
+  const renderMobileCards = () => (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex flex-col space-y-4 mb-8"
+    >
+      {dashboardCards.map((card, index) => (
+        <motion.div
+          key={index}
+          variants={itemVariants}
+          whileTap={{ scale: 0.98 }}
+          className={`${
+            card.bg
+          } rounded-lg p-4 shadow-md cursor-pointer flex items-center ${
+            card.highlight ? "border-l-4 border-green-500" : ""
+          }`}
+          onClick={() => navigate(card.route)}
+        >
+          <div className="rounded-full p-2 bg-white bg-opacity-60 mr-4">
+            {card.icon}
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">{card.title}</h3>
+            <p className="text-xs opacity-80">{card.description}</p>
+          </div>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+
   return (
     <motion.div
-      className="space-y-8 px-4 md:px-10 py-6"
+      className={`space-y-6 ${isMobile ? "px-3 py-4" : "px-10 py-6"}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-white to-gray-50 p-6 rounded-xl shadow-sm border border-gray-100"
-      >
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Welcome, <span className="text-green-700">{name}!</span>
-            </h1>
-            <p className="text-gray-500 mt-1">{formattedDate}</p>
-          </div>
-        </div>
-      </motion.div>
+      {isMobile ? renderMobileWelcome() : renderDesktopWelcome()}
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
-      >
-        {dashboardCards.map((card, index) => (
-          <motion.div
-            key={index}
-            variants={itemVariants}
-            whileHover={{
-              y: -5,
-              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)",
-            }}
-            className={`${card.bg} rounded-lg p-6 shadow-md cursor-pointer ${
-              card.highlight ? "border-l-4 border-green-500" : ""
-            }`}
-            onClick={() => navigate(card.route)}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-xl mb-2">{card.title}</h3>
-                <p className="text-sm opacity-80">{card.description}</p>
-              </div>
-              <div className="rounded-full p-3 bg-white bg-opacity-60">
-                {card.icon}
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
+      {isMobile ? renderMobileCards() : renderDesktopCards()}
+
+      {role === "admin" && (
+        <div className={isMobile ? "mt-4" : "mt-8"}>
+          <AdminFeedbackDisplay />
+        </div>
+      )}
 
       {role === "student" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <StudentPerformanceChart />
-          </div>
-          <div>
-            <StudentComplaintsWidget />
-          </div>
+        <div className={isMobile ? "mt-4" : ""}>
+          <StudentPerformanceChart />
         </div>
       )}
     </motion.div>
