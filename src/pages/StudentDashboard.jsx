@@ -207,14 +207,14 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-              <Route
+              {/* <Route
                 path="admin/admin-chat"
                 element={
                   <ProtectedStudent roles={["admin", "teacher"]}>
                     <AdminChatPage />
                   </ProtectedStudent>
                 }
-              />
+              /> */}
               <Route
                 path="/adminevents"
                 element={
