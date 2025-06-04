@@ -208,6 +208,14 @@ const StudentDashboard = () => {
                 }
               />
               <Route
+                path="admin/admin-chat"
+                element={
+                  <ProtectedStudent roles={["admin", "teacher"]}>
+                    <AdminChatPage />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
                 path="/adminevents"
                 element={
                   <ProtectedStudent roles={["admin", "teacher"]}>
@@ -356,12 +364,22 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           />
         )}
         {["teacher", "admin"].includes(userRole) && (
-          <SidebarItem
-            icon={<FaBook />}
-            label="Syllabus Management"
-            active={location.pathname === "/student-dashboard/syllabus"}
-            onClick={() => handleNav("/student-dashboard/syllabus")}
-          />
+          <>
+            <SidebarItem
+              icon={<FaBook />}
+              label="Syllabus Management"
+              active={location.pathname === "/student-dashboard/syllabus"}
+              onClick={() => handleNav("/student-dashboard/syllabus")}
+            />
+            <SidebarItem
+              icon={<FaBook />}
+              label="Chat System WIP"
+              active={
+                location.pathname === "/student-dashboard/admin/admin-chat"
+              }
+              onClick={() => handleNav("/student-dashboard/admin/admin-chat")}
+            />
+          </>
         )}
         {userRole === "student" && (
           <SidebarItem

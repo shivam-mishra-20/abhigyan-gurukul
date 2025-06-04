@@ -59,7 +59,7 @@ const Leaders = ({ info, isFlagged }) => {
       img: "/PratyakshaCropped.jpg",
     },
     { name: "Shivam Sir", subject: "Tech Team", img: "/Shivam.png" },
-    { name: "Sarman Sir", subject: "Tech Team", img: "/Sarman.jpg" },
+    // { name: "Sarman Sir", subject: "Tech Team", img: "/Sarman.jpg" },
   ];
 
   if (isFlagged) {

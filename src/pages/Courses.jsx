@@ -76,7 +76,7 @@ const Courses = () => {
       title: "Social Studies",
       description:
         "Engaging social studies courses that explore history, civics, geography and economics through interactive learning.",
-      courses: ["History", "Geography", "Civics", "Economics"],
+      courses: ["History", "Geography", "Political Science", "Economics"],
     },
     {
       icon: <FaBook className="text-3xl text-yellow-500" />,

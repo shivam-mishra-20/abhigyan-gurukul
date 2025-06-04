@@ -403,8 +403,8 @@ const Navbar = () => {
                   "About Us",
                   "Faculties",
                   "Admissions",
-                  "Courses",
-                  "Events",
+                  // "Courses",
+                  // "Events",
                 ].map((text, i) => (
                   <motion.div
                     key={text}
