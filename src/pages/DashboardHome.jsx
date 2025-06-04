@@ -253,12 +253,6 @@ const DashboardHome = ({ name }) => {
         ))}
       </motion.div>
 
-      {role === "admin" && (
-        <div className="mt-8">
-          <AdminFeedbackDisplay />
-        </div>
-      )}
-
       {role === "student" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>

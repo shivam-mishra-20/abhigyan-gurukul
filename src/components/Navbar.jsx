@@ -164,7 +164,7 @@ const Navbar = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="absolute -bottom-[2px] text-[#252641] bg-white border rounded-lg font-semibold px-14 border-white py-1 hidden lg:flex lg:left-[100px] 2xl:left-[160px] shadow-md z-20"
+          className="absolute -bottom-[2px] text-[#252641] bg-white border rounded-lg font-semibold px-10 border-white py-[2px] hidden lg:flex lg:left-[120px] 2xl:left-[160px] shadow-md z-20"
           whileHover={{
             y: -2,
             boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
@@ -175,7 +175,7 @@ const Navbar = () => {
         </motion.div>
 
         {/* Navigation Links */}
-        <div className="flex justify-center items-center gap-4 lg:gap-6 xl:gap-8 font-semibold text-black text-md w-2/3 h-full relative z-10">
+        <div className="flex justify  -center items-center gap-4 lg:gap-6 xl:gap-8 font-semibold text-black text-md w-2/3 h-full relative z-10">
           {[
             "Home",
             "About Us",

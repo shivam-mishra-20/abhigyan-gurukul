@@ -10,6 +10,7 @@ import {
   FaBars,
   FaBook,
   FaExclamationCircle,
+  FaComments, // Use FaComments for feedbacks icon
 } from "react-icons/fa";
 import {
   useNavigate,
@@ -33,6 +34,7 @@ import SyllabusManager from "../components/SyllabusManager";
 import SyllabusProgress from "../components/SyllabusProgress";
 import Complaints from "./Complaints";
 import FeedbackButton from "../components/FeedbackButton";
+import AdminFeedbackDisplay from "../components/AdminFeedbackDisplay";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -207,14 +209,7 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-              <Route
-                path="admin/admin-chat"
-                element={
-                  <ProtectedStudent roles={["admin", "teacher"]}>
-                    <AdminChatPage />
-                  </ProtectedStudent>
-                }
-              />
+
               <Route
                 path="/adminevents"
                 element={
@@ -244,6 +239,14 @@ const StudentDashboard = () => {
                 element={
                   <ProtectedStudent roles={["admin", "teacher", "student"]}>
                     <Complaints />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="feedbacks"
+                element={
+                  <ProtectedStudent roles={["admin", "teacher"]}>
+                    <AdminFeedbackDisplay />
                   </ProtectedStudent>
                 }
               />
@@ -336,12 +339,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               }
               onClick={() => handleNav("/student-dashboard/admin/manage-users")}
             />
-            <SidebarItem
+            {/* <SidebarItem
               icon={<FaUserShield />}
               label="Developer Console"
               active={location.pathname === "/student-dashboard/dev-console"}
               onClick={() => handleNav("/student-dashboard/dev-console")}
-            />
+            /> */}
           </>
         )}
         {["teacher", "admin"].includes(userRole) && (
@@ -372,13 +375,19 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               onClick={() => handleNav("/student-dashboard/syllabus")}
             />
             <SidebarItem
+              icon={<FaComments />} // Use comments icon for Feedbacks
+              label="Feedbacks"
+              active={location.pathname === "/student-dashboard/feedbacks"}
+              onClick={() => handleNav("/student-dashboard/feedbacks")}
+            />
+            {/* <SidebarItem
               icon={<FaBook />}
               label="Chat System WIP"
               active={
                 location.pathname === "/student-dashboard/admin/admin-chat"
               }
               onClick={() => handleNav("/student-dashboard/admin/admin-chat")}
-            />
+            /> */}
           </>
         )}
         {userRole === "student" && (

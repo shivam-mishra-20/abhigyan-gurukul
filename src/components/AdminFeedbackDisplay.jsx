@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { motion } from "framer-motion";
 import { FaCommentDots, FaFilter, FaDownload } from "react-icons/fa";
@@ -12,6 +19,9 @@ const AdminFeedbackDisplay = () => {
   const [filterClass, setFilterClass] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
+  const feedbacksPerPage = 10;
+  const userRole = localStorage.getItem("userRole");
 
   useEffect(() => {
     const fetchFeedback = async () => {
@@ -91,6 +101,24 @@ const AdminFeedbackDisplay = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Feedback");
     XLSX.writeFile(wb, "student_feedback.xlsx");
   };
+
+  // Handle delete
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this feedback?")) {
+      try {
+        await deleteDoc(doc(db, "Feedbacks", id));
+        setFeedback((prev) => prev.filter((item) => item.id !== id));
+      } catch (error) {
+        alert("Failed to delete feedback.");
+      }
+    }
+  };
+
+  // Pagination logic
+  const indexOfLast = currentPage * feedbacksPerPage;
+  const indexOfFirst = indexOfLast - feedbacksPerPage;
+  const currentFeedbacks = sortedFeedback.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(sortedFeedback.length / feedbacksPerPage);
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
@@ -204,7 +232,7 @@ const AdminFeedbackDisplay = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {sortedFeedback.map((item) => (
+          {currentFeedbacks.map((item) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 10 }}
@@ -222,6 +250,14 @@ const AdminFeedbackDisplay = () => {
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                     {item.batch || "No batch"}
                   </span>
+                  {userRole === "admin" && (
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="ml-4 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -230,6 +266,29 @@ const AdminFeedbackDisplay = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-6">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       )}
 
