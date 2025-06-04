@@ -22,6 +22,7 @@ import MobileVideoCarousel from "../components/MobileVideoCarousel";
 import StudeentCarousel from "../components/StudentCarousel";
 import EventCarousel from "../components/EventCarousel";
 import ChatButton from "../components/ChatButton";
+import FeedbackButton from "../components/FeedbackButton";
 
 const MobileHome = () => {
   // Image paths
@@ -414,6 +415,7 @@ const MobileHome = () => {
       </motion.div>
       {/*Chatbutton*/}
       <ChatButton />
+      <FeedbackButton />
     </>
   );
 };

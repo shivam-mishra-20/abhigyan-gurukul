@@ -1,8 +1,11 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import StudentPerformanceChart from "../components/Page-Specific-Components/StudentPerformanceChart";
 import StudentComplaintsWidget from "../components/StudentComplaintsWidget";
+import AdminFeedbackDisplay from "../components/AdminFeedbackDisplay";
 import {
   FaUsers,
   FaChalkboardTeacher,
@@ -249,6 +252,12 @@ const DashboardHome = ({ name }) => {
           </motion.div>
         ))}
       </motion.div>
+
+      {role === "admin" && (
+        <div className="mt-8">
+          <AdminFeedbackDisplay />
+        </div>
+      )}
 
       {role === "student" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
