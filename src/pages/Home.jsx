@@ -26,6 +26,7 @@ import {
 import HomePageMainCarousel from "../components/Page-Specific-Components/HomePageMainCarousel";
 import MiniLeaderboardCard from "../components/MiniLeaderboardCard";
 import StudentCarousel from "../components/StudentCarousel";
+import FeedbackButton from "../components/FeedbackButton";
 //       </h3>
 
 const Home = () => {
@@ -147,6 +148,7 @@ const Home = () => {
       </motion.div>
       {/* Floating Chat Button */}
       <ChatButton />
+      <FeedbackButton />
     </>
   );
 };

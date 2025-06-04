@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import {
   FaTachometerAlt,
@@ -31,6 +32,7 @@ import DevConsole from "../components/DevConsole";
 import SyllabusManager from "../components/SyllabusManager";
 import SyllabusProgress from "../components/SyllabusProgress";
 import Complaints from "./Complaints";
+import FeedbackButton from "../components/FeedbackButton";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -249,6 +251,9 @@ const StudentDashboard = () => {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Add the feedback button if the user is a student or teacher */}
+      {userRole === "student" && <FeedbackButton />}
     </div>
   );
 };
