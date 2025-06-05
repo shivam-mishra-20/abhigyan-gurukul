@@ -35,6 +35,7 @@ import SyllabusProgress from "../components/SyllabusProgress";
 import Complaints from "./Complaints";
 import FeedbackButton from "../components/FeedbackButton";
 import AdminFeedbackDisplay from "../components/AdminFeedbackDisplay";
+import Goals from "./Goals";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -258,6 +259,15 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
+
+              <Route
+                path="goals"
+                element={
+                  <ProtectedStudent roles={["teacher", "admin"]}>
+                    <Goals />
+                  </ProtectedStudent>
+                }
+              />
             </Routes>
           </motion.div>
         </AnimatePresence>
@@ -271,7 +281,7 @@ const StudentDashboard = () => {
 
 const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
   <div className="flex flex-col justify-between h-full">
-    <div>
+    <div className="flex-1 min-h-0 overflow-y-auto pb-4">
       <motion.div
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -387,6 +397,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               label="Feedbacks"
               active={location.pathname === "/student-dashboard/feedbacks"}
               onClick={() => handleNav("/student-dashboard/feedbacks")}
+            />
+            <SidebarItem
+              icon={<FaChartLine />}
+              label="Goals"
+              active={location.pathname === "/student-dashboard/goals"}
+              onClick={() => handleNav("/student-dashboard/goals")}
             />
             {/* <SidebarItem
               icon={<FaBook />}
