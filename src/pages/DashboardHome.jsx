@@ -131,6 +131,14 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/complaints",
       highlight: false,
     },
+    {
+      icon: <FaCalendarAlt className="text-3xl" />,
+      title: "Manage Schedules",
+      description: "Create and update class schedules",
+      bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800",
+      route: "/student-dashboard/schedules/manage",
+      highlight: true,
+    },
   ];
 
   const teacherCards = [
@@ -166,6 +174,14 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/complaints",
       highlight: false,
     },
+    {
+      icon: <FaCalendarAlt className="text-3xl" />,
+      title: "Class Schedule",
+      description: "View your teaching schedule",
+      bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800",
+      route: "/student-dashboard/schedules",
+      highlight: true,
+    },
   ];
 
   const studentCards = [
@@ -200,6 +216,14 @@ const DashboardHome = ({ name }) => {
       bg: "bg-gradient-to-br from-red-50 to-red-100 text-red-800",
       route: "/student-dashboard/complaints",
       highlight: false,
+    },
+    {
+      icon: <FaCalendarAlt className="text-3xl" />,
+      title: "Class Schedule",
+      description: "View your class timetable",
+      bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800",
+      route: "/student-dashboard/schedules",
+      highlight: true,
     },
   ];
 
