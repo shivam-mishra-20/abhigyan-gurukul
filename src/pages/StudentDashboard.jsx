@@ -36,6 +36,8 @@ import Complaints from "./Complaints";
 import FeedbackButton from "../components/FeedbackButton";
 import AdminFeedbackDisplay from "../components/AdminFeedbackDisplay";
 import Goals from "./Goals";
+import ScheduleDisplay from "../components/ScheduleDisplay";
+import ScheduleManager from "../components/ScheduleManager";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -265,6 +267,22 @@ const StudentDashboard = () => {
                 element={
                   <ProtectedStudent roles={["teacher", "admin"]}>
                     <Goals />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="/schedules"
+                element={
+                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                    <ScheduleDisplay />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="/schedules/manage"
+                element={
+                  <ProtectedStudent roles={["admin"]}>
+                    <ScheduleManager />
                   </ProtectedStudent>
                 }
               />
