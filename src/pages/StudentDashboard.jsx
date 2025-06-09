@@ -37,8 +37,8 @@ import Complaints from "./Complaints";
 import FeedbackButton from "../components/FeedbackButton";
 import AdminFeedbackDisplay from "../components/AdminFeedbackDisplay";
 import Goals from "./Goals";
-import ScheduleDisplay from "../components/ScheduleDisplay";
-import ScheduleManager from "../components/ScheduleManager";
+import Test from "./Test"; // Import the Test component
+import SyllabusReport from "./SyllabusReport"; // Import SyllabusReport component
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -262,7 +262,6 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-
               <Route
                 path="goals"
                 element={
@@ -271,19 +270,27 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
-              <Route
-                path="/schedules"
+              {/* <Route
+                path="test"
+                element={
+                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                    <Test />
+                  </ProtectedStudent>
+                }
+              /> */}
+              {/* <Route
+                path="schedules"
                 element={
                   <ProtectedStudent roles={["student", "teacher", "admin"]}>
                     <ScheduleDisplay />
                   </ProtectedStudent>
                 }
-              />
+              /> */}
               <Route
-                path="/schedules/manage"
+                path="syllabus-report"
                 element={
-                  <ProtectedStudent roles={["admin"]}>
-                    <ScheduleManager />
+                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                    <SyllabusReport />
                   </ProtectedStudent>
                 }
               />
@@ -356,12 +363,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/attendance"}
           onClick={() => handleNav("/student-dashboard/attendance")}
         />
-        <SidebarItem
-          icon={<FaBookOpen />}
-          label="Schedule"
-          active={location.pathname === "/student-dashboard/schedules"}
-          onClick={() => handleNav("/student-dashboard/schedules")}
-        />
+
         {userRole === "teacher" && (
           <SidebarItem
             icon={<FaUsers />}
@@ -457,6 +459,24 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/complaints")}
           />
         )}
+        {/* <SidebarItem
+          icon={<FaBookOpen />}
+          label="Schedule"
+          active={location.pathname === "/student-dashboard/schedules"}
+          onClick={() => handleNav("/student-dashboard/schedules")}
+        /> */}
+        {/* <SidebarItem
+          icon={<FaUserShield />}
+          label="Test"
+          active={location.pathname === "/student-dashboard/test"}
+          onClick={() => handleNav("/student-dashboard/test")}
+        /> */}
+        <SidebarItem
+          icon={<FaBookOpen />}
+          label="Syllabus Report"
+          active={location.pathname === "/student-dashboard/syllabus-report"}
+          onClick={() => handleNav("/student-dashboard/syllabus-report")}
+        />
       </motion.div>
     </div>
     <motion.div
