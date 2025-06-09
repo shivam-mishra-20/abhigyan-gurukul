@@ -509,15 +509,17 @@ const AdminUserManagement = () => {
                 className="w-full bg-green-600 text-white py-2 rounded-lg shadow-md hover:bg-green-700 transition-all font-semibold"
                 onClick={async () => {
                   await updateDoc(doc(db, "Users", editUser.id), {
-                    name: editUser.name,
-                    email: editUser.email,
-                    phone: editUser.phone,
-                    Class: editUser.Class,
-                    role: editUser.role,
-                    batch: editUser.batch,
+                    name: editUser.name || "",
+                    email: editUser.email || "",
+                    phone: editUser.phone || "",
+                    Class: editUser.Class || "",
+                    role: editUser.role || "student",
+                    batch: editUser.batch || "",
                   });
                   setAllUsers((prev) =>
-                    prev.map((u) => (u.id === editUser.id ? editUser : u))
+                    prev.map((u) =>
+                      u.id === editUser.id ? { ...u, ...editUser } : u
+                    )
                   );
                   setEditUser(null);
                   alert("✅ User updated!");

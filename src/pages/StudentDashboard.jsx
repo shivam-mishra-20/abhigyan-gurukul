@@ -9,6 +9,7 @@ import {
   FaUserShield,
   FaBars,
   FaBook,
+  FaBookOpen,
   FaExclamationCircle,
   FaComments, // Use FaComments for feedbacks icon
 } from "react-icons/fa";
@@ -354,6 +355,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           label="Attendance"
           active={location.pathname === "/student-dashboard/attendance"}
           onClick={() => handleNav("/student-dashboard/attendance")}
+        />
+        <SidebarItem
+          icon={<FaBookOpen />}
+          label="Schedule"
+          active={location.pathname === "/student-dashboard/schedules"}
+          onClick={() => handleNav("/student-dashboard/schedules")}
         />
         {userRole === "teacher" && (
           <SidebarItem

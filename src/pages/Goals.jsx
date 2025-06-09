@@ -8,8 +8,6 @@ import {
   doc,
   serverTimestamp,
   updateDoc,
-  doc,
-  deleteDoc,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
 import { ToastContainer, toast, Slide } from "react-toastify";

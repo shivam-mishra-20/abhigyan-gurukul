@@ -20,6 +20,7 @@ const AdminFeedbackDisplay = () => {
   const [filterBatch, setFilterBatch] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [resolvedFeedbacks, setResolvedFeedbacks] = useState([]);
   const feedbacksPerPage = 10;
   const userRole = localStorage.getItem("userRole");
 
@@ -112,6 +113,11 @@ const AdminFeedbackDisplay = () => {
         alert("Failed to delete feedback.");
       }
     }
+  };
+
+  // Handle resolve
+  const handleResolve = (id) => {
+    setResolvedFeedbacks((prev) => [...prev, id]);
   };
 
   // Pagination logic
@@ -243,17 +249,31 @@ const AdminFeedbackDisplay = () => {
                 <span className="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm rounded-full mb-2 sm:mb-0">
                   {item.feedback}
                 </span>
-                <div>
+                <div className="flex items-center gap-2">
                   <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">
                     {item.class || "No class"}
                   </span>
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                     {item.batch || "No batch"}
                   </span>
+                  {userRole === "admin" &&
+                    !resolvedFeedbacks.includes(item.id) && (
+                      <button
+                        onClick={() => handleResolve(item.id)}
+                        className="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition"
+                      >
+                        Resolve
+                      </button>
+                    )}
+                  {resolvedFeedbacks.includes(item.id) && (
+                    <span className="ml-4 bg-green-500 text-white px-3 py-1 rounded text-xs font-semibold">
+                      Resolved
+                    </span>
+                  )}
                   {userRole === "admin" && (
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="ml-4 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
+                      className="ml-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
                     >
                       Delete
                     </button>
