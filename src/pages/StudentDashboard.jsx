@@ -12,6 +12,7 @@ import {
   FaBookOpen,
   FaExclamationCircle,
   FaComments, // Use FaComments for feedbacks icon
+  FaTable, // Import FaTable for Time Table
 } from "react-icons/fa";
 import {
   useNavigate,
@@ -37,8 +38,9 @@ import Complaints from "./Complaints";
 import FeedbackButton from "../components/FeedbackButton";
 import AdminFeedbackDisplay from "../components/AdminFeedbackDisplay";
 import Goals from "./Goals";
-import Test from "./Test"; // Import the Test component
 import SyllabusReport from "./SyllabusReport"; // Import SyllabusReport component
+import TimeTable from "./TimeTable"; // Import TimeTable component
+import TimeTableManager from "./TimeTableManager"; // Import TimeTableManager component
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -294,6 +296,22 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               />
+              <Route
+                path="time-table"
+                element={
+                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                    <TimeTable />
+                  </ProtectedStudent>
+                }
+              />
+              <Route
+                path="time-table-manager"
+                element={
+                  <ProtectedStudent roles={["teacher", "admin"]}>
+                    <TimeTableManager />
+                  </ProtectedStudent>
+                }
+              />
             </Routes>
           </motion.div>
         </AnimatePresence>
@@ -477,6 +495,22 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/syllabus-report"}
           onClick={() => handleNav("/student-dashboard/syllabus-report")}
         />
+        <SidebarItem
+          icon={<FaTable />}
+          label="Time Table"
+          active={location.pathname === "/student-dashboard/time-table"}
+          onClick={() => handleNav("/student-dashboard/time-table")}
+        />
+        {["teacher", "admin"].includes(userRole) && (
+          <SidebarItem
+            icon={<FaTable />}
+            label="Time Table Manager"
+            active={
+              location.pathname === "/student-dashboard/time-table-manager"
+            }
+            onClick={() => handleNav("/student-dashboard/time-table-manager")}
+          />
+        )}
       </motion.div>
     </div>
     <motion.div
