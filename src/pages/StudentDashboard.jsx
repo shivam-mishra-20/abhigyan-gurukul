@@ -462,6 +462,22 @@ const StudentDashboard = () => {
                       </ProtectedStudent>
                     }
                   />
+                  <Route
+                    path="time-table"
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <TimeTable />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="time-table-manager"
+                    element={
+                      <ProtectedStudent roles={["teacher", "admin"]}>
+                        <TimeTableManager />
+                      </ProtectedStudent>
+                    }
+                  />
                 </Routes>
               </motion.div>
             </AnimatePresence>
@@ -634,6 +650,22 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/syllabus-report"}
           onClick={() => handleNav("/student-dashboard/syllabus-report")}
         />
+        <SidebarItem
+          icon={<FaBookOpen />}
+          label="Time Table"
+          active={location.pathname === "/student-dashboard/time-table"}
+          onClick={() => handleNav("/student-dashboard/time-table")}
+        />
+        {["teacher", "admin"].includes(userRole) && (
+          <SidebarItem
+            icon={<FaBookOpen />}
+            label="Time Table Manager"
+            active={
+              location.pathname === "/student-dashboard/time-table-manager"
+            }
+            onClick={() => handleNav("/student-dashboard/time-table-manager")}
+          />
+        )}
       </div>
     </div>
 
