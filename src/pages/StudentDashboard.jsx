@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import {
@@ -11,8 +12,10 @@ import {
   FaBook,
   FaBookOpen,
   FaExclamationCircle,
-  FaComments, // Use FaComments for feedbacks icon
-  FaTable, // Import FaTable for Time Table
+  FaComments,
+  FaSearch,
+  FaBell,
+  FaCog,
 } from "react-icons/fa";
 import {
   useNavigate,
@@ -54,6 +57,8 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const studentName = localStorage.getItem("studentName") || "Student";
   const studentClass = localStorage.getItem("studentClass") || "N/A";
@@ -82,141 +87,302 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
-      <motion.aside
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="hidden md:flex w-64 bg-white shadow-lg flex-col justify-between px-4 py-6 border-r border-gray-200"
-      >
-        <SidebarContent
-          location={location}
-          userRole={userRole}
-          handleNav={handleNav}
-          handleLogout={handleLogout}
-        />
-      </motion.aside>
-
-      <AnimatePresence>
-        {isSidebarOpen && (
-          <div className="fixed inset-0 z-40 flex">
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "tween", duration: 0.25 }}
-              className="w-64 bg-white shadow-lg p-4 flex flex-col justify-between z-50"
-            >
-              <SidebarContent
-                location={location}
-                userRole={userRole}
-                handleNav={handleNav}
-                handleLogout={handleLogout}
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex-1 backdrop-blur-xs"
-              onClick={() => setIsSidebarOpen(false)}
-            />
-          </div>
-        )}
-      </AnimatePresence>
-
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 w-full min-h-full">
-        <div className="md:hidden mb-4">
+    <div className="flex flex-col h-screen bg-gray-100">
+      {/* Top Navigation */}
+      <div className="bg-white shadow-md px-6 py-3 flex justify-between items-center z-10 relative">
+        <div className="flex items-center">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center px-4 py-2 text-sm bg-green-700 text-white rounded-lg shadow hover:bg-green-800 transition-all duration-200"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
           >
-            <FaBars className="mr-2" /> Menu
+            <FaBars />
           </motion.button>
+          <img
+            src="/ABHIGYAN_GURUKUL_logo.svg"
+            alt="Logo"
+            className="h-10 md:h-12 ml-3 md:ml-0"
+          />
+          <h1 className="hidden md:block text-xl font-bold text-green-700 ml-3">
+            Abhigyan Gurukul
+          </h1>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="w-full"
-          >
-            <Routes>
-              <Route
-                index
-                element={
-                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
-                    <DashboardHome
-                      name={studentName}
-                      studentClass={studentClass}
-                    />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="results"
-                element={
-                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
-                    <DashboardResult />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="leaderboards"
-                element={
-                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
-                    <Leaderboards />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="dev-console"
-                element={
-                  <ProtectedStudent roles={["admin"]}>
-                    <DevConsole />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="attendance"
-                element={
-                  <ProtectedStudent roles={["student", "admin", "teacher"]}>
-                    <DashboardAttendance />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="leaves"
-                element={
-                  <ProtectedStudent roles={["teacher", "admin"]}>
-                    <TeacherLeaveCalendar />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="admin/manage-users"
-                element={
-                  <ProtectedStudent roles={["admin", "teacher"]}>
-                    <AdminUserManagement />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="admin/create-user"
-                element={
-                  <ProtectedStudent roles={["admin"]}>
-                    <CreateUserPage />
-                  </ProtectedStudent>
-                }
-              />
+        {/* <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 flex-grow max-w-xl mx-6">
+          <FaSearch className="text-gray-400 mr-2" />
+          <input
+            type="text"
+            placeholder="Search dashboard..."
+            className="bg-transparent border-none outline-none w-full text-gray-700"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div> */}
 
-              {/* <Route
+        <div className="flex items-center space-x-4">
+          {/* <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative p-2 text-gray-600 hover:text-green-600 transition-colors"
+          >
+            <FaBell className="h-5 w-5" />
+            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+          </motion.button> */}
+
+          <div className="relative">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="flex items-center cursor-pointer bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-full transition-all duration-200 border border-gray-200 shadow-sm"
+            >
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white font-semibold text-sm shadow overflow-hidden">
+                {studentName?.charAt(0).toUpperCase() || "S"}
+              </div>
+              <span className="hidden md:block ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                {studentName}
+              </span>
+              <motion.svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-2 text-gray-500 hidden md:block"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                animate={{ rotate: isProfileMenuOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </motion.svg>
+            </motion.div>
+
+            <AnimatePresence>
+              {isProfileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2, type: "spring", stiffness: 350 }}
+                  className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100 overflow-hidden"
+                >
+                  <div className="relative pt-12 pb-4 px-5 border-b border-gray-100 bg-gradient-to-br from-green-50 to-green-100">
+                    <div className="absolute top-4 left-4 h-16 w-16 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white text-xl font-semibold shadow-md border-4 border-white">
+                      {studentName?.charAt(0).toUpperCase() || "S"}
+                    </div>
+                    <div className="ml-16 pl-2">
+                      <p className="text-base font-medium text-gray-800">
+                        {studentName}
+                      </p>
+                      <div className="flex items-center mt-1">
+                        <div className="px-2 py-0.5 rounded-md bg-green-200 text-green-800 text-xs font-semibold">
+                          {userRole?.toUpperCase()}
+                        </div>
+                        {userRole === "student" && (
+                          <div className="ml-2 px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-xs font-medium">
+                            {studentClass}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="py-1 px-1">
+                    {/* <motion.a
+                      whileHover={{ backgroundColor: "#f3f4f6", x: 4 }}
+                      href="#"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 rounded-md"
+                      onClick={() => {
+                        // Future feature: Navigate to profile page
+                        setIsProfileMenuOpen(false);
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-3 text-gray-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      My Profile
+                    </motion.a> */}
+
+                    {/* <motion.a
+                      whileHover={{ backgroundColor: "#f3f4f6", x: 4 }}
+                      href="#"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 rounded-md"
+                      onClick={() => {
+                        // Future feature: Open settings page
+                        setIsProfileMenuOpen(false);
+                      }}
+                    >
+                      <FaCog className="h-5 w-5 mr-3 text-gray-500" />
+                      Settings
+                    </motion.a> */}
+
+                    <div className="border-t border-gray-100 my-1"></div>
+
+                    <motion.a
+                      whileHover={{
+                        backgroundColor: "#FEE2E2",
+                        color: "#DC2626",
+                        x: 4,
+                      }}
+                      transition={{ duration: 0.2 }}
+                      href="#"
+                      className="flex items-center px-4 py-2 text-sm text-red-600 rounded-md mt-1"
+                      onClick={handleLogout}
+                    >
+                      <FaSignOutAlt className="h-5 w-5 mr-3" />
+                      Logout from system
+                    </motion.a>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar - Desktop */}
+        <motion.aside
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="hidden md:flex w-64 bg-white shadow-lg flex-col justify-between border-r border-gray-200"
+        >
+          <SidebarContent
+            location={location}
+            userRole={userRole}
+            handleNav={handleNav}
+            handleLogout={handleLogout}
+          />
+        </motion.aside>
+
+        {/* Sidebar - Mobile */}
+        <AnimatePresence>
+          {isSidebarOpen && (
+            <div className="fixed inset-0 z-40 flex md:hidden">
+              <motion.div
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "tween", duration: 0.25 }}
+                className="w-64 bg-white shadow-lg flex flex-col z-50 h-full"
+              >
+                <SidebarContent
+                  location={location}
+                  userRole={userRole}
+                  handleNav={handleNav}
+                  handleLogout={handleLogout}
+                />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex-1 bg-gray-900/50 backdrop-blur-sm"
+                onClick={() => setIsSidebarOpen(false)}
+              />
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto bg-gray-100 w-full">
+          <div className="p-4 md:p-6 max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full"
+              >
+                <Routes>
+                  <Route
+                    index
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <DashboardHome
+                          name={studentName}
+                          studentClass={studentClass}
+                        />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="results"
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <DashboardResult />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="leaderboards"
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <Leaderboards />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="dev-console"
+                    element={
+                      <ProtectedStudent roles={["admin"]}>
+                        <DevConsole />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="attendance"
+                    element={
+                      <ProtectedStudent roles={["student", "admin", "teacher"]}>
+                        <DashboardAttendance />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="leaves"
+                    element={
+                      <ProtectedStudent roles={["teacher", "admin"]}>
+                        <TeacherLeaveCalendar />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="admin/manage-users"
+                    element={
+                      <ProtectedStudent roles={["admin", "teacher"]}>
+                        <AdminUserManagement />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="admin/create-user"
+                    element={
+                      <ProtectedStudent roles={["admin"]}>
+                        <CreateUserPage />
+                      </ProtectedStudent>
+                    }
+                  />
+
+                  {/* <Route
                 path="admin/admin-chat"
                 element={
                   <ProtectedStudent roles={["admin", "teacher"]}>
@@ -224,55 +390,55 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               /> */}
-              <Route
-                path="/adminevents"
-                element={
-                  <ProtectedStudent roles={["admin", "teacher"]}>
-                    <AdminEvents />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="/syllabus"
-                element={
-                  <ProtectedStudent roles={["admin", "teacher"]}>
-                    <SyllabusManager />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="/syllabus-progress"
-                element={
-                  <ProtectedStudent roles={["student", "admin", "teacher"]}>
-                    <SyllabusProgress />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="/complaints"
-                element={
-                  <ProtectedStudent roles={["admin", "teacher", "student"]}>
-                    <Complaints />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="feedbacks"
-                element={
-                  <ProtectedStudent roles={["admin", "teacher"]}>
-                    <AdminFeedbackDisplay />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="goals"
-                element={
-                  <ProtectedStudent roles={["teacher", "admin"]}>
-                    <Goals />
-                  </ProtectedStudent>
-                }
-              />
-              {/* <Route
+                  <Route
+                    path="/adminevents"
+                    element={
+                      <ProtectedStudent roles={["admin", "teacher"]}>
+                        <AdminEvents />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="/syllabus"
+                    element={
+                      <ProtectedStudent roles={["admin", "teacher"]}>
+                        <SyllabusManager />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="/syllabus-progress"
+                    element={
+                      <ProtectedStudent roles={["student", "admin", "teacher"]}>
+                        <SyllabusProgress />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="/complaints"
+                    element={
+                      <ProtectedStudent roles={["admin", "teacher", "student"]}>
+                        <Complaints />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="feedbacks"
+                    element={
+                      <ProtectedStudent roles={["admin", "teacher"]}>
+                        <AdminFeedbackDisplay />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="goals"
+                    element={
+                      <ProtectedStudent roles={["teacher", "admin"]}>
+                        <Goals />
+                      </ProtectedStudent>
+                    }
+                  />
+                  {/* <Route
                 path="test"
                 element={
                   <ProtectedStudent roles={["student", "teacher", "admin"]}>
@@ -280,7 +446,7 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               /> */}
-              {/* <Route
+                  {/* <Route
                 path="schedules"
                 element={
                   <ProtectedStudent roles={["student", "teacher", "admin"]}>
@@ -288,34 +454,20 @@ const StudentDashboard = () => {
                   </ProtectedStudent>
                 }
               /> */}
-              <Route
-                path="syllabus-report"
-                element={
-                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
-                    <SyllabusReport />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="time-table"
-                element={
-                  <ProtectedStudent roles={["student", "teacher", "admin"]}>
-                    <TimeTable />
-                  </ProtectedStudent>
-                }
-              />
-              <Route
-                path="time-table-manager"
-                element={
-                  <ProtectedStudent roles={["teacher", "admin"]}>
-                    <TimeTableManager />
-                  </ProtectedStudent>
-                }
-              />
-            </Routes>
-          </motion.div>
-        </AnimatePresence>
-      </main>
+                  <Route
+                    path="syllabus-report"
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <SyllabusReport />
+                      </ProtectedStudent>
+                    }
+                  />
+                </Routes>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
 
       {/* Add the feedback button if the user is a student or teacher */}
       {userRole === "student" && <FeedbackButton />}
@@ -324,39 +476,23 @@ const StudentDashboard = () => {
 };
 
 const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
-  <div className="flex flex-col justify-between h-full">
-    <div className="flex-1 min-h-0 overflow-y-auto pb-4">
-      <motion.div
-        initial={{ y: -10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.3 }}
-        className="flex flex-col items-center mb-6"
-      >
-        <motion.img
-          whileHover={{ scale: 1.05 }}
-          src="/ABHIGYAN_GURUKUL_logo.svg"
-          alt="Logo"
-          className="w-24 h-24 object-contain mb-2 drop-shadow-md"
-        />
-        <h1 className="text-lg font-bold text-green-800 text-center">
-          Abhigyan Gurukul
-        </h1>
+  <div className="flex flex-col h-full">
+    <div className="flex-1 min-h-0 overflow-y-auto py-4">
+      <div className="flex flex-col items-center mb-6 px-4">
         <motion.span
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
-          className="mt-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-green-200"
+          className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-green-200 w-full text-center"
         >
-          ROLE: {userRole?.toUpperCase() || "UNKNOWN"}
+          {userRole?.toUpperCase() || "UNKNOWN"}
         </motion.span>
-        <hr className="border-green-600 w-full mt-3 opacity-50" />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, staggerChildren: 0.1 }}
-        className="space-y-1"
-      >
+      </div>
+
+      <div className="space-y-1 px-3">
+        <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          Main
+        </p>
         <SidebarItem
           icon={<FaTachometerAlt />}
           label="Dashboard"
@@ -382,6 +518,15 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           onClick={() => handleNav("/student-dashboard/attendance")}
         />
 
+        {(userRole === "teacher" || userRole === "admin") && (
+          <>
+            <div className="my-4 border-t border-gray-200"></div>
+            <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Administration
+            </p>
+          </>
+        )}
+
         {userRole === "teacher" && (
           <SidebarItem
             icon={<FaUsers />}
@@ -392,6 +537,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/admin/manage-users")}
           />
         )}
+
         {userRole === "admin" && (
           <>
             <SidebarItem
@@ -402,33 +548,38 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               }
               onClick={() => handleNav("/student-dashboard/admin/manage-users")}
             />
-            {/* <SidebarItem
-              icon={<FaUserShield />}
-              label="Developer Console"
-              active={location.pathname === "/student-dashboard/dev-console"}
-              onClick={() => handleNav("/student-dashboard/dev-console")}
-            /> */}
           </>
         )}
+
         {["teacher", "admin"].includes(userRole) && (
           <SidebarItem
             icon={<FaCalendarAlt />}
             label={
-              <span className="flex items-center">
-                Leaves
+              <div className="flex items-center justify-between w-full">
+                <span>Leaves</span>
                 <motion.span
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ repeat: Infinity, duration: 1.5 }}
-                  className="ml-2 text-red-500 text-xs"
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-500 text-xs"
                 >
-                  🔴
+                  3
                 </motion.span>
-              </span>
+              </div>
             }
             active={location.pathname === "/student-dashboard/leaves"}
             onClick={() => handleNav("/student-dashboard/leaves")}
           />
         )}
+
+        {(userRole === "teacher" || userRole === "admin") && (
+          <>
+            <div className="my-4 border-t border-gray-200"></div>
+            <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Academic
+            </p>
+          </>
+        )}
+
         {["teacher", "admin"].includes(userRole) && (
           <>
             <SidebarItem
@@ -438,7 +589,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               onClick={() => handleNav("/student-dashboard/syllabus")}
             />
             <SidebarItem
-              icon={<FaComments />} // Use comments icon for Feedbacks
+              icon={<FaComments />}
               label="Feedbacks"
               active={location.pathname === "/student-dashboard/feedbacks"}
               onClick={() => handleNav("/student-dashboard/feedbacks")}
@@ -449,16 +600,9 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               active={location.pathname === "/student-dashboard/goals"}
               onClick={() => handleNav("/student-dashboard/goals")}
             />
-            {/* <SidebarItem
-              icon={<FaBook />}
-              label="Chat System WIP"
-              active={
-                location.pathname === "/student-dashboard/admin/admin-chat"
-              }
-              onClick={() => handleNav("/student-dashboard/admin/admin-chat")}
-            /> */}
           </>
         )}
+
         {userRole === "student" && (
           <SidebarItem
             icon={<FaBook />}
@@ -469,6 +613,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/syllabus-progress")}
           />
         )}
+
+        <div className="my-4 border-t border-gray-200"></div>
+        <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          Reports
+        </p>
+
         {["teacher", "admin", "student"].includes(userRole) && (
           <SidebarItem
             icon={<FaExclamationCircle />}
@@ -477,60 +627,37 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/complaints")}
           />
         )}
-        {/* <SidebarItem
-          icon={<FaBookOpen />}
-          label="Schedule"
-          active={location.pathname === "/student-dashboard/schedules"}
-          onClick={() => handleNav("/student-dashboard/schedules")}
-        /> */}
-        {/* <SidebarItem
-          icon={<FaUserShield />}
-          label="Test"
-          active={location.pathname === "/student-dashboard/test"}
-          onClick={() => handleNav("/student-dashboard/test")}
-        /> */}
+
         <SidebarItem
           icon={<FaBookOpen />}
           label="Syllabus Report"
           active={location.pathname === "/student-dashboard/syllabus-report"}
           onClick={() => handleNav("/student-dashboard/syllabus-report")}
         />
-        <SidebarItem
-          icon={<FaTable />}
-          label="Time Table"
-          active={location.pathname === "/student-dashboard/time-table"}
-          onClick={() => handleNav("/student-dashboard/time-table")}
-        />
-        {["teacher", "admin"].includes(userRole) && (
-          <SidebarItem
-            icon={<FaTable />}
-            label="Time Table Manager"
-            active={
-              location.pathname === "/student-dashboard/time-table-manager"
-            }
-            onClick={() => handleNav("/student-dashboard/time-table-manager")}
-          />
-        )}
-      </motion.div>
+      </div>
     </div>
-    <motion.div
-      whileHover={{ x: 5 }}
-      className="text-red-600 text-sm flex items-center cursor-pointer hover:bg-red-50 p-2 rounded-lg transition-all duration-200"
-      onClick={handleLogout}
-    >
-      <FaSignOutAlt className="mr-2" /> Log Out
-    </motion.div>
+
+    <div className="p-4">
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleLogout}
+        className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow hover:shadow-md"
+      >
+        <FaSignOutAlt className="mr-2" /> Log Out
+      </motion.button>
+    </div>
   </div>
 );
 
 const SidebarItem = ({ icon, label, active, onClick }) => (
   <motion.div
-    whileHover={{ x: active ? 0 : 5 }}
-    whileTap={{ scale: 0.95 }}
-    className={`flex items-center px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-all duration-200 ${
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className={`flex items-center px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium transition-all duration-200 ${
       active
-        ? "bg-gradient-to-r from-green-700 to-green-800 text-white shadow-md"
-        : "text-gray-600 hover:bg-gray-100"
+        ? "bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md"
+        : "text-gray-700 hover:bg-gray-100"
     }`}
     onClick={onClick}
   >
@@ -539,7 +666,15 @@ const SidebarItem = ({ icon, label, active, onClick }) => (
     >
       {icon}
     </span>
-    {label}
+    <span className="flex-grow">{label}</span>
+
+    {active && (
+      <motion.div
+        layoutId="activeIndicator"
+        className="h-2 w-2 rounded-full bg-white"
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      />
+    )}
   </motion.div>
 );
 

@@ -131,14 +131,6 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/complaints",
       highlight: false,
     },
-    {
-      icon: <FaCalendarAlt className="text-3xl" />,
-      title: "Manage Schedules",
-      description: "Create and update class schedules",
-      bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800",
-      route: "/student-dashboard/schedules/manage",
-      highlight: true,
-    },
   ];
 
   const teacherCards = [
