@@ -16,6 +16,8 @@ import {
   FaCalendarAlt,
   FaBook,
   FaExclamationCircle,
+  FaClipboard,
+  FaRegFileAlt,
 } from "react-icons/fa";
 
 // Custom hook for responsive design
@@ -131,6 +133,24 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/complaints",
       highlight: false,
     },
+    // Add Manage Schedule card - updated route
+    {
+      icon: <FaCalendarAlt className="text-3xl" />,
+      title: "Manage Schedule",
+      description: "Manage timetables and schedules",
+      bg: "bg-gradient-to-br from-cyan-50 to-cyan-100 text-cyan-800",
+      route: "/student-dashboard/time-table-manager",
+      highlight: true,
+    },
+    // Add Manage Class Reports card
+    {
+      icon: <FaRegFileAlt className="text-3xl" />,
+      title: "Manage Class Reports",
+      description: "Manage class syllabus reports",
+      bg: "bg-gradient-to-br from-amber-50 to-amber-100 text-amber-800",
+      route: "/student-dashboard/syllabus-report",
+      highlight: true,
+    },
   ];
 
   const teacherCards = [
@@ -166,12 +186,22 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/complaints",
       highlight: false,
     },
+    // Update Class Schedule card route
     {
       icon: <FaCalendarAlt className="text-3xl" />,
       title: "Class Schedule",
       description: "View your teaching schedule",
       bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800",
-      route: "/student-dashboard/schedules",
+      route: "/student-dashboard/time-table",
+      highlight: true,
+    },
+    // Add Manage Class Reports card
+    {
+      icon: <FaClipboard className="text-3xl" />,
+      title: "Manage Class Reports",
+      description: "Create and manage class reports",
+      bg: "bg-gradient-to-br from-amber-50 to-amber-100 text-amber-800",
+      route: "/student-dashboard/syllabus-report",
       highlight: true,
     },
   ];
@@ -209,12 +239,22 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/complaints",
       highlight: false,
     },
+    // Update Class Schedule card route
     {
       icon: <FaCalendarAlt className="text-3xl" />,
       title: "Class Schedule",
       description: "View your class timetable",
       bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-800",
-      route: "/student-dashboard/schedules",
+      route: "/student-dashboard/time-table",
+      highlight: true,
+    },
+    // Add View Class Reports card
+    {
+      icon: <FaRegFileAlt className="text-3xl" />,
+      title: "View Class Reports",
+      description: "Access syllabus and class reports",
+      bg: "bg-gradient-to-br from-amber-50 to-amber-100 text-amber-800",
+      route: "/student-dashboard/syllabus-report",
       highlight: true,
     },
   ];

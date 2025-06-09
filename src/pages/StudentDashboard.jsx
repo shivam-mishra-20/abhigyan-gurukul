@@ -645,8 +645,8 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
         )}
 
         <SidebarItem
-          icon={<FaBookOpen />}
-          label="Syllabus Report"
+          icon={<FaBell />}
+          label="Class Report"
           active={location.pathname === "/student-dashboard/syllabus-report"}
           onClick={() => handleNav("/student-dashboard/syllabus-report")}
         />
