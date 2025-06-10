@@ -151,6 +151,14 @@ const DashboardHome = ({ name }) => {
       route: "/student-dashboard/syllabus-report",
       highlight: true,
     },
+    {
+      icon: <FaChartLine className="text-3xl" />,
+      title: "Traffic Analytics",
+      description: "View website traffic statistics",
+      bg: "bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800",
+      route: "/student-dashboard/trafficdashboard", // Updated route path to match nested route
+      highlight: true,
+    },
   ];
 
   const teacherCards = [

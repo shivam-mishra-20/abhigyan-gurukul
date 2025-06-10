@@ -16,6 +16,7 @@ import {
   FaSearch,
   FaBell,
   FaCog,
+  FaChartArea, // Added for traffic dashboard icon
 } from "react-icons/fa";
 import {
   useNavigate,
@@ -44,6 +45,7 @@ import Goals from "./Goals";
 import SyllabusReport from "./SyllabusReport"; // Import SyllabusReport component
 import TimeTable from "./TimeTable"; // Import TimeTable component
 import TimeTableManager from "./TimeTableManager"; // Import TimeTableManager component
+import TrafficDashboard from "../components/TrafficDashboard"; // Import TrafficDashboard component
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -478,6 +480,15 @@ const StudentDashboard = () => {
                       </ProtectedStudent>
                     }
                   />
+                  {/* Add new route for Traffic Dashboard */}
+                  <Route
+                    path="trafficdashboard"
+                    element={
+                      <ProtectedStudent roles={["admin"]}>
+                        <TrafficDashboard />
+                      </ProtectedStudent>
+                    }
+                  />
                 </Routes>
               </motion.div>
             </AnimatePresence>
@@ -563,6 +574,15 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
                 location.pathname === "/student-dashboard/admin/manage-users"
               }
               onClick={() => handleNav("/student-dashboard/admin/manage-users")}
+            />
+            {/* Add Traffic Dashboard item for admin only */}
+            <SidebarItem
+              icon={<FaChartArea />}
+              label="Traffic Analytics"
+              active={
+                location.pathname === "/student-dashboard/trafficdashboard"
+              }
+              onClick={() => handleNav("/student-dashboard/trafficdashboard")}
             />
           </>
         )}
