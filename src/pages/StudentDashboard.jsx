@@ -46,6 +46,7 @@ import SyllabusReport from "./SyllabusReport"; // Import SyllabusReport componen
 import TimeTable from "./TimeTable"; // Import TimeTable component
 import TimeTableManager from "./TimeTableManager"; // Import TimeTableManager component
 import TrafficDashboard from "../components/TrafficDashboard"; // Import TrafficDashboard component
+import UserProfile from "./UserProfile";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -552,6 +553,14 @@ const StudentDashboard = () => {
                     element={
                       <ProtectedStudent roles={["admin"]}>
                         <TrafficDashboard />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="userprofile"
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <UserProfile />
                       </ProtectedStudent>
                     }
                   />

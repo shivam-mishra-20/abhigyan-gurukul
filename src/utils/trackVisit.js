@@ -83,6 +83,7 @@ const trackVisit = async () => {
     const osInfo = getOSInfo(userAgent);
     
     // Create visit log data
+    const host = window.location.host;
     const visitData = {
       pathname,
       referrer,
@@ -98,7 +99,8 @@ const trackVisit = async () => {
       os: osInfo.name,
       osVersion: osInfo.version,
       timestamp: serverTimestamp(),
-      sessionId: getSessionId()
+      sessionId: getSessionId(),
+      host
     };
     
     // Save to Firestore

@@ -72,6 +72,8 @@ const TrafficDashboard = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isTableExpanded, setIsTableExpanded] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [hostFilter, setHostFilter] = useState("all"); // 'all', 'localhost', 'main'
+  const [referrerFilter, setReferrerFilter] = useState("");
 
   const navigate = useNavigate();
 
@@ -95,7 +97,7 @@ const TrafficDashboard = () => {
     if (isAuthorized) {
       fetchTrafficData();
     }
-  }, [dateRange, isAuthorized]);
+  }, [dateRange, isAuthorized, hostFilter]);
 
   // Custom colors for charts - enhanced palette
   const COLORS = [
@@ -143,13 +145,23 @@ const TrafficDashboard = () => {
       }
 
       // Create Firestore query
-      const trafficQuery = query(
+      let trafficQuery = query(
         collection(db, "traffic_logs"),
         where("timestamp", ">=", Timestamp.fromDate(startDate)),
         where("timestamp", "<=", Timestamp.fromDate(endDate)),
         orderBy("timestamp", "desc")
       );
-
+      if (hostFilter === "localhost") {
+        trafficQuery = query(
+          trafficQuery,
+          where("host", "==", "localhost:5173")
+        );
+      } else if (hostFilter === "main") {
+        trafficQuery = query(
+          trafficQuery,
+          where("host", "==", "abhigyangurukul.com")
+        );
+      }
       const snapshot = await getDocs(trafficQuery);
       const visitData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -382,6 +394,19 @@ const TrafficDashboard = () => {
       </div>
     );
   }
+
+  const filteredVisits = referrerFilter
+    ? visits.filter((visit) => {
+        if (!visit.referrer && referrerFilter === "direct") return true;
+        if (!visit.referrer) return false;
+        try {
+          const url = new URL(visit.referrer);
+          return url.hostname === referrerFilter;
+        } catch {
+          return visit.referrer === referrerFilter;
+        }
+      })
+    : visits;
 
   return (
     <motion.div
@@ -647,7 +672,7 @@ const TrafficDashboard = () => {
 
       {/* Tab navigation for main charts */}
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           <button
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 rounded-lg flex items-center ${
@@ -688,6 +713,27 @@ const TrafficDashboard = () => {
           >
             <FaTable className="mr-2" /> Raw Data
           </button>
+          {/* Referrer filter dropdown */}
+          <div className="ml-auto flex items-center gap-2">
+            <label className="text-xs text-gray-600 font-medium">
+              Referrer:
+            </label>
+            <select
+              value={referrerFilter}
+              onChange={(e) => setReferrerFilter(e.target.value)}
+              className="px-2 py-1 rounded border border-gray-300 text-sm text-gray-700"
+            >
+              <option value="">All</option>
+              <option value="direct">Direct</option>
+              {referrerStats.map((r) =>
+                r.name !== "direct" && r.name !== "" ? (
+                  <option key={r.name} value={r.name}>
+                    {r.name}
+                  </option>
+                ) : null
+              )}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -1300,7 +1346,7 @@ const TrafficDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {visits
+                    {filteredVisits
                       .slice(0, isTableExpanded ? undefined : 10)
                       .map((visit, index) => (
                         <tr key={index} className="hover:bg-gray-50">
