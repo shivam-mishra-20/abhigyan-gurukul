@@ -13,6 +13,7 @@ Create a file named `cors.json` with this content:
   {
     "origin": [
       "http://localhost:5173",
+      "https://www.abhigyangurukul.com/",
       "https://abhigyan-gurukul.web.app",
       "https://abhigyan-gurukul.firebaseapp.com"
     ],

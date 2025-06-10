@@ -44,6 +44,7 @@ import Goals from "./Goals";
 import SyllabusReport from "./SyllabusReport"; // Import SyllabusReport component
 import TimeTable from "./TimeTable"; // Import TimeTable component
 import TimeTableManager from "./TimeTableManager"; // Import TimeTableManager component
+import UserProfile from "./UserProfile"; // Import UserProfile component
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -59,6 +60,7 @@ const StudentDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [profilePic, setProfilePic] = useState(null); // State to store profile picture URL
 
   const studentName = localStorage.getItem("studentName") || "Student";
   const studentClass = localStorage.getItem("studentClass") || "N/A";
@@ -71,6 +73,51 @@ const StudentDashboard = () => {
       localStorage.setItem("studentClass", "10A");
       localStorage.setItem("isAuthenticated", "true");
       window.location.reload();
+    } else {
+      // Fetch the user's profile picture from the server or local storage
+      const fetchProfilePic = async () => {
+        // Fetch from Firestore Users collection using the same logic as UserProfile
+        const userRole = localStorage.getItem("userRole")?.trim();
+        const userName = localStorage.getItem("studentName");
+        if (userRole && userName) {
+          try {
+            const { db } = await import("../firebaseConfig");
+            const { collection, query, where, getDocs } = await import(
+              "firebase/firestore"
+            );
+            const { getStorage, ref, getDownloadURL } = await import(
+              "firebase/storage"
+            );
+            const q = query(
+              collection(db, "Users"),
+              where("name", "==", userName)
+            );
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+              const userData = snapshot.docs[0].data();
+              // Try to fetch from storage using naming convention
+              const dateStr = new Date().toISOString().split("T")[0];
+              const ext = userData.profilePicUrl
+                ? userData.profilePicUrl.split(".").pop().split("?")[0]
+                : "png";
+              const fileName = `${userData.name}_${userRole}_${dateStr}.${ext}`;
+              try {
+                const storage = getStorage();
+                const storageRef = ref(storage, `profilePics/${fileName}`);
+                const url = await getDownloadURL(storageRef);
+                setProfilePic(url);
+              } catch (e) {
+                if (userData.profilePicUrl)
+                  setProfilePic(userData.profilePicUrl);
+              }
+            }
+          } catch (error) {
+            setProfilePic(null);
+          }
+        }
+      };
+
+      fetchProfilePic();
     }
   }, [userRole]);
 
@@ -137,8 +184,18 @@ const StudentDashboard = () => {
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="flex items-center cursor-pointer bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-full transition-all duration-200 border border-gray-200 shadow-sm"
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white font-semibold text-sm shadow overflow-hidden">
-                {studentName?.charAt(0).toUpperCase() || "S"}
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white font-semibold text-sm shadow overflow-hidden border-2 border-green-500">
+                {profilePic ? (
+                  <img
+                    src={profilePic}
+                    alt="Profile"
+                    className="h-8 w-8 rounded-full object-cover border-2 border-white shadow"
+                  />
+                ) : (
+                  <span className="text-lg font-bold">
+                    {studentName?.charAt(0).toUpperCase() || "S"}
+                  </span>
+                )}
               </div>
               <span className="hidden md:block ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-900">
                 {studentName}
@@ -171,8 +228,18 @@ const StudentDashboard = () => {
                   className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100 overflow-hidden"
                 >
                   <div className="relative pt-12 pb-4 px-5 border-b border-gray-100 bg-gradient-to-br from-green-50 to-green-100">
-                    <div className="absolute top-4 left-4 h-16 w-16 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white text-xl font-semibold shadow-md border-4 border-white">
-                      {studentName?.charAt(0).toUpperCase() || "S"}
+                    <div className="absolute top-4 left-4 h-16 w-16 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white text-3xl font-bold shadow-md border-4 border-white">
+                      {profilePic ? (
+                        <img
+                          src={profilePic}
+                          alt="Profile"
+                          className="h-16 w-16 rounded-full object-cover border-4 border-white shadow"
+                        />
+                      ) : (
+                        <span>
+                          {studentName?.charAt(0).toUpperCase() || "S"}
+                        </span>
+                      )}
                     </div>
                     <div className="ml-16 pl-2">
                       <p className="text-base font-medium text-gray-800">
@@ -192,13 +259,13 @@ const StudentDashboard = () => {
                   </div>
 
                   <div className="py-1 px-1">
-                    {/* <motion.a
+                    <motion.a
                       whileHover={{ backgroundColor: "#f3f4f6", x: 4 }}
                       href="#"
                       className="flex items-center px-4 py-2 text-sm text-gray-700 rounded-md"
                       onClick={() => {
-                        // Future feature: Navigate to profile page
                         setIsProfileMenuOpen(false);
+                        navigate("/student-dashboard/userprofile");
                       }}
                     >
                       <svg
@@ -216,7 +283,7 @@ const StudentDashboard = () => {
                         />
                       </svg>
                       My Profile
-                    </motion.a> */}
+                    </motion.a>
 
                     {/* <motion.a
                       whileHover={{ backgroundColor: "#f3f4f6", x: 4 }}
@@ -478,6 +545,14 @@ const StudentDashboard = () => {
                       </ProtectedStudent>
                     }
                   />
+                  <Route
+                    path="userprofile"
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <UserProfile />
+                      </ProtectedStudent>
+                    }
+                  />
                 </Routes>
               </motion.div>
             </AnimatePresence>
@@ -669,7 +744,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
       </div>
     </div>
 
-    <div className="p-4">
+    <div className="p-4 mt-auto">
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
