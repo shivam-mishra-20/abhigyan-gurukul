@@ -16,6 +16,7 @@
     "@emailjs/browser": "^4.4.1",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
+    "@progress/kendo-react-pdf": "^11.1.0",
     "@react-icons/all-files": "^4.1.0",
     "@tailwindcss/vite": "^4.0.9",
     "antd": "^5.25.0",

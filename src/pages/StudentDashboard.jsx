@@ -764,12 +764,13 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
       </div>
     </div>
 
-    <div className="p-4 mt-auto">
+    <div className="p-4">
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={handleLogout}
         className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow hover:shadow-md"
+        style={{ position: "sticky", bottom: 0, zIndex: 10 }}
       >
         <FaSignOutAlt className="mr-2" /> Log Out
       </motion.button>

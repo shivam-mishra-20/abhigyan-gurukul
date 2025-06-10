@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { db } from "../firebaseConfig";
 import {
   collection,
@@ -9,8 +9,11 @@ import {
   query,
   orderBy,
   limit,
+  deleteDoc,
 } from "firebase/firestore";
 import { useSwipeable } from "react-swipeable";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const periods = [
   "3:30 - 4:30PM",
@@ -87,6 +90,50 @@ const TimeTableManager = () => {
   const [availableDates, setAvailableDates] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [saveForDate, setSaveForDate] = useState(null);
+  const [showSaveForDateModal, setShowSaveForDateModal] = useState(false);
+  const [saveForDateValue, setSaveForDateValue] = useState(new Date());
+  const [userRole, setUserRole] = useState(localStorage.getItem("userRole"));
+  const pdfExportRef = useRef(null);
+
+  // Function to generate PDF (improved, table-based)
+  const handleExportPDF = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "pt",
+      format: "a3",
+    });
+    const tableColumn = ["Class / Period", ...periods];
+    const tableRows = rowHeaders.map((row) => [
+      row,
+      ...periods.map((_, periodIdx) => {
+        const cell = timetable[row]?.[periodIdx] || {};
+        let cellText = cell.subject || "";
+        if (cell.teacher) cellText += `\n${cell.teacher}`;
+        if (cell.room) cellText += `\nRoom: ${cell.room}`;
+        return cellText;
+      }),
+    ]);
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      styles: { fontSize: 10, cellPadding: 4 },
+      headStyles: { fillColor: [34, 197, 94] },
+      margin: { left: 20, right: 20 },
+      theme: "grid",
+    });
+    doc.text(
+      `Time Table - ${selectedDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}`,
+      20,
+      30
+    );
+    doc.save(`Timetable_${selectedDate.toISOString().split("T")[0]}.pdf`);
+  };
 
   useEffect(() => {
     // Check if the screen is mobile-sized
@@ -200,6 +247,45 @@ const TimeTableManager = () => {
     } catch (error) {
       console.error("Error saving timetable:", error);
       alert("Failed to save timetable. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Copy timetable to the next day
+  const handleCopyToNextDay = async () => {
+    const nextDate = new Date(selectedDate);
+    nextDate.setDate(selectedDate.getDate() + 1);
+    const docId = getDocId(nextDate);
+    try {
+      await setDoc(doc(db, "TimeTable", docId), {
+        timetable,
+        periods,
+        createdAt: new Date(),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      alert("Timetable copied to next day!");
+    } catch (error) {
+      alert("Failed to copy timetable to next day.");
+    }
+  };
+
+  // Save timetable for a specific date in advance
+  const handleSaveForDate = async (date) => {
+    const docId = getDocId(date);
+    setSaving(true);
+    try {
+      await setDoc(doc(db, "TimeTable", docId), {
+        timetable,
+        periods,
+        createdAt: new Date(),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      alert(`Timetable saved for ${date.toLocaleDateString()}`);
+    } catch (error) {
+      alert("Failed to save timetable for selected date.");
     } finally {
       setSaving(false);
     }
@@ -660,6 +746,48 @@ const TimeTableManager = () => {
     setShowClearConfirmation(false);
   };
 
+  // Function to delete the timetable for the selected date
+  const handleDeleteTimetable = async () => {
+    if (userRole !== "admin") {
+      alert("Only administrators can delete timetables.");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to delete the timetable for ${selectedDate.toLocaleDateString()}?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const docId = getDocId(selectedDate);
+      await deleteDoc(doc(db, "TimeTable", docId));
+      alert("Timetable deleted successfully!");
+
+      // Reset the timetable display
+      const emptyTimetable = {};
+      rowHeaders.forEach((row) => {
+        emptyTimetable[row] = periods.map(() => ({
+          subject: "",
+          teacher: "",
+          room: "",
+        }));
+      });
+      setTimetable(emptyTimetable);
+
+      // Refresh available dates list
+      const updatedDates = availableDates.filter(
+        (dateObj) => dateObj.id !== docId
+      );
+      setAvailableDates(updatedDates);
+    } catch (error) {
+      console.error("Error deleting timetable:", error);
+      alert("Failed to delete timetable. Please try again.");
+    }
+  };
+
   // Render confirmation modal
   const renderClearConfirmation = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -805,7 +933,91 @@ const TimeTableManager = () => {
               </svg>
               Clear
             </button>
-
+            <button
+              className="mt-2 md:mt-0 bg-purple-100 border border-purple-500 text-purple-700 hover:bg-purple-200 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1"
+              onClick={() => setShowSaveForDateModal(true)}
+              disabled={saving}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              Save for Date
+            </button>
+            <button
+              className="mt-2 md:mt-0 bg-blue-100 border border-blue-500 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1"
+              onClick={handleCopyToNextDay}
+              disabled={saving}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m4-4v12m0 0l-3-3m3 3l3-3"
+                />
+              </svg>
+              Copy to Next Day
+            </button>
+            <button
+              className="mt-2 md:mt-0 bg-amber-100 border border-amber-500 text-amber-700 hover:bg-amber-200 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1"
+              onClick={handleExportPDF}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Export PDF
+            </button>
+            {userRole === "admin" && (
+              <button
+                className="mt-2 md:mt-0 bg-red-100 border border-red-500 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1"
+                onClick={handleDeleteTimetable}
+                disabled={saving}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Delete Timetable
+              </button>
+            )}
             <button
               className="mt-2 md:mt-0 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 flex items-center gap-2"
               onClick={handleSave}
@@ -855,6 +1067,41 @@ const TimeTableManager = () => {
                 </>
               )}
             </button>
+            {showSaveForDateModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
+                <div className="bg-white rounded-lg shadow-xl p-6 flex flex-col items-center">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Select Date to Save Timetable
+                  </h3>
+                  <input
+                    type="date"
+                    value={saveForDateValue.toISOString().split("T")[0]}
+                    min={new Date().toISOString().split("T")[0]}
+                    onChange={(e) =>
+                      setSaveForDateValue(new Date(e.target.value))
+                    }
+                    className="border border-gray-300 rounded px-3 py-2 mb-4"
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+                      onClick={() => {
+                        handleSaveForDate(saveForDateValue);
+                        setShowSaveForDateModal(false);
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md"
+                      onClick={() => setShowSaveForDateModal(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -897,7 +1144,10 @@ const TimeTableManager = () => {
 
       <div className={`${isMobile ? "hidden" : "block"}`}>
         <div className="bg-white rounded-xl shadow-lg p-3 md:p-5 overflow-hidden">
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div
+            className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+            ref={pdfExportRef}
+          >
             <table className="min-w-full border-collapse">
               <thead>
                 <tr className="bg-gradient-to-r from-green-500 to-green-600 text-white">
