@@ -52,6 +52,9 @@ export default function DashboardResult() {
   const [editIdx, setEditIdx] = useState(null);
   const [editData, setEditData] = useState({});
 
+  // Add sort state for View Results
+  const [viewSortBy, setViewSortBy] = useState("date-desc");
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -262,6 +265,52 @@ export default function DashboardResult() {
     } catch (err) {
       alert("Failed to delete result.");
     }
+  };
+
+  // Sorting logic for viewedResults
+  const getSortedViewedResults = () => {
+    let sorted = [...viewedResults];
+    switch (viewSortBy) {
+      case "date-asc":
+        sorted.sort((a, b) => {
+          const dateA = new Date(a.testDate || 0);
+          const dateB = new Date(b.testDate || 0);
+          return dateA - dateB;
+        });
+        break;
+      case "date-desc":
+        sorted.sort((a, b) => {
+          const dateA = new Date(a.testDate || 0);
+          const dateB = new Date(b.testDate || 0);
+          return dateB - dateA;
+        });
+        break;
+      case "subject":
+        sorted.sort((a, b) => (a.subject || "").localeCompare(b.subject || ""));
+        break;
+      case "marks-desc":
+        sorted.sort((a, b) => {
+          const marksA = Number(a.marks) || 0;
+          const marksB = Number(b.marks) || 0;
+          return marksB - marksA;
+        });
+        break;
+      case "marks-asc":
+        sorted.sort((a, b) => {
+          const marksA = Number(a.marks) || 0;
+          const marksB = Number(b.marks) || 0;
+          return marksA - marksB;
+        });
+        break;
+      default:
+        // Default: latest date first
+        sorted.sort((a, b) => {
+          const dateA = new Date(a.testDate || 0);
+          const dateB = new Date(b.testDate || 0);
+          return dateB - dateA;
+        });
+    }
+    return sorted;
   };
 
   return (
@@ -629,6 +678,25 @@ export default function DashboardResult() {
             </div>
           </motion.div>
 
+          {/* Sort Options */}
+          <motion.div
+            variants={itemVariants}
+            className="mb-4 flex flex-wrap items-center gap-3"
+          >
+            <label className="font-medium text-gray-700 mr-2">Sort By:</label>
+            <select
+              value={viewSortBy}
+              onChange={(e) => setViewSortBy(e.target.value)}
+              className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="date-desc">Date (Latest First)</option>
+              <option value="date-asc">Date (Oldest First)</option>
+              <option value="subject">Subject (A-Z)</option>
+              <option value="marks-desc">Marks (Highest First)</option>
+              <option value="marks-asc">Marks (Lowest First)</option>
+            </select>
+          </motion.div>
+
           {/* FIXED: Use separate loading state for view functionality */}
           <motion.button
             variants={itemVariants}
@@ -668,7 +736,7 @@ export default function DashboardResult() {
           )}
 
           {/* FIXED: Results display - we manually control rendering instead of using AnimatePresence */}
-          {viewedResults.length > 0 && (
+          {getSortedViewedResults().length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
@@ -695,7 +763,7 @@ export default function DashboardResult() {
               </motion.div>
 
               <div className="grid gap-4">
-                {viewedResults.map((res, idx) => {
+                {getSortedViewedResults().map((res, idx) => {
                   const gradeClass = getGradeColor(res.marks, res.outOf);
                   const percentage = ((res.marks / res.outOf) * 100).toFixed(1);
                   const docId = res.id || res.docId;
