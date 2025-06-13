@@ -839,7 +839,10 @@ const SyllabusReport = () => {
         )}
       </div>
 
-      {userRole === "student" ? (
+      {/* Render admin/teacher report view if adminViewMode is true */}
+      {userRole !== "student" && adminViewMode ? (
+        renderAdminReportView()
+      ) : userRole === "student" ? (
         loading ? (
           <div className="flex flex-col items-center justify-center p-16 bg-white rounded-xl shadow-md border border-gray-100">
             <div className="relative w-20 h-20">

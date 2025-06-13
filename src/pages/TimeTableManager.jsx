@@ -527,11 +527,20 @@ const TimeTableManager = () => {
                 }
               >
                 <option value="">Select Teacher</option>
-                {teachers.map((teach) => (
-                  <option key={teach} value={teach}>
-                    {teach}
-                  </option>
-                ))}
+                {teachers.map((teach) => {
+                  // Prevent duplicate teacher in the same period (column)
+                  const isAssigned = rowHeaders.some(
+                    (otherRow) =>
+                      otherRow !== rowHeaders[activeClass] &&
+                      timetable[otherRow]?.[activePeriod]?.teacher === teach
+                  );
+                  return (
+                    <option key={teach} value={teach} disabled={isAssigned}>
+                      {teach}
+                      {isAssigned ? " (Assigned)" : ""}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
@@ -1217,11 +1226,25 @@ const TimeTableManager = () => {
                               }
                             >
                               <option value="">Select Teacher</option>
-                              {teachers.map((teach) => (
-                                <option key={teach} value={teach}>
-                                  {teach}
-                                </option>
-                              ))}
+                              {teachers.map((teach) => {
+                                // Prevent duplicate teacher in the same period (column)
+                                const isAssigned = rowHeaders.some(
+                                  (otherRow) =>
+                                    otherRow !== rowHeaders[rowIdx] &&
+                                    timetable[otherRow]?.[periodIdx]
+                                      ?.teacher === teach
+                                );
+                                return (
+                                  <option
+                                    key={teach}
+                                    value={teach}
+                                    disabled={isAssigned}
+                                  >
+                                    {teach}
+                                    {isAssigned ? " (Assigned)" : ""}
+                                  </option>
+                                );
+                              })}
                             </select>
                             <input
                               type="text"

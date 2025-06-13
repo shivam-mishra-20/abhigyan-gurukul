@@ -74,6 +74,7 @@ const TrafficDashboard = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [hostFilter, setHostFilter] = useState("all"); // 'all', 'localhost', 'main'
   const [referrerFilter, setReferrerFilter] = useState("");
+  const [hideLocalhost, setHideLocalhost] = useState(false);
 
   const navigate = useNavigate();
 
@@ -97,7 +98,7 @@ const TrafficDashboard = () => {
     if (isAuthorized) {
       fetchTrafficData();
     }
-  }, [dateRange, isAuthorized, hostFilter]);
+  }, [dateRange, isAuthorized, hostFilter, hideLocalhost]);
 
   // Custom colors for charts - enhanced palette
   const COLORS = [
@@ -274,7 +275,7 @@ const TrafficDashboard = () => {
           // Invalid URL, keep as is
         }
       }
-
+      if (hideLocalhost && referrer === "localhost") return;
       referrerCounts[referrer] = (referrerCounts[referrer] || 0) + 1;
     });
 
@@ -733,6 +734,15 @@ const TrafficDashboard = () => {
                 ) : null
               )}
             </select>
+            <label className="flex items-center text-xs text-gray-600 font-medium ml-2">
+              <input
+                type="checkbox"
+                checked={hideLocalhost}
+                onChange={() => setHideLocalhost((v) => !v)}
+                className="mr-1"
+              />
+              Hide localhost
+            </label>
           </div>
         </div>
       </div>
@@ -848,14 +858,22 @@ const TrafficDashboard = () => {
               {/* Traffic Sources Chart */}
               <div className="mb-8">
                 <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-                  <div className="p-6 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                      <FaGlobe className="text-indigo-600 mr-2" />
-                      Traffic Sources
-                    </h3>
-                    <p className="text-gray-500 mt-1">
-                      Where your visitors come from
-                    </p>
+                  <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                        <FaGlobe className="text-indigo-600 mr-2" />
+                        Traffic Sources
+                      </h3>
+                      <p className="text-gray-500 mt-1">
+                        Where your visitors come from
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
+                        Total:{" "}
+                        {referrerStats.reduce((sum, r) => sum + r.value, 0)}
+                      </span>
+                    </div>
                   </div>
                   <div className="p-6">
                     {referrerStats.length > 0 ? (
