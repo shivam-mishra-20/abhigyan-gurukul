@@ -47,6 +47,7 @@ import TimeTable from "./TimeTable"; // Import TimeTable component
 import TimeTableManager from "./TimeTableManager"; // Import TimeTableManager component
 import TrafficDashboard from "../components/TrafficDashboard"; // Import TrafficDashboard component
 import UserProfile from "./UserProfile";
+import Homework from "./Homework";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -399,6 +400,14 @@ const StudentDashboard = () => {
                     element={
                       <ProtectedStudent roles={["student", "teacher", "admin"]}>
                         <DashboardResult />
+                      </ProtectedStudent>
+                    }
+                  />
+                  <Route
+                    path="homeworkstatus"
+                    element={
+                      <ProtectedStudent roles={["student", "teacher", "admin"]}>
+                        <Homework />
                       </ProtectedStudent>
                     }
                   />
@@ -761,6 +770,12 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/time-table-manager")}
           />
         )}
+        <SidebarItem
+          icon={<FaBook />}
+          label="Homework Status"
+          active={location.pathname === "/student-dashboard/homeworkstatus"}
+          onClick={() => handleNav("/student-dashboard/homeworkstatus")}
+        />
       </div>
     </div>
 

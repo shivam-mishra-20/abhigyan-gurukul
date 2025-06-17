@@ -38,6 +38,10 @@ export default function DashboardAttendance() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
+  const [showClassAttendance, setShowClassAttendance] = useState(false);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [leaveData, setLeaveData] = useState([]);
   const recordsPerPage = 6;
 
   const userRole = localStorage.getItem("userRole");
@@ -250,6 +254,62 @@ export default function DashboardAttendance() {
     }
   }, [userRole, studentName, studentClass]);
 
+  // Fetch classes and batches from 'Users' and map them with 'studentLeaves' to display cumulative leave data for students.
+  useEffect(() => {
+    const fetchLeaveData = async () => {
+      try {
+        const leavesSnapshot = await getDocs(collection(db, "studentLeaves"));
+
+        const leaves = leavesSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        const mappedData = leaves.map((leave) => ({
+          name: leave.studentName,
+          class: leave.class,
+          batch: leave.batch,
+          totalLeaves: leave.days || 0,
+        }));
+
+        setLeaveData(mappedData);
+      } catch (error) {
+        console.error("Error fetching leave data:", error);
+      }
+    };
+
+    fetchLeaveData();
+  }, []);
+
+  // Fetch attendance data from 'studentLeaves' collection and calculate total attendance days for each student based on valid clockIn and clockOut times.
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      try {
+        const leavesSnapshot = await getDocs(collection(db, "studentLeaves"));
+
+        const attendanceData = leavesSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          const totalAttendanceDays = (data.attendance || []).filter(
+            (entry) => entry.clockIn !== "--:--" && entry.clockOut !== "--:--"
+          ).length;
+
+          return {
+            name: data.name,
+            class: data.Class,
+            batch: data.batch || "Unknown", // Default batch if not provided
+            totalAttendanceDays,
+          };
+        });
+
+        setLeaveData(attendanceData);
+      } catch (error) {
+        console.error("Error fetching attendance data:", error);
+      }
+    };
+
+    fetchAttendanceData();
+  }, []);
+
   // — Filtering by month —
   const filtered = attendanceRecords.filter((rec) => {
     if (!selectedMonth) return true;
@@ -315,6 +375,14 @@ export default function DashboardAttendance() {
       day: "numeric",
     });
   };
+
+  // Prepare class attendance data for the modal
+  const classAttendanceList = attendanceRecords
+    .filter((rec) => selectedClass && rec.Class === selectedClass)
+    .map((rec) => ({
+      name: rec.name,
+      totalDays: rec.attendance ? rec.attendance.length : 0,
+    }));
 
   return (
     <motion.div
@@ -482,6 +550,103 @@ export default function DashboardAttendance() {
               </ol>
             </motion.div>
           </motion.div>
+
+          <div className="flex flex-wrap gap-3 mt-4">
+            <motion.button
+              variants={itemVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white py-3 px-4 rounded-lg shadow transition flex items-center justify-center"
+              onClick={() => setShowClassAttendance(true)}
+            >
+              <FaFilter className="mr-2" /> View Class Attendance
+            </motion.button>
+          </div>
+
+          {/* Modal for class attendance */}
+          {showClassAttendance && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
+              <div className="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full">
+                <h3 className="text-lg font-bold mb-4 text-indigo-700">
+                  View Class Attendance
+                </h3>
+                <div className="flex gap-2 mb-4">
+                  <select
+                    className="w-1/2 border border-gray-300 rounded-lg px-4 py-2"
+                    value={selectedClass}
+                    onChange={(e) => setSelectedClass(e.target.value)}
+                  >
+                    <option value="">Select Class</option>
+                    {Array.from(
+                      new Set(leaveData.map((data) => data.class))
+                    ).map((cls) => (
+                      <option key={cls} value={cls}>
+                        {cls}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="w-1/2 border border-gray-300 rounded-lg px-4 py-2"
+                    value={selectedBatch}
+                    onChange={(e) => setSelectedBatch(e.target.value)}
+                    disabled={!selectedClass}
+                  >
+                    <option value="">Select Batch</option>
+                    {Array.from(
+                      new Set(
+                        leaveData
+                          .filter((data) => data.class === selectedClass)
+                          .map((data) => data.batch)
+                      )
+                    ).map((batch) => (
+                      <option key={batch} value={batch}>
+                        {batch}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="bg-indigo-100">
+                        <th className="px-3 py-2 text-left">Name</th>
+                        <th className="px-3 py-2 text-left">
+                          Total Attendance Days
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leaveData
+                        .filter(
+                          (data) =>
+                            (!selectedClass || data.class === selectedClass) &&
+                            (!selectedBatch || data.batch === selectedBatch)
+                        )
+                        .map((data, idx) => (
+                          <tr
+                            key={idx}
+                            className={idx % 2 === 0 ? "bg-gray-50" : ""}
+                          >
+                            <td className="px-3 py-2">{data.name}</td>
+                            <td className="px-3 py-2">
+                              {data.totalAttendanceDays}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700"
+                    onClick={() => setShowClassAttendance(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 
