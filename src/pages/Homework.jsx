@@ -14,6 +14,7 @@ const Homework = () => {
   const [selectedDate, setSelectedDate] = useState(
     () => new Date().toISOString().split("T")[0]
   );
+  const [studentSelectedDate, setStudentSelectedDate] = useState("");
 
   // Fetch classes and batches from Users collection
   useEffect(() => {
@@ -126,6 +127,62 @@ const Homework = () => {
     }
   }, [selectedClass, selectedBatch, selectedDate]);
 
+  // Student view: fetch homework status for current and previous dates
+  const [studentStatusList, setStudentStatusList] = useState([]);
+  useEffect(() => {
+    if (userRole === "student") {
+      // Use the same doc id logic as teacher/admin side
+      const userName = (
+        localStorage.getItem("studentName") ||
+        localStorage.getItem("name") ||
+        ""
+      ).replace(/\s/g, "_");
+      const userClass =
+        localStorage.getItem("Class") || localStorage.getItem("class") || "";
+      const studentId =
+        localStorage.getItem("studentId") || localStorage.getItem("uid") || "";
+      const today = new Date().toISOString().split("T")[0];
+      getDocs(collection(db, "HomeworkStatus")).then((snapshot) => {
+        const today = new Date().toISOString().split("T")[0];
+        const allDocs = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("[DEBUG] All HomeworkStatus docs:", allDocs);
+        const statusArr = allDocs
+          .filter((doc) => {
+            const docIdParts = doc.id.split("_");
+            const docDate =
+              doc.date ||
+              (docIdParts.length > 2
+                ? docIdParts[docIdParts.length - 1]
+                : null);
+            // Match by studentId or userName (with underscores)
+            const matchesId = studentId && doc.id.startsWith(studentId);
+            const matchesName = userName && doc.id.startsWith(userName);
+            // If a date is present, check it's not in the future
+            const dateOk = !docDate || docDate <= today;
+            const match = (matchesId || matchesName) && dateOk;
+            if (match) {
+              console.log("[DEBUG] Matched doc:", doc);
+            }
+            return match;
+          })
+          .sort((a, b) => {
+            const dateA =
+              a.date ||
+              (a.id.split("_").length > 2 ? a.id.split("_").slice(-1)[0] : "");
+            const dateB =
+              b.date ||
+              (b.id.split("_").length > 2 ? b.id.split("_").slice(-1)[0] : "");
+            return dateB.localeCompare(dateA);
+          });
+        console.log("[DEBUG] Filtered statusArr:", statusArr);
+        setStudentStatusList(statusArr);
+      });
+    }
+  }, [userRole]);
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
@@ -207,7 +264,59 @@ const Homework = () => {
             )}
           </div>
         )}
-        {/* ...existing code for student view... */}
+        {userRole === "student" && (
+          <div className="p-6">
+            <h3 className="text-lg font-bold mb-4 text-blue-700">
+              Your Homework Status
+            </h3>
+            <div className="mb-4">
+              <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-4 py-2"
+                value={studentSelectedDate}
+                onChange={(e) => setStudentSelectedDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+              />
+            </div>
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-blue-100">
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {studentStatusList.filter(
+                  (status) =>
+                    !studentSelectedDate ||
+                    status.date === studentSelectedDate ||
+                    status.id.endsWith(`_${studentSelectedDate}`)
+                ).length === 0 && (
+                  <tr>
+                    <td colSpan={2} className="text-center py-4">
+                      No homework records found.
+                    </td>
+                  </tr>
+                )}
+                {studentStatusList
+                  .filter(
+                    (status) =>
+                      !studentSelectedDate ||
+                      status.date === studentSelectedDate ||
+                      status.id.endsWith(`_${studentSelectedDate}`)
+                  )
+                  .map((status) => (
+                    <tr key={status.id} className="border-b">
+                      <td className="px-3 py-2">
+                        {status.date || status.id.split("_").slice(-1)[0]}
+                      </td>
+                      <td className="px-3 py-2">{status.status}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

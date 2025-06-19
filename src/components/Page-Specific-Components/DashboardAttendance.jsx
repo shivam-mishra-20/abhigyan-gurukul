@@ -280,7 +280,7 @@ export default function DashboardAttendance() {
 
     fetchLeaveData();
   }, []);
-
+  
   // Fetch attendance data from 'studentLeaves' collection and calculate total attendance days for each student based on valid clockIn and clockOut times.
   useEffect(() => {
     const fetchAttendanceData = async () => {
