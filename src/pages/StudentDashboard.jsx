@@ -16,7 +16,9 @@ import {
   FaSearch,
   FaBell,
   FaCog,
-  FaChartArea, // Added for traffic dashboard icon
+  FaChartArea,
+  FaAccusoft,
+  FaAdn, // Added for traffic dashboard icon
 } from "react-icons/fa";
 import {
   useNavigate,
@@ -48,6 +50,7 @@ import TimeTableManager from "./TimeTableManager"; // Import TimeTableManager co
 import TrafficDashboard from "../components/TrafficDashboard"; // Import TrafficDashboard component
 import UserProfile from "./UserProfile";
 import Homework from "./Homework";
+import TestManagement from "./TestManagement";
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
@@ -556,6 +559,14 @@ const StudentDashboard = () => {
                       </ProtectedStudent>
                     }
                   />
+                  <Route
+                    path="test-management"
+                    element={
+                      <ProtectedStudent roles={["teacher", "admin"]}>
+                        <TestManagement />
+                      </ProtectedStudent>
+                    }
+                  />
                   {/* Add new route for Traffic Dashboard */}
                   <Route
                     path="trafficdashboard"
@@ -771,11 +782,19 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           />
         )}
         <SidebarItem
-          icon={<FaBook />}
+          icon={<FaAdn />}
           label="Homework Status"
           active={location.pathname === "/student-dashboard/homeworkstatus"}
           onClick={() => handleNav("/student-dashboard/homeworkstatus")}
         />
+        {["teacher", "admin"].includes(userRole) && (
+          <SidebarItem
+            icon={<FaAccusoft />}
+            label="Test Management"
+            active={location.pathname === "/student-dashboard/test-management"}
+            onClick={() => handleNav("/student-dashboard/test-management")}
+          />
+        )}
       </div>
     </div>
 

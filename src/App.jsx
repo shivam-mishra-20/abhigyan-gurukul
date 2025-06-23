@@ -6,6 +6,7 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from "react-router";
 import { useMediaQuery } from "react-responsive";
 import { useEffect } from "react";
@@ -36,6 +37,7 @@ import DashboardHome from "./pages/DashboardHome"; // ✅ use this one
 import Admissions from "./pages/Admissions";
 import Courses from "./pages/Courses";
 import Events from "./pages/Events";
+import TestManagement from "./pages/TestManagement";
 
 // TrackingWrapper component to handle visit tracking on route changes
 const TrackingWrapper = ({ children }) => {
@@ -81,6 +83,18 @@ function App() {
                 <Routes>
                   <Route path="/" element={<StudentDashboard />} />
                   {/* Add Traffic dashboard as a nested route within student-dashboard */}
+                  <Route
+                    path="/student-dashboard/test-management"
+                    element={
+                      ["admin", "teacher"].includes(
+                        localStorage.getItem("userRole")
+                      ) ? (
+                        <TestManagement />
+                      ) : (
+                        <Navigate to="/student-dashboard" />
+                      )
+                    }
+                  />
 
                   {/* Add other nested routes if needed */}
                   <Route path="*" element={<StudentDashboard />} />
