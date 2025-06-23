@@ -12,6 +12,7 @@ import {
 import Swal from "sweetalert2";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logEvent } from "../utils/logEvent";
 
 const Goals = () => {
   const [goalText, setGoalText] = useState("");
@@ -65,9 +66,12 @@ const Goals = () => {
           await deleteDoc(goalRef);
           setGoals((goals) => goals.filter((g) => g.id !== goalId));
           toast.success("Goal archived successfully");
+          await logEvent(`Goal archived: ${goalId}`);
         } catch (error) {
           toast.error("Failed to archive goal");
         }
+      } else {
+        await logEvent(`Goal marked incomplete: ${goalId}`);
       }
     } catch (error) {
       toast.error("Failed to update goal status");
@@ -100,6 +104,7 @@ const Goals = () => {
       setGoalNotes("");
 
       Swal.fire("Success", "Goal created successfully!", "success");
+      await logEvent(`Goal created: ${goalText.trim()}`);
     } catch (error) {
       Swal.fire("Error", "Failed to create goal", "error");
     }

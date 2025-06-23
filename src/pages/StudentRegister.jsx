@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import bcrypt from "bcryptjs";
 import { useNavigate } from "react-router"; // ✅ Step 1: Import useNavigate
 import { notifyAuthStateChange } from "../components/Navbar";
+import { logEvent } from "../utils/logEvent";
 
 const StudentRegister = () => {
   const navigate = useNavigate(); // ✅ Step 2: Initialize navigate
@@ -86,6 +87,8 @@ const StudentRegister = () => {
       setTimeout(() => {
         window.location.href = "/login";
       }, 1500);
+
+      await logEvent(`User registered: ${student.name} (${student.role})`);
     } catch (err) {
       console.error("Registration error:", err);
       setError("Failed to register user.");
@@ -153,6 +156,7 @@ const StudentRegister = () => {
           <option value="student">Student</option>
           <option value="teacher">Teacher</option>
           <option value="admin">Admin</option>
+          <option value="developer">Developer</option>
         </select>
 
         <motion.button

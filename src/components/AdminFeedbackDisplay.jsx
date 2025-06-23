@@ -23,6 +23,7 @@ import {
   FaSortAmountUp,
 } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import { logEvent } from "../utils/logEvent";
 
 const AdminFeedbackDisplay = () => {
   const [feedback, setFeedback] = useState([]);
@@ -121,6 +122,7 @@ const AdminFeedbackDisplay = () => {
       try {
         await deleteDoc(doc(db, "Feedbacks", id));
         setFeedback((prev) => prev.filter((item) => item.id !== id));
+        await logEvent(`Feedback deleted: ${id}`);
       } catch (error) {
         alert("Failed to delete feedback.");
       }

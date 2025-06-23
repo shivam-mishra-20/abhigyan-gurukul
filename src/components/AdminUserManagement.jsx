@@ -15,6 +15,7 @@ import { useNavigate } from "react-router";
 import bcrypt from "bcryptjs";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
+import { logEvent } from "../utils/logEvent";
 
 const AdminUserManagement = () => {
   const [allUsers, setAllUsers] = useState([]);
@@ -111,6 +112,7 @@ const AdminUserManagement = () => {
       await deleteDoc(doc(db, "Users", user.id));
       setAllUsers((prev) => prev.filter((u) => u.id !== user.id));
       showFeedback(`${user.name} deleted successfully`);
+      await logEvent(`User deleted: ${user.name} (${user.role})`);
     } catch (error) {
       showFeedback("Failed to delete user", "error");
     }
@@ -161,6 +163,7 @@ const AdminUserManagement = () => {
         prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
       );
       showFeedback("Role updated successfully");
+      await logEvent(`User role changed: ${userId} to ${newRole}`);
     } catch (error) {
       showFeedback("Failed to update role", "error");
     }
@@ -343,6 +346,7 @@ const AdminUserManagement = () => {
             <option value="student">Student</option>
             <option value="teacher">Teacher</option>
             <option value="admin">Admin</option>
+            <option value="developer">Developer</option>
           </motion.select>
 
           <motion.select
@@ -507,6 +511,7 @@ const AdminUserManagement = () => {
                               <option value="student">Student</option>
                               <option value="teacher">Teacher</option>
                               <option value="admin">Admin</option>
+                              <option value="developer">Developer</option>
                             </select>
                           ) : (
                             <span
@@ -515,6 +520,8 @@ const AdminUserManagement = () => {
                                   ? "bg-purple-100 text-purple-800"
                                   : user.role === "teacher"
                                   ? "bg-blue-100 text-blue-800"
+                                  : user.role === "developer"
+                                  ? "bg-gray-200 text-gray-800"
                                   : "bg-green-100 text-green-800"
                               }`}
                             >
@@ -794,6 +801,7 @@ const AdminUserManagement = () => {
                     <option value="student">Student</option>
                     <option value="teacher">Teacher</option>
                     <option value="admin">Admin</option>
+                    <option value="developer">Developer</option>
                   </select>
                 </motion.div>
 

@@ -39,7 +39,8 @@ const ProtectedStudentRoute = ({ children, roles }) => {
     roles &&
     roles.includes("admin") &&
     roles.length === 1 &&
-    userRole !== "admin"
+    userRole !== "admin" &&
+    userRole !== "developer"
   ) {
     return (
       <motion.div
@@ -73,7 +74,9 @@ const ProtectedStudentRoute = ({ children, roles }) => {
   if (
     !isAuthenticated ||
     !hasUserData ||
-    (roles && !roles.includes(userRole))
+    (roles &&
+      !roles.includes(userRole) &&
+      !(roles.includes("admin") && userRole === "developer"))
   ) {
     return (
       <motion.div

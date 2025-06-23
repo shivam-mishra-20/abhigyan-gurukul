@@ -3,6 +3,7 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { logEvent } from "../utils/logEvent";
 
 const AdminDashboard = () => {
   const auth = getAuth();
@@ -75,6 +76,7 @@ const AdminDashboard = () => {
 
   const handleLogout = async () => {
     await signOut(auth);
+    await logEvent("Logout");
     navigate("/adminlogin");
   };
 

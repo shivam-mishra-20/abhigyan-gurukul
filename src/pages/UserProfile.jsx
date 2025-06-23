@@ -9,6 +9,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { logEvent } from "../utils/logEvent";
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -70,6 +71,7 @@ const UserProfile = () => {
       if (user && user.id) {
         const userDoc = doc(db, "Users", user.id);
         await updateDoc(userDoc, { profilePicUrl: url });
+        await logEvent("Profile picture updated");
       }
     } catch (error) {
       alert("Failed to upload profile picture");
@@ -161,7 +163,7 @@ const UserProfile = () => {
               <span className="text-gray-600 col-span-1">Role</span>
               <span className="font-medium text-gray-900 col-span-2">
                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                  {userRole}
+                  {userRole === "developer" ? "DEVELOPER" : userRole}
                 </span>
               </span>
             </div>

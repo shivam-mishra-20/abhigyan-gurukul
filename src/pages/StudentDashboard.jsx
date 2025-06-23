@@ -51,10 +51,17 @@ import TrafficDashboard from "../components/TrafficDashboard"; // Import Traffic
 import UserProfile from "./UserProfile";
 import Homework from "./Homework";
 import TestManagement from "./TestManagement";
+import Logs from "./Logs"; // Import the Logs page
 
 const ProtectedStudent = ({ children, roles }) => {
   const userRole = localStorage.getItem("userRole");
-  if (!userRole || (roles && !roles.includes(userRole))) {
+  // Allow "developer" wherever "admin" is allowed
+  if (
+    !userRole ||
+    (roles &&
+      !roles.includes(userRole) &&
+      !(roles.includes("admin") && userRole === "developer"))
+  ) {
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -584,6 +591,14 @@ const StudentDashboard = () => {
                       </ProtectedStudent>
                     }
                   />
+                  <Route
+                    path="logs"
+                    element={
+                      <ProtectedStudent roles={["developer"]}>
+                        <Logs />
+                      </ProtectedStudent>
+                    }
+                  />
                 </Routes>
               </motion.div>
             </AnimatePresence>
@@ -607,7 +622,8 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
           className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-green-200 w-full text-center"
         >
-          {userRole?.toUpperCase() || "UNKNOWN"}
+          {(userRole === "developer" ? "DEVELOPER" : userRole?.toUpperCase()) ||
+            "UNKNOWN"}
         </motion.span>
       </div>
 
@@ -670,7 +686,29 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
               }
               onClick={() => handleNav("/student-dashboard/admin/manage-users")}
             />
-            {/* Add Traffic Dashboard item for admin only */}
+            {/* Add Traffic Dashboard item for admin/developer only */}
+            <SidebarItem
+              icon={<FaChartArea />}
+              label="Traffic Analytics"
+              active={
+                location.pathname === "/student-dashboard/trafficdashboard"
+              }
+              onClick={() => handleNav("/student-dashboard/trafficdashboard")}
+            />
+          </>
+        )}
+
+        {userRole === "developer" && (
+          <>
+            <SidebarItem
+              icon={<FaUsers />}
+              label="Manage Users"
+              active={
+                location.pathname === "/student-dashboard/admin/manage-users"
+              }
+              onClick={() => handleNav("/student-dashboard/admin/manage-users")}
+            />
+            {/* Add Traffic Dashboard item for admin/developer only */}
             <SidebarItem
               icon={<FaChartArea />}
               label="Traffic Analytics"
@@ -702,7 +740,9 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           />
         )}
 
-        {(userRole === "teacher" || userRole === "admin") && (
+        {(userRole === "teacher" ||
+          userRole === "admin" ||
+          userRole === "developer") && (
           <>
             <div className="my-4 border-t border-gray-200"></div>
             <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -711,7 +751,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           </>
         )}
 
-        {["teacher", "admin"].includes(userRole) && (
+        {["teacher", "admin", "developer"].includes(userRole) && (
           <>
             <SidebarItem
               icon={<FaBook />}
@@ -750,7 +790,7 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           Reports
         </p>
 
-        {["teacher", "admin", "student"].includes(userRole) && (
+        {["teacher", "admin", "developer"].includes(userRole) && (
           <SidebarItem
             icon={<FaExclamationCircle />}
             label="Complaints"
@@ -787,12 +827,20 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
           active={location.pathname === "/student-dashboard/homeworkstatus"}
           onClick={() => handleNav("/student-dashboard/homeworkstatus")}
         />
-        {["teacher", "admin"].includes(userRole) && (
+        {["teacher", "admin", "developer"].includes(userRole) && (
           <SidebarItem
             icon={<FaAccusoft />}
             label="Test Management"
             active={location.pathname === "/student-dashboard/test-management"}
             onClick={() => handleNav("/student-dashboard/test-management")}
+          />
+        )}
+        {userRole === "developer" && (
+          <SidebarItem
+            icon={<FaBookOpen />}
+            label="Logs"
+            active={location.pathname === "/student-dashboard/logs"}
+            onClick={() => handleNav("/student-dashboard/logs")}
           />
         )}
       </div>

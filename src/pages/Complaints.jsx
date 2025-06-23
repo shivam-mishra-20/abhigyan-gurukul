@@ -24,6 +24,7 @@ import {
   FaExclamationTriangle,
   FaCheck,
 } from "react-icons/fa";
+import { logEvent } from "../utils/logEvent";
 
 const Complaints = () => {
   const userRole = localStorage.getItem("userRole") || "";
@@ -248,6 +249,9 @@ const Complaints = () => {
 
       // Switch to view tab
       setSelectedTab("view");
+      await logEvent(
+        `Complaint submitted for student: ${selectedStudentObj.name}, class: ${selectedStudentObj.class}, batch: ${selectedStudentObj.batch}`
+      );
     } catch (error) {
       console.error("Error submitting complaint:", error);
       setError("Failed to submit complaint: " + error.message);
@@ -332,6 +336,9 @@ const Complaints = () => {
       setSuccess("Complaint deleted successfully");
       setConfirmedDelete(null);
       setTimeout(() => setSuccess(""), 3000);
+      await logEvent(
+        `Complaint deleted for student: ${selectedStudentObj.name}, class: ${selectedStudentObj.class}, batch: ${selectedStudentObj.batch}`
+      );
     } catch (error) {
       console.error("Error deleting complaint:", error);
       setError("Failed to delete complaint: " + error.message);

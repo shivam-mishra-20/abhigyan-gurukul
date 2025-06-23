@@ -5,6 +5,7 @@ import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import bcrypt from "bcryptjs";
 import { useNavigate } from "react-router";
+import { logEvent } from "../utils/logEvent";
 
 const CreateUserPage = () => {
   const navigate = useNavigate();
@@ -88,6 +89,8 @@ const CreateUserPage = () => {
       setTimeout(() => {
         navigate("/student-dashboard/admin/manage-users");
       }, 1500);
+
+      await logEvent(`User created: ${formData.name} (${formData.role})`);
     } catch (err) {
       console.error("Create user error:", err);
       setError("Failed to create user.");
@@ -157,6 +160,7 @@ const CreateUserPage = () => {
           <option value="student">Student</option>
           <option value="teacher">Teacher</option>
           <option value="admin">Admin</option>
+          <option value="developer">Developer</option>
         </select>
 
         <motion.button

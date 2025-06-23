@@ -8,6 +8,7 @@ import {
 } from "firebase/firestore";
 import { useNavigate } from "react-router";
 import bcrypt from "bcryptjs";
+import { logEvent } from "../utils/logEvent";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ const Login = () => {
         // Notify components about auth state change
         notifyAuthStateChange();
 
+        await logEvent(`Login success: Admin (admin)`);
+
         navigate("/dashboard"); // Redirect on successful login
         return; // Exit function after successful Firebase auth
       } catch (firebaseError) {
@@ -44,6 +47,7 @@ const Login = () => {
 
       if (snapshot.empty) {
         setError("User not found.");
+        await logEvent(`Login failed: user not found (${email})`);
         return;
       }
 
@@ -55,6 +59,7 @@ const Login = () => {
 
       if (!passwordMatch) {
         setError("Invalid email or password.");
+        await logEvent(`Login failed: incorrect password (${email})`);
         return;
       }
 
@@ -67,10 +72,13 @@ const Login = () => {
       localStorage.setItem("uid", userData.uid);
       localStorage.setItem("loginTimestamp", Date.now().toString());
 
+      await logEvent(`Login success: ${userData.name} (${userData.role})`);
+
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
       setError("Something went wrong. Please try again.");
+      await logEvent(`Login failed: exception (${email})`);
     }
   };
 

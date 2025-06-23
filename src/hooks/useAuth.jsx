@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logEvent } from "../utils/logEvent";
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -44,6 +45,7 @@ export const useAuth = () => {
     // Clear all authentication data
     localStorage.clear();
     setIsAuthenticated(false);
+    logEvent("Logout");
   };
 
   return { isAuthenticated, isLoading, login, logout };

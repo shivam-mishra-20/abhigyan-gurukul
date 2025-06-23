@@ -10,7 +10,9 @@ import ProtectedStudentRoute from "./ProtectedStudentRoute";
 // This component now leverages ProtectedStudentRoute with admin-only roles
 const AdminOnlyRoute = ({ children }) => {
   return (
-    <ProtectedStudentRoute roles={["admin"]}>{children}</ProtectedStudentRoute>
+    <ProtectedStudentRoute roles={["admin", "developer"]}>
+      {children}
+    </ProtectedStudentRoute>
   );
 };
 

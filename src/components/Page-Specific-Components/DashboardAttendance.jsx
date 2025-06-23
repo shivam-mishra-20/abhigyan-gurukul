@@ -27,6 +27,7 @@ import {
   FaTrash,
   FaUserCheck,
 } from "react-icons/fa";
+import { logEvent } from "../../utils/logEvent";
 
 export default function DashboardAttendance() {
   // — state —
@@ -170,6 +171,7 @@ export default function DashboardAttendance() {
       setTimeout(() => setShowStatus(false), 3000);
       setFile(null);
       document.getElementById("attendance-upload").value = "";
+      await logEvent("Attendance uploaded via Excel");
     } catch (e) {
       console.error(e);
       setStatus("❌ Failed to upload attendance.");
@@ -218,6 +220,7 @@ export default function DashboardAttendance() {
       setStatus("✅ Synced students to 'studentLeaves'.");
       setShowStatus(true);
       setTimeout(() => setShowStatus(false), 3000);
+      await logEvent("Synced students to studentLeaves");
     } catch (e) {
       console.error(e);
       setStatus("❌ Sync failed.");
@@ -280,7 +283,7 @@ export default function DashboardAttendance() {
 
     fetchLeaveData();
   }, []);
-  
+
   // Fetch attendance data from 'studentLeaves' collection and calculate total attendance days for each student based on valid clockIn and clockOut times.
   useEffect(() => {
     const fetchAttendanceData = async () => {

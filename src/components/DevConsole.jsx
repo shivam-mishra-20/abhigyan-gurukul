@@ -12,6 +12,7 @@ import {
 import { db } from "../firebaseConfig";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logEvent } from "../utils/logEvent";
 
 const DevConsole = () => {
   const [batches, setBatches] = useState([]);
@@ -122,6 +123,7 @@ const DevConsole = () => {
       toast.success(`✅ Synced ${synced} students' results.`, {
         autoClose: 3000,
       });
+      await logEvent(`Synced ${synced} students' results`);
     } catch (err) {
       console.error("❌ Error syncing results:", err);
       toast.error("❌ Sync failed. Check console.", {
@@ -152,6 +154,7 @@ const DevConsole = () => {
       toast.success(`🗑️ Deleted ${deleted} records successfully.`, {
         autoClose: 3000,
       });
+      await logEvent(`Deleted all ActualStudentResults (${deleted} records)`);
     } catch (err) {
       console.error("❌ Error deleting records:", err);
       toast.error("❌ Failed to delete records.", { autoClose: 3000 });

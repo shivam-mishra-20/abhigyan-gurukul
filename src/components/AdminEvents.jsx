@@ -35,6 +35,7 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
+import { logEvent } from "../utils/logEvent";
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
@@ -468,6 +469,7 @@ const AdminEvents = () => {
             hasLocalImages ? " (Note: Some images are stored locally)" : ""
           }`
         );
+        await logEvent(`Event updated: ${currentEvent.title}`);
       } else {
         await addDoc(collection(db, "events"), eventData);
         setSuccessMessage(
@@ -475,6 +477,7 @@ const AdminEvents = () => {
             hasLocalImages ? " (Note: Some images are stored locally)" : ""
           }`
         );
+        await logEvent(`Event created: ${currentEvent.title}`);
       }
 
       resetForm();
@@ -500,6 +503,7 @@ const AdminEvents = () => {
       await deleteDoc(doc(db, "events", eventId));
       setSuccessMessage(`Event "${eventTitle}" deleted successfully!`);
       fetchEvents();
+      await logEvent(`Event deleted: ${eventTitle}`);
     } catch (error) {
       console.error("Error deleting event:", error);
       setErrorMessage("Failed to delete event. Please try again.");

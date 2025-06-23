@@ -5,6 +5,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import bcrypt from "bcryptjs";
 import { motion } from "framer-motion";
 import { notifyAuthStateChange } from "../components/Navbar";
+import { logEvent } from "../utils/logEvent";
 
 const StudentLogin = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const StudentLogin = () => {
 
       if (snapshot.empty) {
         setError("⚠️ User not found. Please check your email.");
+        await logEvent(`Login failed: user not found (${credentials.email})`);
         return;
       }
 
@@ -58,6 +60,9 @@ const StudentLogin = () => {
 
       if (!isMatch) {
         setError("❌ Incorrect password.");
+        await logEvent(
+          `Login failed: incorrect password (${credentials.email})`
+        );
         return;
       }
 
@@ -77,11 +82,15 @@ const StudentLogin = () => {
 
       setMessage(`🎉 Welcome, ${userData.name}!`);
 
+      await logEvent(`Login success: ${userData.name} (${userData.role})`);
+
       // ✅ Role-based redirection (customize routes here)
       setTimeout(() => {
-        if (userData.role === "admin") {
-          navigate("/student-dashboard");
-        } else if (userData.role === "teacher") {
+        if (
+          userData.role === "admin" ||
+          userData.role === "teacher" ||
+          userData.role === "developer"
+        ) {
           navigate("/student-dashboard");
         } else {
           navigate("/student-dashboard");
@@ -90,6 +99,7 @@ const StudentLogin = () => {
     } catch (err) {
       console.error("🔥 Firebase login error:", err.message || err);
       setError(`⚠️ Login failed: ${err.message || err}`);
+      await logEvent(`Login failed: exception (${credentials.email})`);
     }
   };
 

@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+import { logEvent } from "../utils/logEvent";
 
 // Add the teachers array
 const teachers = [
@@ -176,6 +177,7 @@ const SyllabusReport = () => {
         prevReports.filter((report) => report.id !== reportId)
       );
       setDeleteConfirm(null);
+      await logEvent(`Syllabus report deleted: ${reportId}`);
     } catch (error) {
       console.error("Error deleting report:", error);
       alert("Failed to delete report. Please try again.");
@@ -201,6 +203,9 @@ const SyllabusReport = () => {
         )
       );
       setDeleteAllConfirm(false);
+      await logEvent(
+        `Bulk deleted syllabus reports: ${filteredAdminReports.length} reports`
+      );
     } catch (error) {
       console.error("Error deleting reports:", error);
       alert("Failed to delete reports. Please try again.");

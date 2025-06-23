@@ -19,6 +19,8 @@ const Leaderboard = () => {
   const [filterMode, setFilterMode] = useState({});
   const [studentViewData, setStudentViewData] = useState([]);
   const [studentRank, setStudentRank] = useState(null);
+  // Add: Store user pictures by name
+  const [userPics, setUserPics] = useState({});
 
   const classOrder = ["Class 8", "Class 9", "Class 10", "Class 11", "Class 12"];
   const batchOrder = ["Aadharshila", "Lakshya", "Basic"];
@@ -91,7 +93,8 @@ const Leaderboard = () => {
             availableBatches[0];
           if (selected) {
             defaultBatches[cls] = selected;
-            defaultFilters[cls] = "all";
+            // Default to "top3" instead of "all"
+            defaultFilters[cls] = "top3";
           }
         }
       });
@@ -101,7 +104,21 @@ const Leaderboard = () => {
       setFilterMode(defaultFilters);
     };
 
+    // Fetch user profile pictures
+    const fetchUserPics = async () => {
+      const usersSnap = await getDocs(collection(db, "Users"));
+      const pics = {};
+      usersSnap.forEach((doc) => {
+        const data = doc.data();
+        if (data.name && data.profilePicUrl) {
+          pics[data.name] = data.profilePicUrl;
+        }
+      });
+      setUserPics(pics);
+    };
+
     fetchLeaderboard();
+    fetchUserPics();
   }, []);
 
   const tableHeaderStyle = {
@@ -143,6 +160,189 @@ const Leaderboard = () => {
     marginBottom: "15px",
     flexWrap: "wrap",
     gap: "10px",
+  };
+
+  // Podium component for top 3
+  const Podium = ({ top3, userPics, studentName }) => {
+    // Arrange: 2nd, 1st, 3rd (left, center, right)
+    const order = [1, 0, 2];
+    const heights = [90, 130, 75]; // px
+    const bgColors = [
+      "linear-gradient(135deg, #e0e7ef 0%, #bfc9d1 100%)",
+      "linear-gradient(135deg, #fffbe6 0%, #ffe066 100%)",
+      "linear-gradient(135deg, #f7e6d1 0%, #e5b07b 100%)",
+    ];
+    const shadowColors = [
+      "0 4px 12px rgba(191,201,209,0.18)",
+      "0 8px 24px rgba(255,224,102,0.22)",
+      "0 4px 12px rgba(229,176,123,0.18)",
+    ];
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-end",
+          gap: 36,
+          marginBottom: 40,
+          marginTop: 24,
+          minHeight: 170,
+          position: "relative",
+        }}
+      >
+        {/* Decorative subtle background */}
+        <div
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            background:
+              "radial-gradient(circle at 50% 60%, rgba(58,109,240,0.06) 0%, transparent 80%)",
+            zIndex: 0,
+          }}
+        />
+        {order.map((idx, i) => {
+          const s = top3[idx];
+          if (!s) return <div key={i} style={{ width: 100 }} />;
+          const isCurrentUser = s.name === studentName;
+          const hasPic = !!userPics[s.name];
+          return (
+            <div
+              key={s.name}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: 110,
+                zIndex: 1,
+                transition: "transform 0.25s cubic-bezier(.4,2,.6,1)",
+                transform: isCurrentUser ? "scale(1.04)" : "scale(1)",
+              }}
+            >
+              <div
+                style={{
+                  background: bgColors[i],
+                  height: heights[i],
+                  width: 70,
+                  borderRadius: 18,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  boxShadow: shadowColors[i],
+                  border: isCurrentUser
+                    ? "3px solid #3a6df0"
+                    : "1.5px solid #e5e7eb",
+                  position: "relative",
+                  transition: "box-shadow 0.3s, border 0.3s",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -38,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 2,
+                  }}
+                >
+                  {hasPic ? (
+                    <img
+                      src={userPics[s.name]}
+                      alt={s.name}
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: `3px solid ${
+                          isCurrentUser ? "#3a6df0" : "#fff"
+                        }`,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                        background: "#fff",
+                        transition: "transform 0.2s",
+                        cursor: "pointer",
+                      }}
+                      onMouseOver={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.13)")
+                      }
+                      onMouseOut={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: "50%",
+                        background:
+                          "linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)",
+                        color: "#3a6df0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "bold",
+                        fontSize: 26,
+                        border: `3px solid ${
+                          isCurrentUser ? "#3a6df0" : "#fff"
+                        }`,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                        transition: "transform 0.2s",
+                        cursor: "pointer",
+                      }}
+                      onMouseOver={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.13)")
+                      }
+                      onMouseOut={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
+                    >
+                      {s.name?.[0]?.toUpperCase() || "?"}
+                    </div>
+                  )}
+                </div>
+                <div
+                  style={{
+                    marginBottom: 12,
+                    fontSize: 28,
+                    filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.13))",
+                    marginTop: heights[i] - 56 - 24,
+                  }}
+                >
+                  {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
+                </div>
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  fontWeight: isCurrentUser ? "bold" : "normal",
+                  color: isCurrentUser ? "#3a6df0" : "#222",
+                  fontSize: 14,
+                  textAlign: "center",
+                  maxWidth: 80,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {s.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "#666",
+                  fontWeight: "bold",
+                  marginTop: 2,
+                }}
+              >
+                {s.percentage}%
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -199,6 +399,15 @@ const Leaderboard = () => {
           </div>
         )}
 
+        {/* Podium for Your Batch Leaderboard */}
+        {studentViewData.length > 0 && (
+          <Podium
+            top3={studentViewData.slice(0, 3)}
+            userPics={userPics}
+            studentName={studentName}
+          />
+        )}
+
         <div style={{ overflowX: "auto" }}>
           <table
             style={{
@@ -243,7 +452,47 @@ const Leaderboard = () => {
                         <span style={{ fontWeight: "bold" }}>{index + 1}</span>
                       )}
                     </td>
-                    <td style={{ padding: "12px" }}>
+                    <td
+                      style={{
+                        padding: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      {/* Show profile picture if available */}
+                      {userPics[s.name] ? (
+                        <img
+                          src={userPics[s.name]}
+                          alt={s.name}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: "2px solid #3a6df0",
+                            marginRight: 6,
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%",
+                            background: "#e5e7eb",
+                            color: "#3a6df0",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: "bold",
+                            fontSize: 16,
+                            marginRight: 6,
+                          }}
+                        >
+                          {s.name?.[0]?.toUpperCase() || "?"}
+                        </div>
+                      )}
                       {isCurrentUser ? (
                         <span
                           style={{
@@ -393,6 +642,17 @@ const Leaderboard = () => {
               </div>
             </div>
 
+            {/* Podium for each class/batch leaderboard */}
+            {selectedBatch &&
+              classData[selectedBatch] &&
+              classData[selectedBatch].length > 0 && (
+                <Podium
+                  top3={classData[selectedBatch].slice(0, 3)}
+                  userPics={userPics}
+                  studentName={studentName}
+                />
+              )}
+
             {selectedBatch && classData[selectedBatch] && (
               <div style={{ overflowX: "auto" }}>
                 <table
@@ -467,7 +727,49 @@ const Leaderboard = () => {
                           <td style={{ padding: "12px", textAlign: "center" }}>
                             <span style={{ fontSize: "20px" }}>{medal}</span>
                           </td>
-                          <td style={{ padding: "12px" }}>{s.name}</td>
+                          <td
+                            style={{
+                              padding: "12px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            {/* Show profile picture if available */}
+                            {userPics[s.name] ? (
+                              <img
+                                src={userPics[s.name]}
+                                alt={s.name}
+                                style={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: "50%",
+                                  objectFit: "cover",
+                                  border: "2px solid #3a6df0",
+                                  marginRight: 6,
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: "50%",
+                                  background: "#e5e7eb",
+                                  color: "#3a6df0",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontWeight: "bold",
+                                  fontSize: 16,
+                                  marginRight: 6,
+                                }}
+                              >
+                                {s.name?.[0]?.toUpperCase() || "?"}
+                              </div>
+                            )}
+                            {s.name}
+                          </td>
                           <td style={{ padding: "12px" }}>{s.totalMarks}</td>
                           <td style={{ padding: "12px" }}>{s.totalOutOf}</td>
                           <td
