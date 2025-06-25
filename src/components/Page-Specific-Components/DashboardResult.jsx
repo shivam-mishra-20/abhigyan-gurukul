@@ -30,7 +30,14 @@ export default function DashboardResult() {
   const [marks, setMarks] = useState("");
   const [outOf, setOutOf] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [testDate, setTestDate] = useState("");
+  const [testDate, setTestDate] = useState(() => {
+    // Default to today's date in yyyy-mm-dd format
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  });
   const [confirmation, setConfirmation] = useState("");
 
   const [studentResults, setStudentResults] = useState([]);
@@ -54,6 +61,17 @@ export default function DashboardResult() {
 
   // Add sort state for View Results
   const [viewSortBy, setViewSortBy] = useState("date-desc");
+
+  // Bulk entry state
+  const [bulkResults, setBulkResults] = useState([]);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkTestDate, setBulkTestDate] = useState(() => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  });
 
   // Animation variants
   const containerVariants = {
@@ -149,11 +167,17 @@ export default function DashboardResult() {
       });
 
       setConfirmation("✅ Result submitted successfully!");
-      setSubject("");
+      // Only clear fields that are unique per result
+      // Do NOT clear selectedClass, selectedStudentName, subject, or outOf
       setMarks("");
-      setOutOf("");
       setRemarks("");
-      setTestDate("");
+      setTestDate(() => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      });
 
       // Clear confirmation after 3 seconds
       setTimeout(() => {
@@ -313,6 +337,67 @@ export default function DashboardResult() {
     return sorted;
   };
 
+  useEffect(() => {
+    if (bulkMode && selectedClass && subject) {
+      const classStudents = students.filter((s) => s.Class === selectedClass);
+      setBulkResults(
+        classStudents.map((student) => ({
+          name: student.name,
+          marks: "",
+          outOf: outOf || "",
+          remarks: "",
+        }))
+      );
+    } else {
+      setBulkResults([]);
+    }
+  }, [bulkMode, selectedClass, subject, students, outOf]);
+
+  const handleBulkChange = (idx, field, value) => {
+    setBulkResults((prev) => {
+      const updated = [...prev];
+      updated[idx][field] = value;
+      return updated;
+    });
+  };
+
+  const handleBulkSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedClass || !subject) {
+      alert("Please select class and subject.");
+      return;
+    }
+    const validResults = bulkResults.filter((r) => r.marks && r.outOf);
+    if (validResults.length === 0) {
+      alert("Please fill at least one result.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      for (const r of validResults) {
+        await addDoc(collection(db, "Results"), {
+          class: selectedClass,
+          name: r.name,
+          subject,
+          marks: r.marks,
+          outOf: r.outOf,
+          remarks: r.remarks,
+          testDate: bulkTestDate,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      setConfirmation("✅ All results submitted!");
+      setBulkResults((prev) =>
+        prev.map((r) => ({ ...r, marks: "", remarks: "" }))
+      );
+      setTimeout(() => setConfirmation(""), 3000);
+    } catch (err) {
+      setConfirmation("❌ Failed to submit some results.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <motion.div
       className="bg-white p-4 md:p-6 rounded-xl shadow-md max-w-3xl mx-auto border border-gray-100"
@@ -347,52 +432,56 @@ export default function DashboardResult() {
             <FaStar className="text-yellow-500 mr-2" /> Add New Result
           </motion.h3>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <motion.select
-                variants={itemVariants}
-                whileFocus={formControlVariants.focus}
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-              >
-                <option value="">Select Class</option>
-                {[...new Set(students.map((s) => s.Class))].map((cls) => (
-                  <option key={cls} value={cls}>
-                    {cls}
-                  </option>
-                ))}
-              </motion.select>
+          {/* Bulk/single mode toggle */}
+          <div className="mb-4 flex gap-4">
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-lg font-medium shadow-sm border transition-all ${
+                bulkMode
+                  ? "bg-white border-green-500 text-green-700"
+                  : "bg-green-600 text-white border-transparent hover:bg-green-700"
+              }`}
+              onClick={() => setBulkMode(false)}
+            >
+              Single Entry
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-lg font-medium shadow-sm border transition-all ${
+                bulkMode
+                  ? "bg-green-600 text-white border-transparent hover:bg-green-700"
+                  : "bg-white border-green-500 text-green-700"
+              }`}
+              onClick={() => setBulkMode(true)}
+            >
+              Bulk Entry
+            </button>
+          </div>
 
-              <motion.select
-                variants={itemVariants}
-                whileFocus={formControlVariants.focus}
-                value={selectedStudentName}
-                onChange={(e) => setSelectedStudentName(e.target.value)}
-                className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-              >
-                <option value="">Select Student</option>
-                {students
-                  .filter((s) => s.Class === selectedClass)
-                  .map((student) => (
-                    <option key={student.name} value={student.name}>
-                      {student.name}
+          {/* Bulk Entry Form */}
+          {bulkMode && (
+            <form onSubmit={handleBulkSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <motion.select
+                  variants={itemVariants}
+                  whileFocus={formControlVariants.focus}
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                >
+                  <option value="">Select Class</option>
+                  {[...new Set(students.map((s) => s.Class))].map((cls) => (
+                    <option key={cls} value={cls}>
+                      {cls}
                     </option>
                   ))}
-              </motion.select>
-
-              <motion.div variants={itemVariants} className="relative">
-                <FaBook className="absolute left-3 top-3 text-gray-400" />
-                <select
+                </motion.select>
+                <motion.select
+                  variants={itemVariants}
+                  whileFocus={formControlVariants.focus}
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="p-2 pl-10 border border-gray-300 rounded-lg w-full appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 >
                   <option value="">Select Subject</option>
                   <option value="English">English</option>
@@ -404,20 +493,7 @@ export default function DashboardResult() {
                   <option value="Biology">Biology</option>
                   <option value="Language">Hindi</option>
                   <option value="Language">Gujarati</option>
-                </select>
-              </motion.div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <motion.input
-                  variants={itemVariants}
-                  whileFocus={formControlVariants.focus}
-                  type="number"
-                  placeholder="Marks"
-                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  value={marks}
-                  onChange={(e) => setMarks(e.target.value)}
-                />
-
+                </motion.select>
                 <motion.input
                   variants={itemVariants}
                   whileFocus={formControlVariants.focus}
@@ -427,77 +503,244 @@ export default function DashboardResult() {
                   value={outOf}
                   onChange={(e) => setOutOf(e.target.value)}
                 />
-              </div>
-
-              <motion.input
-                variants={itemVariants}
-                whileFocus={formControlVariants.focus}
-                type="text"
-                placeholder="Remarks"
-                className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-              />
-
-              <motion.div variants={itemVariants} className="relative">
-                <FaCalendarAlt className="absolute left-3 top-3 text-gray-400" />
                 <motion.input
+                  variants={itemVariants}
                   whileFocus={formControlVariants.focus}
                   type="date"
-                  className="p-2 pl-10 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  value={testDate}
-                  onChange={(e) => setTestDate(e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={bulkTestDate}
+                  onChange={(e) => setBulkTestDate(e.target.value)}
                 />
-              </motion.div>
-            </div>
+              </div>
+              {/* Table of students */}
+              {bulkResults.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border mt-4">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-2 border">Student Name</th>
+                        <th className="p-2 border">Marks</th>
+                        <th className="p-2 border">Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bulkResults.map((r, idx) => (
+                        <tr key={r.name}>
+                          <td className="p-2 border font-medium">{r.name}</td>
+                          <td className="p-2 border">
+                            <input
+                              type="number"
+                              className="border rounded p-1 w-20"
+                              value={r.marks}
+                              onChange={(e) =>
+                                handleBulkChange(idx, "marks", e.target.value)
+                              }
+                              required={false}
+                            />
+                          </td>
+                          <td className="p-2 border">
+                            <input
+                              type="text"
+                              className="border rounded p-1 w-32"
+                              value={r.remarks}
+                              onChange={(e) =>
+                                handleBulkChange(idx, "remarks", e.target.value)
+                              }
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <motion.button
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isSubmitting}
+                type="submit"
+                className={`${
+                  isSubmitting
+                    ? "bg-gray-400 cursor-wait"
+                    : "bg-green-600 hover:bg-green-700"
+                } text-white px-6 py-2 rounded-lg shadow-sm hover:shadow transition-all w-full md:w-auto flex items-center justify-center space-x-2`}
+              >
+                {isSubmitting ? "Submitting..." : "Submit All Results"}
+              </motion.button>
+              <AnimatePresence>
+                {confirmation && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className={`font-medium mt-2 p-2 rounded-lg text-center ${
+                      confirmation.includes("❌")
+                        ? "bg-red-50 text-red-700"
+                        : "bg-green-50 text-green-700"
+                    }`}
+                  >
+                    {confirmation}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </form>
+          )}
 
-            <motion.button
-              variants={itemVariants}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={isSubmitting}
-              type="submit"
-              className={`${
-                isSubmitting
-                  ? "bg-gray-400 cursor-wait"
-                  : "bg-green-600 hover:bg-green-700"
-              } text-white px-6 py-2 rounded-lg shadow-sm hover:shadow transition-all w-full md:w-auto flex items-center justify-center space-x-2`}
+          {/* Single Entry Form (existing) */}
+          {!bulkMode && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              className="space-y-4"
             >
-              {isSubmitting ? (
-                <>
-                  <motion.div
-                    className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
-                  <span>Submitting...</span>
-                </>
-              ) : (
-                <span>Submit Result</span>
-              )}
-            </motion.button>
-
-            <AnimatePresence>
-              {confirmation && (
-                <motion.p
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className={`font-medium mt-2 p-2 rounded-lg text-center ${
-                    confirmation.includes("❌")
-                      ? "bg-red-50 text-red-700"
-                      : "bg-green-50 text-green-700"
-                  }`}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <motion.select
+                  variants={itemVariants}
+                  whileFocus={formControlVariants.focus}
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 >
-                  {confirmation}
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </form>
+                  <option value="">Select Class</option>
+                  {[...new Set(students.map((s) => s.Class))].map((cls) => (
+                    <option key={cls} value={cls}>
+                      {cls}
+                    </option>
+                  ))}
+                </motion.select>
+
+                <motion.select
+                  variants={itemVariants}
+                  whileFocus={formControlVariants.focus}
+                  value={selectedStudentName}
+                  onChange={(e) => setSelectedStudentName(e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                >
+                  <option value="">Select Student</option>
+                  {students
+                    .filter((s) => s.Class === selectedClass)
+                    .map((student) => (
+                      <option key={student.name} value={student.name}>
+                        {student.name}
+                      </option>
+                    ))}
+                </motion.select>
+
+                <motion.div variants={itemVariants} className="relative">
+                  <FaBook className="absolute left-3 top-3 text-gray-400" />
+                  <select
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="p-2 pl-10 border border-gray-300 rounded-lg w-full appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Select Subject</option>
+                    <option value="English">English</option>
+                    <option value="Social Science">SS</option>
+                    <option value="Mathematics">Maths</option>
+                    <option value="Science">Science</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Language">Hindi</option>
+                    <option value="Language">Gujarati</option>
+                  </select>
+                </motion.div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <motion.input
+                    variants={itemVariants}
+                    whileFocus={formControlVariants.focus}
+                    type="number"
+                    placeholder="Marks"
+                    className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    value={marks}
+                    onChange={(e) => setMarks(e.target.value)}
+                  />
+
+                  <motion.input
+                    variants={itemVariants}
+                    whileFocus={formControlVariants.focus}
+                    type="number"
+                    placeholder="Out Of"
+                    className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    value={outOf}
+                    onChange={(e) => setOutOf(e.target.value)}
+                  />
+                </div>
+
+                <motion.input
+                  variants={itemVariants}
+                  whileFocus={formControlVariants.focus}
+                  type="text"
+                  placeholder="Remarks"
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                />
+
+                <motion.div variants={itemVariants} className="relative">
+                  <FaCalendarAlt className="absolute left-3 top-3 text-gray-400" />
+                  <motion.input
+                    whileFocus={formControlVariants.focus}
+                    type="date"
+                    className="p-2 pl-10 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    value={testDate}
+                    onChange={(e) => setTestDate(e.target.value)}
+                  />
+                </motion.div>
+              </div>
+
+              <motion.button
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isSubmitting}
+                type="submit"
+                className={`${
+                  isSubmitting
+                    ? "bg-gray-400 cursor-wait"
+                    : "bg-green-600 hover:bg-green-700"
+                } text-white px-6 py-2 rounded-lg shadow-sm hover:shadow transition-all w-full md:w-auto flex items-center justify-center space-x-2`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <motion.div
+                      className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <span>Submit Result</span>
+                )}
+              </motion.button>
+
+              <AnimatePresence>
+                {confirmation && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className={`font-medium mt-2 p-2 rounded-lg text-center ${
+                      confirmation.includes("❌")
+                        ? "bg-red-50 text-red-700"
+                        : "bg-green-50 text-green-700"
+                    }`}
+                  >
+                    {confirmation}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </form>
+          )}
         </motion.div>
       )}
 

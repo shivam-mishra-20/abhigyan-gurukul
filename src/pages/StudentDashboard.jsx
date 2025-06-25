@@ -821,6 +821,14 @@ const SidebarContent = ({ location, userRole, handleNav, handleLogout }) => (
             onClick={() => handleNav("/student-dashboard/time-table-manager")}
           />
         )}
+        {["admin"].includes(userRole) && (
+          <SidebarItem
+            icon={<FaBookOpen />}
+            label="Dev Console"
+            active={location.pathname === "/student-dashboard/dev-console"}
+            onClick={() => handleNav("/student-dashboard/dev-console")}
+          />
+        )}
         <SidebarItem
           icon={<FaAdn />}
           label="Homework Status"
