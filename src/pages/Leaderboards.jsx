@@ -9,9 +9,11 @@ import {
   FaUserGraduate,
   FaChalkboardTeacher,
   FaFilter,
+  FaBook,
 } from "react-icons/fa";
 import { BsPersonCheckFill } from "react-icons/bs";
 import { GiPodium } from "react-icons/gi";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Leaderboard = () => {
   const [leaderboards, setLeaderboards] = useState({});
@@ -21,6 +23,9 @@ const Leaderboard = () => {
   const [studentRank, setStudentRank] = useState(null);
   // Add: Store user pictures by name
   const [userPics, setUserPics] = useState({});
+  const [subjectLeaderboards, setSubjectLeaderboards] = useState({});
+  const [selectedSubjects, setSelectedSubjects] = useState({});
+  const [activeTab, setActiveTab] = useState("subject"); // Changed from "overall" to "subject"
 
   const classOrder = ["Class 8", "Class 9", "Class 10", "Class 11", "Class 12"];
   const batchOrder = ["Aadharshila", "Lakshya", "Basic"];
@@ -34,13 +39,15 @@ const Leaderboard = () => {
       const colRef = collection(db, "ActualStudentResults");
       const snapshot = await getDocs(colRef);
 
-      const tempMap = {};
+      const tempMap = {}; // Overall rankings
+      const subjectMap = {}; // For subject-wise rankings
       const studentFiltered = [];
 
       snapshot.forEach((doc) => {
         const data = doc.data();
         const results = data.results || [];
 
+        // For overall ranking (existing logic)
         const totalMarks = results.reduce(
           (sum, r) => sum + parseFloat(r.marks || "0"),
           0
@@ -60,6 +67,7 @@ const Leaderboard = () => {
           percentage: percentage.toFixed(2),
         };
 
+        // Existing code for overall rankings
         if (!tempMap[data.class]) tempMap[data.class] = {};
         if (!tempMap[data.class][data.batch])
           tempMap[data.class][data.batch] = [];
@@ -68,8 +76,37 @@ const Leaderboard = () => {
         if (data.class === studentClass && data.batch === studentBatch) {
           studentFiltered.push(entry);
         }
+
+        // NEW SECTION: Subject-wise rankings
+        results.forEach((r) => {
+          if (r.subject) {
+            // Initialize structure if needed
+            if (!subjectMap[data.class]) subjectMap[data.class] = {};
+            if (!subjectMap[data.class][data.batch])
+              subjectMap[data.class][data.batch] = {};
+            if (!subjectMap[data.class][data.batch][r.subject])
+              subjectMap[data.class][data.batch][r.subject] = [];
+
+            // Add student's performance in this subject
+            const subjectPercentage =
+              parseFloat(r.outOf) > 0
+                ? (parseFloat(r.marks) / parseFloat(r.outOf)) * 100
+                : 0;
+
+            subjectMap[data.class][data.batch][r.subject].push({
+              name: data.name,
+              class: data.class,
+              batch: data.batch,
+              marks: parseFloat(r.marks || "0"),
+              outOf: parseFloat(r.outOf || "0"),
+              percentage: subjectPercentage.toFixed(2),
+              subject: r.subject,
+            });
+          }
+        });
       });
 
+      // Sort overall rankings (existing code)
       Object.keys(tempMap).forEach((classKey) => {
         Object.keys(tempMap[classKey]).forEach((batchKey) => {
           tempMap[classKey][batchKey].sort(
@@ -77,6 +114,20 @@ const Leaderboard = () => {
           );
         });
       });
+
+      // Sort subject-wise rankings
+      Object.keys(subjectMap).forEach((classKey) => {
+        Object.keys(subjectMap[classKey]).forEach((batchKey) => {
+          Object.keys(subjectMap[classKey][batchKey]).forEach((subject) => {
+            subjectMap[classKey][batchKey][subject].sort(
+              (a, b) => b.percentage - a.percentage
+            );
+          });
+        });
+      });
+
+      // Set state for subject-wise rankings
+      setSubjectLeaderboards(subjectMap);
 
       studentFiltered.sort((a, b) => b.percentage - a.percentage);
       const rank = studentFiltered.findIndex((s) => s.name === studentName);
@@ -128,22 +179,32 @@ const Leaderboard = () => {
     textAlign: "left",
   };
 
+  // Enhanced card style
   const cardStyle = {
     background: "white",
-    borderRadius: "8px",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    padding: "20px",
-    marginBottom: "30px",
+    borderRadius: "12px",
+    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
+    padding: "24px",
+    marginBottom: "32px",
+    transition: "all 0.3s ease",
+    border: "1px solid rgba(0,0,0,0.04)",
+    overflow: "hidden",
   };
 
   const buttonStyle = {
     border: "none",
-    borderRadius: "4px",
-    padding: "8px 15px",
+    borderRadius: "6px",
+    padding: "10px 18px",
     margin: "0 5px",
     cursor: "pointer",
-    fontWeight: "bold",
-    transition: "all 0.3s ease",
+    fontWeight: "600",
+    transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "15px",
+    position: "relative",
+    overflow: "hidden",
   };
 
   const selectStyle = {
@@ -345,6 +406,106 @@ const Leaderboard = () => {
     );
   };
 
+  // Updated tab controls with animations
+  const tabControlsSection = (
+    <div
+      style={{
+        display: "flex",
+        gap: "15px",
+        marginBottom: "25px",
+        borderBottom: "1px solid #e5e7eb",
+        padding: "5px 0 15px 0",
+        position: "relative",
+      }}
+    >
+      <button
+        onClick={() => setActiveTab("subject")}
+        style={{
+          ...buttonStyle,
+          backgroundColor: activeTab === "subject" ? "#3a6df0" : "#edf2f7",
+          color: activeTab === "subject" ? "white" : "#2d3748",
+          boxShadow:
+            activeTab === "subject"
+              ? "0 4px 10px rgba(58, 109, 240, 0.25)"
+              : "none",
+          transform:
+            activeTab === "subject" ? "translateY(-2px)" : "translateY(0)",
+        }}
+      >
+        <FaBook style={{ fontSize: "16px" }} /> Subject-wise Leaderboards
+        {activeTab === "subject" && (
+          <motion.div
+            layoutId="tab-underline"
+            style={{
+              position: "absolute",
+              bottom: "-5px",
+              left: "0",
+              right: "0",
+              height: "3px",
+              backgroundColor: "#3a6df0",
+              borderRadius: "3px",
+            }}
+          />
+        )}
+      </button>
+      <button
+        onClick={() => setActiveTab("overall")}
+        style={{
+          ...buttonStyle,
+          backgroundColor: activeTab === "overall" ? "#3a6df0" : "#edf2f7",
+          color: activeTab === "overall" ? "white" : "#2d3748",
+          boxShadow:
+            activeTab === "overall"
+              ? "0 4px 10px rgba(58, 109, 240, 0.25)"
+              : "none",
+          transform:
+            activeTab === "overall" ? "translateY(-2px)" : "translateY(0)",
+        }}
+      >
+        <FaTrophy style={{ fontSize: "16px" }} /> Overall Leaderboards
+        {activeTab === "overall" && (
+          <motion.div
+            layoutId="tab-underline"
+            style={{
+              position: "absolute",
+              bottom: "-5px",
+              left: "0",
+              right: "0",
+              height: "3px",
+              backgroundColor: "#3a6df0",
+              borderRadius: "3px",
+            }}
+          />
+        )}
+      </button>
+    </div>
+  );
+
+  // Animated filter buttons
+  const FilterButton = ({ active, children, onClick }) => (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.98 }}
+      style={{
+        background: active ? "#3a6df0" : "#edf2f7",
+        color: active ? "#fff" : "#2d3748",
+        border: "none",
+        borderRadius: "6px",
+        padding: "8px 16px",
+        cursor: "pointer",
+        fontWeight: "600",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        boxShadow: active ? "0 3px 8px rgba(58, 109, 240, 0.2)" : "none",
+        transition: "all 0.2s ease",
+      }}
+    >
+      {children}
+    </motion.button>
+  );
+
   return (
     <div
       style={{
@@ -367,6 +528,7 @@ const Leaderboard = () => {
         <FaTrophy style={{ color: "#f1c40f" }} /> Leaderboards
       </h1>
 
+      {/* Your batch leaderboard (always visible) */}
       <div style={cardStyle}>
         <h2
           style={{
@@ -533,271 +695,584 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      {classOrder.map((className) => {
-        const classData = leaderboards[className];
-        if (!classData) return null;
+      {/* Replace the existing tab controls with the animated version */}
+      {tabControlsSection}
 
-        const availableBatches = Object.keys(classData);
-        const selectedBatch = selectedBatches[className];
-        const filter = filterMode[className] || "all";
+      <AnimatePresence mode="wait">
+        {/* Overall leaderboards - show when activeTab is "overall" */}
+        {activeTab === "overall" && (
+          <motion.div
+            key="overall-tab"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            {classOrder.map((className) => {
+              const classData = leaderboards[className];
+              if (!classData) return null;
 
-        return (
-          <div key={className} style={cardStyle}>
-            <h2
-              style={{
-                color: "#2c3e50",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                marginBottom: "20px",
-                borderBottom: "2px solid #f1c40f",
-                paddingBottom: "10px",
-              }}
-            >
-              <FaChalkboardTeacher /> {className}
-            </h2>
+              const availableBatches = Object.keys(classData);
+              const selectedBatch = selectedBatches[className];
+              const filter = filterMode[className] || "all";
 
-            <div style={filterContainerStyle}>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <span style={{ fontWeight: "bold" }}>Choose Batch:</span>
-                <select
-                  style={selectStyle}
-                  value={selectedBatch}
-                  onChange={(e) =>
-                    setSelectedBatches((prev) => ({
-                      ...prev,
-                      [className]: e.target.value,
-                    }))
-                  }
-                >
-                  {batchOrder
-                    .filter((batch) => availableBatches.includes(batch))
-                    .map((batch) => (
-                      <option key={batch} value={batch}>
-                        {batch}
-                      </option>
-                    ))}
-                </select>
-              </div>
+              return (
+                <div key={className} style={cardStyle}>
+                  <h2
+                    style={{
+                      color: "#2c3e50",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginBottom: "20px",
+                      borderBottom: "2px solid #f1c40f",
+                      paddingBottom: "10px",
+                    }}
+                  >
+                    <FaChalkboardTeacher /> {className}
+                  </h2>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  background: "#f5f5f5",
-                  borderRadius: "8px",
-                  padding: "8px 15px",
-                  gap: "10px",
-                }}
-              >
-                <FaFilter style={{ color: "#3a6df0" }} />
-                <span style={{ fontWeight: "bold" }}>Filter:</span>
-                <label
-                  style={{
-                    marginLeft: "10px",
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name={`filter-${className}`}
-                    value="all"
-                    checked={filter === "all"}
-                    onChange={() =>
-                      setFilterMode((prev) => ({
-                        ...prev,
-                        [className]: "all",
-                      }))
-                    }
-                    style={{ marginRight: "5px" }}
-                  />
-                  All Students
-                </label>
-                <label
-                  style={{
-                    marginLeft: "15px",
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name={`filter-${className}`}
-                    value="top3"
-                    checked={filter === "top3"}
-                    onChange={() =>
-                      setFilterMode((prev) => ({
-                        ...prev,
-                        [className]: "top3",
-                      }))
-                    }
-                    style={{ marginRight: "5px" }}
-                  />
-                  <GiPodium style={{ marginRight: "5px", color: "#f1c40f" }} />
-                  Top 3 Only
-                </label>
-              </div>
-            </div>
+                  <div style={filterContainerStyle}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span style={{ fontWeight: "bold" }}>Choose Batch:</span>
+                      <select
+                        style={selectStyle}
+                        value={selectedBatch}
+                        onChange={(e) =>
+                          setSelectedBatches((prev) => ({
+                            ...prev,
+                            [className]: e.target.value,
+                          }))
+                        }
+                      >
+                        {batchOrder
+                          .filter((batch) => availableBatches.includes(batch))
+                          .map((batch) => (
+                            <option key={batch} value={batch}>
+                              {batch}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
 
-            {/* Podium for each class/batch leaderboard */}
-            {selectedBatch &&
-              classData[selectedBatch] &&
-              classData[selectedBatch].length > 0 && (
-                <Podium
-                  top3={classData[selectedBatch].slice(0, 3)}
-                  userPics={userPics}
-                  studentName={studentName}
-                />
-              )}
-
-            {selectedBatch && classData[selectedBatch] && (
-              <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th style={tableHeaderStyle}>
-                        <span
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "left",
-                            gap: "5px",
-                          }}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        background: "#f5f5f5",
+                        borderRadius: "8px",
+                        padding: "8px 15px",
+                        gap: "10px",
+                      }}
+                    >
+                      <FaFilter style={{ color: "#3a6df0" }} />
+                      <span style={{ fontWeight: "bold" }}>Filter:</span>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          background: "#f5f5f5",
+                          borderRadius: "10px",
+                          padding: "10px 15px",
+                          gap: "12px",
+                        }}
+                      >
+                        <FilterButton
+                          active={filter === "all"}
+                          onClick={() =>
+                            setFilterMode((prev) => ({
+                              ...prev,
+                              [className]: "all",
+                            }))
+                          }
                         >
-                          <FaMedal /> Rank
-                        </span>
-                      </th>
-                      <th style={tableHeaderStyle}>Name</th>
-                      <th style={tableHeaderStyle}>Total Marks</th>
-                      <th style={tableHeaderStyle}>Out Of</th>
-                      <th style={tableHeaderStyle}>
-                        <span
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "left",
-                            gap: "5px",
-                          }}
+                          All Students
+                        </FilterButton>
+                        <FilterButton
+                          active={filter === "top3"}
+                          onClick={() =>
+                            setFilterMode((prev) => ({
+                              ...prev,
+                              [className]: "top3",
+                            }))
+                          }
                         >
-                          <FaSort /> Percentage
-                        </span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(filter === "top3"
-                      ? classData[selectedBatch].slice(0, 3)
-                      : classData[selectedBatch]
-                    ).map((s, index) => {
-                      let medal = index + 1;
-                      if (index === 0) medal = "🥇";
-                      else if (index === 1) medal = "🥈";
-                      else if (index === 2) medal = "🥉";
-
-                      const rankColors = {
-                        0: "#fef3c7", // Gold
-                        1: "#e5e7eb", // Silver
-                        2: "#fef2f2", // Bronze
-                      };
-
-                      return (
-                        <tr
-                          key={s.name + index}
-                          style={{
-                            backgroundColor:
-                              index < 3
-                                ? rankColors[index]
-                                : index % 2 === 0
-                                ? "#f8f9fa"
-                                : "white",
-                            fontWeight: index < 3 ? "bold" : "normal",
-                          }}
-                        >
-                          <td style={{ padding: "12px", textAlign: "center" }}>
-                            <span style={{ fontSize: "20px" }}>{medal}</span>
-                          </td>
-                          <td
+                          <GiPodium
                             style={{
-                              padding: "12px",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
+                              color: filter === "top3" ? "#fff" : "#f1c40f",
                             }}
-                          >
-                            {/* Show profile picture if available */}
-                            {userPics[s.name] ? (
-                              <img
-                                src={userPics[s.name]}
-                                alt={s.name}
+                          />{" "}
+                          Top 3
+                        </FilterButton>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Podium for each class/batch leaderboard */}
+                  {selectedBatch &&
+                    classData[selectedBatch] &&
+                    classData[selectedBatch].length > 0 && (
+                      <Podium
+                        top3={classData[selectedBatch].slice(0, 3)}
+                        userPics={userPics}
+                        studentName={studentName}
+                      />
+                    )}
+
+                  {selectedBatch && classData[selectedBatch] && (
+                    <div style={{ overflowX: "auto" }}>
+                      <table
+                        style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+                        }}
+                      >
+                        <thead>
+                          <tr>
+                            <th style={tableHeaderStyle}>
+                              <span
                                 style={{
-                                  width: 32,
-                                  height: 32,
-                                  borderRadius: "50%",
-                                  objectFit: "cover",
-                                  border: "2px solid #3a6df0",
-                                  marginRight: 6,
-                                }}
-                              />
-                            ) : (
-                              <div
-                                style={{
-                                  width: 32,
-                                  height: 32,
-                                  borderRadius: "50%",
-                                  background: "#e5e7eb",
-                                  color: "#3a6df0",
                                   display: "flex",
                                   alignItems: "center",
-                                  justifyContent: "center",
-                                  fontWeight: "bold",
-                                  fontSize: 16,
-                                  marginRight: 6,
+                                  justifyContent: "left",
+                                  gap: "5px",
                                 }}
                               >
-                                {s.name?.[0]?.toUpperCase() || "?"}
-                              </div>
-                            )}
-                            {s.name}
-                          </td>
-                          <td style={{ padding: "12px" }}>{s.totalMarks}</td>
-                          <td style={{ padding: "12px" }}>{s.totalOutOf}</td>
-                          <td
-                            style={{
-                              padding: "12px",
-                              color:
-                                parseFloat(s.percentage) > 90
-                                  ? "#2ecc71"
-                                  : parseFloat(s.percentage) > 75
-                                  ? "#3498db"
-                                  : parseFloat(s.percentage) > 60
-                                  ? "#f39c12"
-                                  : "#e74c3c",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {s.percentage}%
-                          </td>
+                                <FaMedal /> Rank
+                              </span>
+                            </th>
+                            <th style={tableHeaderStyle}>Name</th>
+                            <th style={tableHeaderStyle}>Total Marks</th>
+                            <th style={tableHeaderStyle}>Out Of</th>
+                            <th style={tableHeaderStyle}>
+                              <span
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "left",
+                                  gap: "5px",
+                                }}
+                              >
+                                <FaSort /> Percentage
+                              </span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(filter === "top3"
+                            ? classData[selectedBatch].slice(0, 3)
+                            : classData[selectedBatch]
+                          ).map((s, index) => {
+                            let medal = index + 1;
+                            if (index === 0) medal = "🥇";
+                            else if (index === 1) medal = "🥈";
+                            else if (index === 2) medal = "🥉";
+
+                            const rankColors = {
+                              0: "#fef3c7", // Gold
+                              1: "#e5e7eb", // Silver
+                              2: "#fef2f2", // Bronze
+                            };
+
+                            return (
+                              <motion.tr
+                                key={s.name + index}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.3,
+                                  delay: index * 0.05,
+                                  ease: "easeOut",
+                                }}
+                                style={{
+                                  backgroundColor:
+                                    index < 3
+                                      ? rankColors[index]
+                                      : index % 2 === 0
+                                      ? "#f8f9fa"
+                                      : "white",
+                                  fontWeight: index < 3 ? "bold" : "normal",
+                                }}
+                              >
+                                <td
+                                  style={{
+                                    padding: "12px",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  <span style={{ fontSize: "20px" }}>
+                                    {medal}
+                                  </span>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "12px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  {/* Show profile picture if available */}
+                                  {userPics[s.name] ? (
+                                    <img
+                                      src={userPics[s.name]}
+                                      alt={s.name}
+                                      style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: "50%",
+                                        objectFit: "cover",
+                                        border: "2px solid #3a6df0",
+                                        marginRight: 6,
+                                      }}
+                                    />
+                                  ) : (
+                                    <div
+                                      style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: "50%",
+                                        background: "#e5e7eb",
+                                        color: "#3a6df0",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontWeight: "bold",
+                                        fontSize: 16,
+                                        marginRight: 6,
+                                      }}
+                                    >
+                                      {s.name?.[0]?.toUpperCase() || "?"}
+                                    </div>
+                                  )}
+                                  {s.name}
+                                </td>
+                                <td style={{ padding: "12px" }}>
+                                  {s.totalMarks}
+                                </td>
+                                <td style={{ padding: "12px" }}>
+                                  {s.totalOutOf}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "12px",
+                                    color:
+                                      parseFloat(s.percentage) > 90
+                                        ? "#2ecc71"
+                                        : parseFloat(s.percentage) > 75
+                                        ? "#3498db"
+                                        : parseFloat(s.percentage) > 60
+                                        ? "#f39c12"
+                                        : "#e74c3c",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {s.percentage}%
+                                </td>
+                              </motion.tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </motion.div>
+        )}
+
+        {/* Subject-wise leaderboards - show when activeTab is "subject" */}
+        {activeTab === "subject" && (
+          <motion.div
+            key="subject-tab"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            {classOrder.map((className) => {
+              const classData = subjectLeaderboards[className];
+              if (!classData) return null;
+
+              const availableBatches = Object.keys(classData);
+              const selectedBatch = selectedBatches[className];
+
+              if (!selectedBatch || !classData[selectedBatch]) return null;
+
+              const availableSubjects = Object.keys(
+                classData[selectedBatch] || {}
+              );
+              const selectedSubject =
+                selectedSubjects[className] ||
+                (availableSubjects.length > 0 ? availableSubjects[0] : null);
+
+              if (
+                !selectedSubject ||
+                !classData[selectedBatch][selectedSubject]
+              )
+                return null;
+
+              return (
+                <div key={`subject-${className}`} style={cardStyle}>
+                  <h2
+                    style={{
+                      color: "#2c3e50",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginBottom: "20px",
+                      borderBottom: "2px solid #f1c40f",
+                      paddingBottom: "10px",
+                    }}
+                  >
+                    <FaChalkboardTeacher /> {className} - Subject Rankings
+                  </h2>
+
+                  <div style={filterContainerStyle}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span style={{ fontWeight: "bold" }}>Choose Batch:</span>
+                      <select
+                        style={selectStyle}
+                        value={selectedBatch}
+                        onChange={(e) =>
+                          setSelectedBatches((prev) => ({
+                            ...prev,
+                            [className]: e.target.value,
+                          }))
+                        }
+                      >
+                        {batchOrder
+                          .filter((batch) => availableBatches.includes(batch))
+                          .map((batch) => (
+                            <option key={batch} value={batch}>
+                              {batch}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginLeft: "15px",
+                      }}
+                    >
+                      <span style={{ fontWeight: "bold" }}>
+                        Choose Subject:
+                      </span>
+                      <select
+                        style={selectStyle}
+                        value={selectedSubject}
+                        onChange={(e) =>
+                          setSelectedSubjects((prev) => ({
+                            ...prev,
+                            [className]: e.target.value,
+                          }))
+                        }
+                      >
+                        {availableSubjects.map((subject) => (
+                          <option key={subject} value={subject}>
+                            {subject}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Subject Podium */}
+                  <Podium
+                    top3={classData[selectedBatch][selectedSubject].slice(0, 3)}
+                    userPics={userPics}
+                    studentName={studentName}
+                  />
+
+                  {/* Subject Ranking Table */}
+                  <div style={{ overflowX: "auto" }}>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          <th style={tableHeaderStyle}>
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "left",
+                                gap: "5px",
+                              }}
+                            >
+                              <FaMedal /> Rank
+                            </span>
+                          </th>
+                          <th style={tableHeaderStyle}>Name</th>
+                          <th style={tableHeaderStyle}>Marks</th>
+                          <th style={tableHeaderStyle}>Out Of</th>
+                          <th style={tableHeaderStyle}>
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "left",
+                                gap: "5px",
+                              }}
+                            >
+                              <FaSort /> Percentage
+                            </span>
+                          </th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        );
-      })}
+                      </thead>
+                      <tbody>
+                        {classData[selectedBatch][selectedSubject].map(
+                          (s, index) => {
+                            let medal = index + 1;
+                            if (index === 0) medal = "🥇";
+                            else if (index === 1) medal = "🥈";
+                            else if (index === 2) medal = "🥉";
+
+                            const rankColors = {
+                              0: "#fef3c7", // Gold
+                              1: "#e5e7eb", // Silver
+                              2: "#fef2f2", // Bronze
+                            };
+
+                            const isCurrentUser = s.name === studentName;
+
+                            return (
+                              <motion.tr
+                                key={s.name + index}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.3,
+                                  delay: index * 0.05,
+                                  ease: "easeOut",
+                                }}
+                                style={{
+                                  backgroundColor: isCurrentUser
+                                    ? "#e3f2fd"
+                                    : index < 3
+                                    ? rankColors[index]
+                                    : index % 2 === 0
+                                    ? "#f8f9fa"
+                                    : "white",
+                                  fontWeight: isCurrentUser
+                                    ? "bold"
+                                    : index < 3
+                                    ? "bold"
+                                    : "normal",
+                                  borderLeft: isCurrentUser
+                                    ? "4px solid #3a6df0"
+                                    : "none",
+                                }}
+                              >
+                                <td
+                                  style={{
+                                    padding: "12px",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  <span style={{ fontSize: "20px" }}>
+                                    {medal}
+                                  </span>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "12px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  {userPics[s.name] ? (
+                                    <img
+                                      src={userPics[s.name]}
+                                      alt={s.name}
+                                      style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: "50%",
+                                        objectFit: "cover",
+                                        border: "2px solid #3a6df0",
+                                        marginRight: 6,
+                                      }}
+                                    />
+                                  ) : (
+                                    <div
+                                      style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: "50%",
+                                        background: "#e5e7eb",
+                                        color: "#3a6df0",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontWeight: "bold",
+                                        fontSize: 16,
+                                        marginRight: 6,
+                                      }}
+                                    >
+                                      {s.name?.[0]?.toUpperCase() || "?"}
+                                    </div>
+                                  )}
+                                  {isCurrentUser ? (
+                                    <span
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "8px",
+                                      }}
+                                    >
+                                      <FaUserGraduate color="#3a6df0" />{" "}
+                                      {s.name}
+                                    </span>
+                                  ) : (
+                                    s.name
+                                  )}
+                                </td>
+                                <td style={{ padding: "12px" }}>{s.marks}</td>
+                                <td style={{ padding: "12px" }}>{s.outOf}</td>
+                                <td
+                                  style={{
+                                    padding: "12px",
+                                    color:
+                                      parseFloat(s.percentage) > 90
+                                        ? "#2ecc71"
+                                        : parseFloat(s.percentage) > 75
+                                        ? "#3498db"
+                                        : parseFloat(s.percentage) > 60
+                                        ? "#f39c12"
+                                        : "#e74c3c",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {s.percentage}%
+                                </td>
+                              </motion.tr>
+                            );
+                          }
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
