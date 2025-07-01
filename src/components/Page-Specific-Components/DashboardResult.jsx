@@ -73,6 +73,10 @@ export default function DashboardResult() {
     return `${yyyy}-${mm}-${dd}`;
   });
 
+  // New batch state
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState("");
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -109,6 +113,11 @@ export default function DashboardResult() {
         const snapshot = await getDocs(collection(db, "Users"));
         const data = snapshot.docs.map((doc) => doc.data());
         setStudents(data.filter((u) => u.role === "student"));
+        // Extract unique batches
+        const uniqueBatches = [
+          ...new Set(data.map((u) => u.batch).filter(Boolean)),
+        ];
+        setBatches(uniqueBatches);
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -337,11 +346,24 @@ export default function DashboardResult() {
     return sorted;
   };
 
+  // Filtered classes and students based on selected batch
+  const filteredClasses = [
+    ...new Set(
+      students
+        .filter((s) => !selectedBatch || s.batch === selectedBatch)
+        .map((s) => s.Class)
+    ),
+  ];
+  const filteredStudents = students.filter(
+    (s) =>
+      (!selectedBatch || s.batch === selectedBatch) &&
+      (!selectedClass || s.Class === selectedClass)
+  );
+
   useEffect(() => {
     if (bulkMode && selectedClass && subject) {
-      const classStudents = students.filter((s) => s.Class === selectedClass);
       setBulkResults(
-        classStudents.map((student) => ({
+        filteredStudents.map((student) => ({
           name: student.name,
           marks: "",
           outOf: outOf || "",
@@ -351,7 +373,8 @@ export default function DashboardResult() {
     } else {
       setBulkResults([]);
     }
-  }, [bulkMode, selectedClass, subject, students, outOf]);
+    // eslint-disable-next-line
+  }, [bulkMode, selectedClass, subject, students, outOf, selectedBatch]);
 
   const handleBulkChange = (idx, field, value) => {
     setBulkResults((prev) => {
@@ -461,7 +484,23 @@ export default function DashboardResult() {
           {/* Bulk Entry Form */}
           {bulkMode && (
             <form onSubmit={handleBulkSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {/* Batch Filter */}
+                <motion.select
+                  variants={itemVariants}
+                  whileFocus={formControlVariants.focus}
+                  value={selectedBatch}
+                  onChange={(e) => setSelectedBatch(e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                >
+                  <option value="">All Batches</option>
+                  {batches.map((batch) => (
+                    <option key={batch} value={batch}>
+                      {batch}
+                    </option>
+                  ))}
+                </motion.select>
+                {/* Class Dropdown */}
                 <motion.select
                   variants={itemVariants}
                   whileFocus={formControlVariants.focus}
@@ -470,7 +509,7 @@ export default function DashboardResult() {
                   className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 >
                   <option value="">Select Class</option>
-                  {[...new Set(students.map((s) => s.Class))].map((cls) => (
+                  {filteredClasses.map((cls) => (
                     <option key={cls} value={cls}>
                       {cls}
                     </option>
@@ -596,7 +635,23 @@ export default function DashboardResult() {
               }}
               className="space-y-4"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Batch Filter */}
+                <motion.select
+                  variants={itemVariants}
+                  whileFocus={formControlVariants.focus}
+                  value={selectedBatch}
+                  onChange={(e) => setSelectedBatch(e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                >
+                  <option value="">All Batches</option>
+                  {batches.map((batch) => (
+                    <option key={batch} value={batch}>
+                      {batch}
+                    </option>
+                  ))}
+                </motion.select>
+                {/* Class Dropdown */}
                 <motion.select
                   variants={itemVariants}
                   whileFocus={formControlVariants.focus}
@@ -605,7 +660,7 @@ export default function DashboardResult() {
                   className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 >
                   <option value="">Select Class</option>
-                  {[...new Set(students.map((s) => s.Class))].map((cls) => (
+                  {filteredClasses.map((cls) => (
                     <option key={cls} value={cls}>
                       {cls}
                     </option>
@@ -620,13 +675,11 @@ export default function DashboardResult() {
                   className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 >
                   <option value="">Select Student</option>
-                  {students
-                    .filter((s) => s.Class === selectedClass)
-                    .map((student) => (
-                      <option key={student.name} value={student.name}>
-                        {student.name}
-                      </option>
-                    ))}
+                  {filteredStudents.map((student) => (
+                    <option key={student.name} value={student.name}>
+                      {student.name}
+                    </option>
+                  ))}
                 </motion.select>
 
                 <motion.div variants={itemVariants} className="relative">
